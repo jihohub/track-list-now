@@ -13,6 +13,11 @@ const config: Config = {
         "gradient-conic":
           "conic-gradient(from 180deg at 50% 50%, var(--tw-gradient-stops))",
       },
+      screens: {
+        mobile: { max: "479px" },
+        tablet: { min: "480px", max: "1023px" },
+        desktop: { min: "1024px" },
+      },
       colors: {
         navyBlue: "#12086f",
         persianBlue: "#2b35af",
