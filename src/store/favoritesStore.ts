@@ -1,19 +1,6 @@
+import { Artist, Track } from "@/types/types";
 import { create } from "zustand";
-import { persist } from "zustand/middleware"; // persist 미들웨어 추가
-
-interface Artist {
-  id: string;
-  name: string;
-  images: { url: string }[];
-  followers?: { total: number }; // optional for tracks
-}
-
-interface Track {
-  id: string;
-  name: string;
-  album: { images: { url: string }[] };
-  artists: Artist[];
-}
+import { persist } from "zustand/middleware";
 
 interface FavoritesState {
   allTimeArtists: Artist[];
@@ -38,7 +25,6 @@ export const useFavoritesStore = create(
       currentArtists: [],
       currentTracks: [],
 
-      // Add functions
       addAllTimeArtist: (artist) =>
         set((state) => ({
           allTimeArtists: [...state.allTimeArtists, artist],
@@ -56,11 +42,10 @@ export const useFavoritesStore = create(
           currentTracks: [...state.currentTracks, track],
         })),
 
-      // Remove functions
       removeAllTimeArtist: (id) =>
         set((state) => ({
           allTimeArtists: state.allTimeArtists.filter(
-            (artist) => artist.id !== id
+            (artist) => artist.id !== id,
           ),
         })),
       removeAllTimeTrack: (id) =>
@@ -70,7 +55,7 @@ export const useFavoritesStore = create(
       removeCurrentArtist: (id) =>
         set((state) => ({
           currentArtists: state.currentArtists.filter(
-            (artist) => artist.id !== id
+            (artist) => artist.id !== id,
           ),
         })),
       removeCurrentTrack: (id) =>
@@ -79,8 +64,8 @@ export const useFavoritesStore = create(
         })),
     }),
     {
-      name: "favorites-storage", // localStorage에 저장될 키 이름
-      getStorage: () => localStorage, // 로컬 스토리지 사용
-    }
-  )
+      name: "favorites-storage",
+      getStorage: () => localStorage,
+    },
+  ),
 );
