@@ -1,0 +1,72 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model User {
+  id        Int      @id @default(autoincrement())
+  googleId       String   @unique
+  email          String   @unique
+  name           String?
+  profileImage   String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  favorites UserFavorites[]
+}
+
+model UserFavorites {
+  id           Int      @id @default(autoincrement())
+  user         User     @relation(fields: [userId], references: [id])
+  userId       Int
+  artistId     String?
+  trackId      String?
+  favoriteType String
+
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
+
+model AllTimeFavoriteArtistsRanking {
+  id           Int      @id @default(autoincrement())
+  artistId     String   @unique
+  count        Int      
+  followers    Int      
+  lastUpdated  DateTime @updatedAt
+
+  @@index([count, followers])
+}
+
+model AllTimeFavoriteTracksRanking {
+  id           Int      @id @default(autoincrement())
+  trackId      String   @unique
+  count        Int      
+  popularity   Int      
+  lastUpdated  DateTime @updatedAt
+
+  @@index([count, popularity])
+}
+
+model CurrentFavoriteArtistsRanking {
+  id           Int      @id @default(autoincrement())
+  artistId     String   @unique
+  count        Int      
+  followers    Int      
+  lastUpdated  DateTime @updatedAt
+
+  @@index([count, followers])
+}
+
+model CurrentFavoriteTracksRanking {
+  id           Int      @id @default(autoincrement())
+  trackId      String   @unique
+  count        Int      
+  popularity   Int      
+  lastUpdated  DateTime @updatedAt
+
+  @@index([count, popularity])
+}
