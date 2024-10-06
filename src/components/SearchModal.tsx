@@ -1,23 +1,34 @@
+import ArtistOrTrackImage from "@/components/ArtistOrTrackImage";
+import spotifyApi from "@/lib/axios";
+import { Artist, Track } from "@/types/types";
+import { useTranslation } from "next-i18next";
+import { useRouter } from "next/router";
 import { useState } from "react";
 
 const SearchModal = ({
   closeModal,
-  modalType, // artist or track
+  modalType,
   activeSection,
-  handleAddItem, // 아이템을 추가하는 함수
+  handleAddItem,
 }) => {
-  const [searchQuery, setSearchQuery] = useState("");
-  const [searchResults, setSearchResults] = useState([]);
-  const [hasSearched, setHasSearched] = useState(false);
+  const { t } = useTranslation("common");
+  const router = useRouter();
+  const [searchQuery, setSearchQuery] = useState<string>("");
+  const [searchResults, setSearchResults] = useState<(Artist | Track)[]>([]);
+  const [hasSearched, setHasSearched] = useState<boolean>(false);
 
   const handleSearch = async () => {
     if (!searchQuery) return;
     setHasSearched(true);
     try {
-      const response = await fetch(
-        `/api/search?query=${encodeURIComponent(searchQuery)}&type=${modalType}`
-      );
-      const data = await response.json();
+      const response = await spotifyApi.get("/search", {
+        params: {
+          q: searchQuery,
+          type: modalType,
+        },
+      });
+
+      const { data } = response;
 
       if (modalType === "artist" && data.artists) {
         setSearchResults(data.artists.items);
@@ -31,16 +42,25 @@ const SearchModal = ({
     }
   };
 
-  const handleSelectItem = (item) => {
-    handleAddItem(activeSection, item); // 추가 기능을 처리하는 함수 호출
+  const handleSelectItem = (item: Artist | Track) => {
+    handleAddItem(activeSection, item);
     closeModal();
   };
 
-  const handleKeyPress = (e) => {
+  const handleKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "Enter") {
       handleSearch();
     }
   };
+
+  const getTargetLabel = (modalType: "artist" | "track", locale: string) => {
+    if (modalType === "artist") {
+      return locale === "en" ? "Artist" : "아티스트";
+    }
+    return locale === "en" ? "Track" : "곡";
+  };
+
+  const target = getTargetLabel(modalType, router.locale);
 
   return (
     <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
@@ -53,7 +73,7 @@ const SearchModal = ({
         </button>
 
         <h2 className="text-xl font-semibold mb-4 text-white">
-          Search for {modalType === "artist" ? "Artists" : "Tracks"}
+          {t("search_for", { target })}
         </h2>
 
         <div className="relative w-full">
@@ -61,17 +81,15 @@ const SearchModal = ({
             type="text"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            onKeyDown={handleKeyPress} // Enter키를 누르면 검색 실행
-            placeholder={`Search for ${
-              modalType === "artist" ? "artists" : "tracks"
-            }`}
+            onKeyDown={handleKeyPress}
+            placeholder={t("placeholder", { target })}
             className="border p-2 pr-16 w-full rounded-lg bg-gray-800 text-white"
           />
           <button
             onClick={handleSearch}
             className="absolute right-0 top-0 h-full bg-blue-600 text-white px-4 rounded-r-lg"
           >
-            Search
+            {t("search")}
           </button>
         </div>
 
@@ -83,30 +101,19 @@ const SearchModal = ({
                 className="flex items-center justify-between text-sm text-white cursor-pointer hover:bg-gray-700 p-2 rounded-lg"
               >
                 <div className="flex items-center">
-                  {/* 노래일 경우 앨범 이미지 표시 */}
-                  {modalType === "track" &&
-                    result.album &&
-                    result.album.images &&
-                    result.album.images[0] && (
-                      <img
-                        className="w-10 h-10 mr-4 rounded-lg"
-                        src={result.album.images[0].url}
-                        alt={result.name}
-                      />
-                    )}
-                  {/* 아티스트일 경우 아티스트 이미지 표시 */}
-                  {modalType === "artist" &&
-                    result.images &&
-                    result.images[0] && (
-                      <img
-                        className="w-10 h-10 mr-4 rounded-full"
-                        src={result.images[0].url}
-                        alt={result.name}
-                      />
-                    )}
+                  <ArtistOrTrackImage
+                    imageUrl={
+                      modalType === "artist"
+                        ? result?.images?.[0]?.url
+                        : result?.album?.images?.[0]?.url
+                    }
+                    type={modalType}
+                    alt={result.name}
+                    size="w-10 h-10"
+                    className="mr-4"
+                  />
                   <div className="flex flex-col">
                     <span>{result.name}</span>
-                    {/* 노래일 경우 가수명 표시 */}
                     {modalType === "track" && result.artists && (
                       <span className="text-gray-400 text-xs">
                         {result.artists.map((artist) => artist.name).join(", ")}
@@ -118,7 +125,7 @@ const SearchModal = ({
                   onClick={() => handleSelectItem(result)}
                   className="bg-green-500 text-white px-2 py-1 rounded-lg ml-4"
                 >
-                  Add
+                  {t("add")}
                 </button>
               </li>
             ))}
@@ -126,7 +133,7 @@ const SearchModal = ({
         )}
 
         {hasSearched && searchResults.length === 0 && (
-          <p className="mt-4 text-sm text-white">No results found</p>
+          <p className="mt-4 text-sm text-white">{t("no_result")}</p>
         )}
       </div>
     </div>
