@@ -1,5 +1,11 @@
 {
-  "extends": ["airbnb", "next/core-web-vitals"],
+  "parser": "@typescript-eslint/parser",
+  "extends": [
+    "airbnb",
+    "next/core-web-vitals",
+    "plugin:@typescript-eslint/recommended"
+  ],
+  "plugins": ["@typescript-eslint"],
   "rules": {
     "quotes": ["error", "double"],
     "no-console": ["warn"],
@@ -15,5 +21,10 @@
     "react/jsx-props-no-spreading": "off",
     "object-curly-newline": "off",
     "import/extensions": "off"
+  },
+  "settings": {
+    "import/resolver": {
+      "typescript": {}
+    }
   }
 }
