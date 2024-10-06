@@ -1,23 +1,50 @@
-// import { postRefreshToken } from "@/pages/api/token";
 import axios from "axios";
-import { getCookie } from "cookies-next";
+import { getCookie, setCookie } from "cookies-next";
 
-const spotify = axios.create({
-  baseURL: "https://api.spotify.com/v1", // 기본 API URL 설정
+const spotifyApi = axios.create({
+  baseURL: "https://api.spotify.com/v1",
 });
 
-// Axios Request Interceptor
-spotify.interceptors.request.use(
+spotifyApi.interceptors.request.use(
   async (config) => {
-    const accessToken = getCookie("access_token"); // 쿠키에서 access_token을 가져옴
+    const accessToken = getCookie("access_token");
     if (accessToken) {
-      // Access Token이 있으면 Authorization 헤더에 추가
       config.headers.Authorization = `Bearer ${accessToken}`;
     }
 
     return config;
   },
-  (error) => Promise.reject(error)
+  (error) => Promise.reject(error),
 );
 
-export default spotify;
+spotifyApi.interceptors.response.use(
+  (response) => response,
+  async (error) => {
+    const originalRequest = error.config;
+
+    if (
+      error.response &&
+      error.response.status === 401 &&
+      !originalRequest._retry
+    ) {
+      originalRequest._retry = true;
+
+      try {
+        const tokenResponse = await axios.post("/api/token");
+        const newAccessToken = tokenResponse.data.access_token;
+
+        setCookie("access_token", newAccessToken);
+
+        originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
+
+        return spotifyApi(originalRequest);
+      } catch (tokenError) {
+        return Promise.reject(tokenError);
+      }
+    }
+
+    return Promise.reject(error);
+  },
+);
+
+export default spotifyApi;
