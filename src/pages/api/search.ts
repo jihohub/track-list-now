@@ -1,4 +1,4 @@
-import axios from "axios";
+import spotifyApi from "@/lib/axios";
 import { getCookie } from "cookies-next";
 
 export default async function handler(req, res) {
@@ -11,17 +11,16 @@ export default async function handler(req, res) {
       return res.status(401).json({ error: "No access token provided" });
     }
 
-    // Spotify API에 검색 요청
-    const response = await axios.get(
-      `https://api.spotify.com/v1/search?q=${encodeURIComponent(
-        query
-      )}&type=${type}&limit=50`,
-      {
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-        },
-      }
-    );
+    const response = await spotifyApi.get("/search", {
+      params: {
+        q: query,
+        type,
+        limit: 50,
+      },
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+    });
 
     const { data } = response;
     res.status(200).json(data);

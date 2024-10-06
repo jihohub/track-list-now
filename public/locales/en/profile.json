@@ -1,0 +1,10 @@
+{
+  "edit": "edit",
+  "save": "save",
+  "to_image": "Save this page as image 🖼",
+  "add": "add",
+  "search": "search",
+  "search_for": "Search for {{target}}s",
+  "placeholder": "Enter {{target}} name.",
+  "no_result": "No Results."
+}

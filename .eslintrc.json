@@ -1,6 +1,14 @@
 {
-  "extends": ["airbnb", "next/core-web-vitals"],
+  "parser": "@typescript-eslint/parser",
+  "extends": [
+    "airbnb",
+    "next/core-web-vitals",
+    "plugin:@typescript-eslint/recommended",
+    "plugin:prettier/recommended"
+  ],
+  "plugins": ["@typescript-eslint", "prettier"],
   "rules": {
+    "prettier/prettier": "error",
     "quotes": ["error", "double"],
     "no-console": ["warn"],
     "react/react-in-jsx-scope": "off",
@@ -15,5 +23,10 @@
     "react/jsx-props-no-spreading": "off",
     "object-curly-newline": "off",
     "import/extensions": "off"
+  },
+  "settings": {
+    "import/resolver": {
+      "typescript": {}
+    }
   }
 }
