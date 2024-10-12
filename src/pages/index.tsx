@@ -1,155 +1,100 @@
+// /pages/index.tsx
+import ErrorComponent from "@/components/ErrorComponent";
+import LoadingBar from "@/components/LoadingBar";
 import RankingSection from "@/components/RankingSection";
-import spotifyApi from "@/lib/axios";
-import { Artist, RankingSectionProps, Track } from "@/types/types";
+import useRankingData from "@/hooks/useRankingData";
+import {
+  FullRankingData,
+  RankedArtist,
+  RankedTrack,
+  RankingSectionProps,
+} from "@/types/types";
+import { dehydrate, QueryClient, useQuery } from "@tanstack/react-query";
 import axios from "axios";
 import { GetServerSideProps } from "next";
 import { useTranslation } from "next-i18next";
 import { serverSideTranslations } from "next-i18next/serverSideTranslations";
-import { useEffect, useState } from "react";
+
+const fetchFeaturedRanking = async (): Promise<FullRankingData> => {
+  const response = await axios.get(
+    "http://localhost:3000/api/featured-ranking",
+  ); // 절대 경로 사용
+  return response.data;
+};
 
 const MainPage = () => {
   const { t } = useTranslation("common");
-  const [isLoading, setIsLoading] = useState(true);
-  const [allTimeArtists, setAllTimeArtists] = useState<Artist[]>([]);
-  const [allTimeTracks, setAllTimeTracks] = useState<Track[]>([]);
-  const [currentArtists, setCurrentArtists] = useState<Artist[]>([]);
-  const [currentTracks, setCurrentTracks] = useState<Track[]>([]);
+
+  const {
+    data: rankingData,
+    error,
+    isLoading,
+  } = useQuery<FullRankingData, Error>({
+    queryKey: ["featuredRanking"],
+    queryFn: fetchFeaturedRanking,
+    staleTime: 5 * 60 * 1000,
+  });
+
+  const { data: allTimeArtists, isLoading: isLoadingATFArtists } =
+    useRankingData(rankingData, "allTimeArtists");
+  const { data: allTimeTracks, isLoading: isLoadingATFTracks } = useRankingData(
+    rankingData,
+    "allTimeTracks",
+  );
+  const { data: currentArtists, isLoading: isLoadingCFArtists } =
+    useRankingData(rankingData, "currentArtists");
+  const { data: currentTracks, isLoading: isLoadingCFTracks } = useRankingData(
+    rankingData,
+    "currentTracks",
+  );
+
+  const isAllLoading =
+    isLoading ||
+    isLoadingATFArtists ||
+    isLoadingATFTracks ||
+    isLoadingCFArtists ||
+    isLoadingCFTracks;
+
+  if (isAllLoading) {
+    return <LoadingBar />;
+  }
+
+  if (error) {
+    return <ErrorComponent message={`Error loading data: ${error.message}`} />;
+  }
 
   const sections: RankingSectionProps[] = [
     {
       title: t("all_time_favorite_artists"),
       data: allTimeArtists,
       type: "artist",
-      category: "atfArtists",
+      category: "allTimeArtists",
     },
     {
       title: t("all_time_favorite_tracks"),
       data: allTimeTracks,
       type: "track",
-      category: "atfTracks",
+      category: "allTimeTracks",
     },
     {
       title: t("current_favorite_artists"),
       data: currentArtists,
       type: "artist",
-      category: "cfArtists",
+      category: "currentArtists",
     },
     {
       title: t("current_favorite_tracks"),
       data: currentTracks,
       type: "track",
-      category: "cfTracks",
+      category: "currentTracks",
     },
   ];
 
-  const fetchSpotifyDataBatch = async (
-    type: "artists" | "tracks",
-    ids: string[],
-  ): Promise<Artist[] | Track[]> => {
-    if (ids.length === 0) return [];
-
-    try {
-      if (ids.length === 1) {
-        const result = await spotifyApi.get(`/${type}/${ids[0]}`);
-        return [result.data];
-      }
-
-      const result = await spotifyApi.get(`/${type}`, {
-        params: { ids: ids.join(",") },
-      });
-      return result.data[type === "tracks" ? "tracks" : "artists"];
-    } catch (error) {
-      console.error("Error fetching Spotify data:", error);
-      return [];
-    }
-  };
-
-  useEffect(() => {
-    const fetchRankingData = async () => {
-      try {
-        const response = await axios.get("/api/featured-ranking");
-        const {
-          allTimeArtistsRanking,
-          allTimeTracksRanking,
-          currentArtistsRanking,
-          currentTracksRanking,
-        } = response.data;
-
-        const atfArtistIds = allTimeArtistsRanking.map(
-          (item: any) => item.artistId,
-        );
-        const atfArtistsData = await fetchSpotifyDataBatch(
-          "artists",
-          atfArtistIds,
-        );
-        const allTimeArtistsWithCounts = atfArtistsData.map(
-          (artist: any, index: number) => ({
-            ...artist,
-            count: allTimeArtistsRanking[index].count,
-          }),
-        );
-        setAllTimeArtists(allTimeArtistsWithCounts);
-
-        const atfTrackIds = allTimeTracksRanking.map(
-          (item: any) => item.trackId,
-        );
-        const atfTracksData = await fetchSpotifyDataBatch(
-          "tracks",
-          atfTrackIds,
-        );
-        const allTimeTracksWithCounts = atfTracksData.map(
-          (track: any, index: number) => ({
-            ...track,
-            count: allTimeTracksRanking[index].count,
-          }),
-        );
-        setAllTimeTracks(allTimeTracksWithCounts);
-
-        const cfArtistIds = currentArtistsRanking.map(
-          (item: any) => item.artistId,
-        );
-        const cfArtistsData = await fetchSpotifyDataBatch(
-          "artists",
-          cfArtistIds,
-        );
-        const currentArtistsWithCounts = cfArtistsData.map(
-          (artist: any, index: number) => ({
-            ...artist,
-            count: currentArtistsRanking[index].count,
-          }),
-        );
-        setCurrentArtists(currentArtistsWithCounts);
-
-        const cfTrackIds = currentTracksRanking.map(
-          (item: any) => item.trackId,
-        );
-        const cfTracksData = await fetchSpotifyDataBatch("tracks", cfTrackIds);
-        const currentTracksWithCounts = cfTracksData.map(
-          (track: any, index: number) => ({
-            ...track,
-            count: currentTracksRanking[index].count,
-          }),
-        );
-        setCurrentTracks(currentTracksWithCounts);
-      } catch (error) {
-        console.error("Error fetching ranking data:", error);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    fetchRankingData();
-  }, []);
-
-  if (isLoading) {
-    return <p>Loading...</p>;
-  }
-
   return (
     <div className="max-w-5xl mx-auto p-6 grid grid-cols-1 md:grid-cols-2 gap-8">
-      {sections.map((section, index) => (
+      {sections.map((section) => (
         <RankingSection
-          key={index}
+          key={section.category}
           title={section.title}
           data={section.data}
           type={section.type}
@@ -162,8 +107,121 @@ const MainPage = () => {
 
 export default MainPage;
 
-export const getServerSideProps: GetServerSideProps = async ({ locale }) => ({
-  props: {
-    ...(await serverSideTranslations(locale ?? "ko", ["common"])),
-  },
-});
+export const getServerSideProps: GetServerSideProps = async ({ locale }) => {
+  const queryClient = new QueryClient();
+
+  try {
+    await queryClient.prefetchQuery({
+      queryKey: ["featuredRanking"],
+      queryFn: fetchFeaturedRanking,
+    });
+
+    const rankingData = queryClient.getQueryData<FullRankingData>([
+      "featuredRanking",
+    ]);
+
+    if (rankingData) {
+      const { artistRanking, trackRanking, artist, track } = rankingData;
+
+      // 아티스트 및 트랙 정보를 맵으로 생성
+      const artistMap = new Map<string, any>();
+      artist.forEach((a) => artistMap.set(a.id, a));
+
+      const trackMap = new Map<string, any>();
+      track.forEach((t) => trackMap.set(t.id, t));
+
+      // 랭킹 타입별로 분리
+      const allTimeArtistsRanking = artistRanking.filter(
+        (ar) => ar.rankingType === "ALL_TIME",
+      );
+      const currentArtistsRanking = artistRanking.filter(
+        (ar) => ar.rankingType === "CURRENT",
+      );
+
+      const allTimeTracksRanking = trackRanking.filter(
+        (tr) => tr.rankingType === "ALL_TIME",
+      );
+      const currentTracksRanking = trackRanking.filter(
+        (tr) => tr.rankingType === "CURRENT",
+      );
+
+      // RankedArtist 및 RankedTrack 배열 생성
+      const allTimeArtists: RankedArtist[] = allTimeArtistsRanking.map(
+        (item) => {
+          const artistData = artistMap.get(item.artistId);
+          if (!artistData)
+            throw new Error(`Artist not found: ${item.artistId}`);
+          return {
+            id: artistData.id,
+            name: artistData.name,
+            imageUrl: artistData.imageUrl,
+            followers: artistData.followers,
+            count: item.count,
+          } as RankedArtist;
+        },
+      );
+
+      const currentArtists: RankedArtist[] = currentArtistsRanking.map(
+        (item) => {
+          const artistData = artistMap.get(item.artistId);
+          if (!artistData)
+            throw new Error(`Artist not found: ${item.artistId}`);
+          return {
+            id: artistData.id,
+            name: artistData.name,
+            imageUrl: artistData.imageUrl,
+            followers: artistData.followers,
+            count: item.count,
+          } as RankedArtist;
+        },
+      );
+
+      const allTimeTracks: RankedTrack[] = allTimeTracksRanking.map((item) => {
+        const trackData = trackMap.get(item.trackId);
+        if (!trackData) throw new Error(`Track not found: ${item.trackId}`);
+        return {
+          id: trackData.id,
+          name: trackData.name,
+          albumImageUrl: trackData.albumImageUrl,
+          artistNames: trackData.artistNames,
+          popularity: trackData.popularity,
+          count: item.count,
+        } as RankedTrack;
+      });
+
+      const currentTracks: RankedTrack[] = currentTracksRanking.map((item) => {
+        const trackData = trackMap.get(item.trackId);
+        if (!trackData) throw new Error(`Track not found: ${item.trackId}`);
+        return {
+          id: trackData.id,
+          name: trackData.name,
+          albumImageUrl: trackData.albumImageUrl,
+          artistNames: trackData.artistNames,
+          popularity: trackData.popularity,
+          count: item.count,
+        } as RankedTrack;
+      });
+
+      // React Query에 데이터 설정
+      queryClient.setQueryData(["allTimeArtists"], allTimeArtists);
+      queryClient.setQueryData(["allTimeTracks"], allTimeTracks);
+      queryClient.setQueryData(["currentArtists"], currentArtists);
+      queryClient.setQueryData(["currentTracks"], currentTracks);
+    }
+
+    return {
+      props: {
+        ...(await serverSideTranslations(locale ?? "ko", ["common", "main"])),
+        dehydratedState: dehydrate(queryClient),
+      },
+    };
+  } catch (error) {
+    console.error("Error in getServerSideProps:", error);
+    return {
+      props: {
+        ...(await serverSideTranslations(locale ?? "ko", ["common", "main"])),
+        dehydratedState: dehydrate(queryClient),
+      },
+    };
+  }
+};
