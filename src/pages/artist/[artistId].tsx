@@ -1,6 +1,6 @@
 // /pages/artist/[artistId].tsx
 import ErrorComponent from "@/components/ErrorComponent";
-import LoadingSpinner from "@/components/LoadingSpinner";
+import LoadingBar from "@/components/LoadingBar";
 import RankingItem from "@/components/RankingItem"; // RankingItem 컴포넌트 임포트
 import { dehydrate, QueryClient, useQuery } from "@tanstack/react-query";
 import axios from "axios";
@@ -29,7 +29,7 @@ const ArtistPage = ({ artistId }: ArtistPageProps) => {
   });
 
   if (isLoading) {
-    return <LoadingSpinner />;
+    return <LoadingBar />;
   }
 
   if (error) {

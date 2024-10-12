@@ -1,6 +1,6 @@
 // /pages/track/[trackId].tsx
 import ErrorComponent from "@/components/ErrorComponent";
-import LoadingSpinner from "@/components/LoadingSpinner";
+import LoadingBar from "@/components/LoadingBar";
 import { TrackDetail } from "@/types/types";
 import { dehydrate, QueryClient, useQuery } from "@tanstack/react-query";
 import axios from "axios";
@@ -35,7 +35,7 @@ const TrackPage = ({ trackId }: TrackPageProps) => {
   });
 
   if (isLoading) {
-    return <LoadingSpinner />;
+    return <LoadingBar />;
   }
 
   if (error) {
