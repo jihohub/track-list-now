@@ -151,7 +151,6 @@ const ProfilePage = ({ userFavorites }: ProfilePageProps) => {
               height={100}
             />
             <h1 className="text-3xl font-bold">{session.user?.name}</h1>
-            <p className="text-gray-400">{session.user?.email}</p>
           </div>
         )}
 
