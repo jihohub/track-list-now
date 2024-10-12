@@ -1,5 +1,5 @@
 // /pages/api/dummy.ts
-import prisma from "@/lib/prisma";
+import prisma from "@/libs/prisma/prismaClient";
 
 export default async function handler(req, res) {
   if (req.method !== "POST") {

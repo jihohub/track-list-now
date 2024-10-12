@@ -12,6 +12,12 @@ const nextConfig = {
 
     return config;
   },
+  images: {
+    remotePatterns: [
+      { protocol: "https", hostname: "*.scdn.co" },
+      { protocol: "https", hostname: "*.googleusercontent.com" },
+    ],
+  },
 };
 
 module.exports = nextConfig;

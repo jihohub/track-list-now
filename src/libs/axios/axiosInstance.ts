@@ -1,11 +1,13 @@
+// /libs/axios/axiosInstance.ts
 import axios from "axios";
 import { getCookie, setCookie } from "cookies-next";
 
-const spotifyApi = axios.create({
+const axiosInstance = axios.create({
   baseURL: "https://api.spotify.com/v1",
 });
 
-spotifyApi.interceptors.request.use(
+// 요청 인터셉터
+axiosInstance.interceptors.request.use(
   async (config) => {
     const accessToken = getCookie("access_token");
     if (accessToken) {
@@ -17,7 +19,8 @@ spotifyApi.interceptors.request.use(
   (error) => Promise.reject(error),
 );
 
-spotifyApi.interceptors.response.use(
+// 응답 인터셉터
+axiosInstance.interceptors.response.use(
   (response) => response,
   async (error) => {
     const originalRequest = error.config;
@@ -30,14 +33,14 @@ spotifyApi.interceptors.response.use(
       originalRequest._retry = true;
 
       try {
-        const tokenResponse = await axios.post("/api/token");
+        const tokenResponse = await axios.post("/api/token"); // 클라이언트 사이드에서는 상대 경로 사용 가능
         const newAccessToken = tokenResponse.data.access_token;
 
         setCookie("access_token", newAccessToken);
 
         originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
 
-        return spotifyApi(originalRequest);
+        return axiosInstance(originalRequest);
       } catch (tokenError) {
         return Promise.reject(tokenError);
       }
@@ -47,4 +50,4 @@ spotifyApi.interceptors.response.use(
   },
 );
 
-export default spotifyApi;
+export default axiosInstance;

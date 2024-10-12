@@ -1,9 +1,10 @@
-import ArtistOrTrackImage from "@/components/ArtistOrTrackImage";
-import spotifyApi from "@/lib/axios";
+// /components/SearchModal.tsx
+import ItemImage from "@/components/ItemImage";
+import spotifyApi from "@/libs/axios/axiosInstance";
 import { Artist, Track } from "@/types/types";
 import { useTranslation } from "next-i18next";
 import { useRouter } from "next/router";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 const SearchModal = ({
   closeModal,
@@ -11,11 +12,13 @@ const SearchModal = ({
   activeSection,
   handleAddItem,
 }) => {
-  const { t } = useTranslation("common");
+  const { t } = useTranslation(["common", "profile"]);
   const router = useRouter();
   const [searchQuery, setSearchQuery] = useState<string>("");
   const [searchResults, setSearchResults] = useState<(Artist | Track)[]>([]);
   const [hasSearched, setHasSearched] = useState<boolean>(false);
+
+  const resultsRef = useRef<HTMLUListElement>(null);
 
   const handleSearch = async () => {
     if (!searchQuery) return;
@@ -43,7 +46,23 @@ const SearchModal = ({
   };
 
   const handleSelectItem = (item: Artist | Track) => {
-    handleAddItem(activeSection, item);
+    if (modalType === "artist") {
+      handleAddItem(activeSection, {
+        id: item.id,
+        name: item.name,
+        imageUrl: item.images[0]?.url || "/default-artist.png",
+        followers: item.followers.total,
+      });
+    } else if (modalType === "track") {
+      handleAddItem(activeSection, {
+        id: item.id,
+        name: item.name,
+        albumImageUrl: item.album.images[0]?.url || "/default-artist.png",
+        artists: item.artists.map((artist) => ({ name: artist.name })),
+        popularity: item.popularity,
+      });
+    }
+
     closeModal();
   };
 
@@ -60,6 +79,12 @@ const SearchModal = ({
     return locale === "en" ? "Track" : "곡";
   };
 
+  useEffect(() => {
+    if (resultsRef.current) {
+      resultsRef.current.scrollTop = 0;
+    }
+  }, [searchResults]);
+
   const target = getTargetLabel(modalType, router.locale);
 
   return (
@@ -73,7 +98,7 @@ const SearchModal = ({
         </button>
 
         <h2 className="text-xl font-semibold mb-4 text-white">
-          {t("search_for", { target })}
+          {t("search_for", { target, ns: "profile" })}
         </h2>
 
         <div className="relative w-full">
@@ -82,26 +107,26 @@ const SearchModal = ({
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             onKeyDown={handleKeyPress}
-            placeholder={t("placeholder", { target })}
+            placeholder={t("placeholder", { target, ns: "profile" })}
             className="border p-2 pr-16 w-full rounded-lg bg-gray-800 text-white"
           />
           <button
             onClick={handleSearch}
             className="absolute right-0 top-0 h-full bg-blue-600 text-white px-4 rounded-r-lg"
           >
-            {t("search")}
+            {t("search", { ns: "profile" })}
           </button>
         </div>
 
         {searchResults.length > 0 && (
-          <ul className="mt-4 max-h-48 overflow-y-auto">
+          <ul ref={resultsRef} className="mt-4 max-h-48 overflow-y-auto">
             {searchResults.map((result, index) => (
               <li
                 key={index}
                 className="flex items-center justify-between text-sm text-white cursor-pointer hover:bg-gray-700 p-2 rounded-lg"
               >
                 <div className="flex items-center">
-                  <ArtistOrTrackImage
+                  <ItemImage
                     imageUrl={
                       modalType === "artist"
                         ? result?.images?.[0]?.url

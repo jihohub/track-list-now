@@ -1,3 +1,4 @@
+// /components/Header.tsx
 import { signIn, signOut, useSession } from "next-auth/react";
 import Link from "next/link";
 import LanguageToggle from "./LanguageToggle";
@@ -13,7 +14,6 @@ const Header = () => {
         </Link>
         <nav>
           <ul className="flex items-center space-x-4">
-            {/* Profile 링크 */}
             <li>
               <LanguageToggle />
             </li>

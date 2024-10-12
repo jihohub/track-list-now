@@ -1,3 +1,4 @@
+// /pages/api/token.ts
 import { setCookie } from "cookies-next";
 
 export default async function handler(req, res) {
@@ -22,7 +23,10 @@ export default async function handler(req, res) {
     setCookie("access_token", data.access_token, {
       req,
       res,
-      maxAge: data.expires_in,
+      maxAge: data.expires_in, // 초 단위
+      httpOnly: true, // 보안 강화를 위해 HTTP Only 설정
+      secure: process.env.NODE_ENV === "production", // 프로덕션 환경에서는 HTTPS 사용
+      path: "/", // 전체 경로에서 접근 가능
     });
     res.status(200).json({ access_token: data.access_token });
   } else {
