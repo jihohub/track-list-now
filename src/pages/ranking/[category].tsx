@@ -72,7 +72,7 @@ const RankingPage = () => {
           imageUrl: isTrack ? item.track.albumImageUrl : item.artist.imageUrl,
           followers: isTrack ? 0 : item.artist.followers,
           popularity: isTrack ? item.track.popularity || 0 : 0,
-          artists: isTrack ? item.track.artistNames : null, // artistNames 필드 활용
+          artistNames: isTrack ? item.track.artistNames : null, // artistNames 필드 활용
           count: item.count,
           trackId: isTrack ? item.trackId : undefined, // 트랙일 경우 trackId 포함
           artistId: isTrack ? undefined : item.artistId, // 아티스트일 경우 artistId 포함

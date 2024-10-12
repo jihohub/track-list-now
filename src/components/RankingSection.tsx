@@ -2,7 +2,7 @@
 import { RankingSectionProps } from "@/types/types";
 import { useTranslation } from "next-i18next";
 import Link from "next/link";
-import FeaturedRankingItem from "./FeaturedRankingItem";
+import RankingItem from "./RankingItem";
 
 const RankingSection = ({
   title,
@@ -23,11 +23,12 @@ const RankingSection = ({
             </li>
           ) : (
             data.map((item, index) => (
-              <FeaturedRankingItem
+              <RankingItem
                 key={item.id}
                 index={index}
                 item={item}
                 type={type}
+                isFeatured
               />
             ))
           )}
