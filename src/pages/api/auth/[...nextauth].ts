@@ -1,8 +1,7 @@
-import { PrismaClient } from "@prisma/client";
+// /pages/api/auth/[...nextauth].ts
+import prisma from "@/libs/prisma/prismaClient";
 import NextAuth from "next-auth";
 import GoogleProvider from "next-auth/providers/google";
-
-const prisma = new PrismaClient();
 
 export default NextAuth({
   providers: [
@@ -12,9 +11,9 @@ export default NextAuth({
     }),
   ],
   callbacks: {
-    async signIn({ user, account, profile }) {
+    async signIn({ user, account }) {
       const existingUser = await prisma.user.findUnique({
-        where: { googleId: account.providerAccountId },
+        where: { email: user.email },
       });
 
       if (!existingUser) {
@@ -30,7 +29,7 @@ export default NextAuth({
       return true;
     },
 
-    async session({ session, token, user }) {
+    async session({ session }) {
       const dbUser = await prisma.user.findUnique({
         where: { email: session.user.email },
       });
