@@ -1,18 +1,19 @@
+// /components/FavoriteSection.tsx
 import AddIcon from "@/assets/icons/add.svg";
 import ArtistIcon from "@/assets/icons/artist.svg";
 import TrackIcon from "@/assets/icons/track.svg";
 import { FavoriteSectionProps } from "@/types/types";
 import { useTranslation } from "next-i18next";
-import ArtistOrTrackImage from "./ArtistOrTrackImage";
+import ItemImage from "./ItemImage";
 
-const FavoriteSection: React.FC<FavoriteSectionProps> = ({
+const FavoriteSection = ({
   title,
   items,
   openModal,
   type,
   isEditing,
   handleDelete,
-}) => {
+}: FavoriteSectionProps) => {
   const { t } = useTranslation("common");
   return (
     <div className="mb-8 bg-zinc-800 p-6 rounded-lg shadow-md">
@@ -23,11 +24,9 @@ const FavoriteSection: React.FC<FavoriteSectionProps> = ({
             {item && (
               <div className="relative flex flex-col items-center">
                 <div className="relative w-24 h-24">
-                  <ArtistOrTrackImage
+                  <ItemImage
                     imageUrl={
-                      type === "artist"
-                        ? item?.images?.[0]?.url
-                        : item?.album?.images?.[0]?.url
+                      type === "artist" ? item?.imageUrl : item?.albumImageUrl
                     }
                     type={type}
                     alt={item.name}
@@ -51,7 +50,7 @@ const FavoriteSection: React.FC<FavoriteSectionProps> = ({
                 </p>
                 {type === "artist" && item.followers && (
                   <p className="text-gray-400 text-sm text-center mt-1 w-24">
-                    {item.followers.total.toLocaleString()} {t("followers")}
+                    {item.followers.toLocaleString()} {t("followers")}
                   </p>
                 )}
                 {type === "track" && item.artists && (

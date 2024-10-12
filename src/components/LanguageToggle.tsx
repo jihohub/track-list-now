@@ -1,7 +1,8 @@
+// /components/LanguageToggle.tsx
 import { useRouter } from "next/router";
 import { useState } from "react";
 
-function LanguageToggle() {
+const LanguageToggle = () => {
   const router = useRouter();
   const [isKorean, setIsKorean] = useState(router.locale === "ko"); // 현재 locale에 맞춰 초기 값 설정
 
@@ -35,6 +36,6 @@ function LanguageToggle() {
       </div>
     </div>
   );
-}
+};
 
 export default LanguageToggle;

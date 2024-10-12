@@ -1,3 +1,4 @@
+// /components/Footer.tsx
 const Footer = () => (
   <footer className="bg-zinc-950 text-lime-200 p-4 mt-auto">
     <div className="container mx-auto text-center">
