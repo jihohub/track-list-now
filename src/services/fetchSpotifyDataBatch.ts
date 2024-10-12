@@ -2,7 +2,7 @@
 import axiosInstance from "@/libs/axios/axiosInstance";
 import { SpotifyArtist, SpotifyTrack } from "@/types/types";
 
-export async function fetchSpotifyDataBatch<T extends "artists" | "tracks">(
+async function fetchSpotifyDataBatch<T extends "artists" | "tracks">(
   type: T,
   ids: string[],
 ): Promise<T extends "artists" ? SpotifyArtist[] : SpotifyTrack[]> {
