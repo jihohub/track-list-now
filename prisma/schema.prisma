@@ -7,66 +7,115 @@ generator client {
   provider = "prisma-client-js"
 }
 
+enum FavoriteType {
+  ALL_TIME_ARTIST
+  ALL_TIME_TRACK
+  CURRENT_ARTIST
+  CURRENT_TRACK
+}
+
+enum ArtistRankingType {
+  ALL_TIME_ARTIST
+  CURRENT_ARTIST
+}
+
+enum TrackRankingType {
+  ALL_TIME_TRACK
+  CURRENT_TRACK
+}
+
 model User {
-  id        Int      @id @default(autoincrement())
-  googleId       String   @unique
-  email          String   @unique
-  name           String?
-  profileImage   String?
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id               Int                  @id @default(autoincrement())
+  googleId         String               @unique
+  email            String               @unique
+  name             String?
+  profileImage     String?
+  createdAt        DateTime             @default(now())
+  updatedAt        DateTime             @updatedAt
 
-  favorites UserFavorites[]
+  favoriteArtists  UserFavoriteArtists[]
+  favoriteTracks   UserFavoriteTracks[]
 }
 
-model UserFavorites {
-  id           Int      @id @default(autoincrement())
-  user         User     @relation(fields: [userId], references: [id])
+model UserFavoriteArtists {
+  id           Int          @id @default(autoincrement())
+  user         User         @relation(fields: [userId], references: [id])
   userId       Int
-  artistId     String?
-  trackId      String?
-  favoriteType String
+  artistId     String
+  favoriteType FavoriteType
 
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
+
+  artist       Artist       @relation(fields: [artistId], references: [id])
+
+  @@unique([userId, artistId, favoriteType], name: "userId_artistId_favoriteType")
+  @@index([userId, artistId], name: "user_artist_idx")
 }
 
-model AllTimeFavoriteArtistsRanking {
-  id           Int      @id @default(autoincrement())
-  artistId     String   @unique
-  count        Int      
-  followers    Int      
-  lastUpdated  DateTime @updatedAt
+model UserFavoriteTracks {
+  id           Int          @id @default(autoincrement())
+  user         User         @relation(fields: [userId], references: [id])
+  userId       Int
+  trackId      String
+  favoriteType FavoriteType
 
-  @@index([count, followers])
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
+
+  track        Track        @relation(fields: [trackId], references: [id])
+
+  @@unique([userId, trackId, favoriteType], name: "userId_trackId_favoriteType")
+  @@index([userId, trackId], name: "user_track_idx")
 }
 
-model AllTimeFavoriteTracksRanking {
-  id           Int      @id @default(autoincrement())
-  trackId      String   @unique
-  count        Int      
-  popularity   Int      
-  lastUpdated  DateTime @updatedAt
+model Artist {
+  id                  String              @id
+  name                String
+  imageUrl            String
+  followers           Int
+  createdAt           DateTime            @default(now())
+  updatedAt           DateTime            @updatedAt
 
-  @@index([count, popularity])
+  userFavoriteArtists UserFavoriteArtists[]
+  artistRanking       ArtistRanking[]
 }
 
-model CurrentFavoriteArtistsRanking {
-  id           Int      @id @default(autoincrement())
-  artistId     String   @unique
-  count        Int      
-  followers    Int      
-  lastUpdated  DateTime @updatedAt
+model Track {
+  id                String              @id
+  name              String
+  albumImageUrl     String
+  artistNames       String
+  popularity        Int
+  createdAt         DateTime            @default(now())
+  updatedAt         DateTime            @updatedAt
 
-  @@index([count, followers])
+  userFavoriteTracks UserFavoriteTracks[]
+  trackRanking      TrackRanking[]
 }
 
-model CurrentFavoriteTracksRanking {
-  id           Int      @id @default(autoincrement())
-  trackId      String   @unique
-  count        Int      
-  popularity   Int      
-  lastUpdated  DateTime @updatedAt
+model ArtistRanking {
+  id           Int         @id @default(autoincrement())
+  artist       Artist      @relation(fields: [artistId], references: [id])
+  artistId     String
+  rankingType  ArtistRankingType
+  count        Int
+  followers    Int
+  updatedAt    DateTime    @updatedAt
 
-  @@index([count, popularity])
+  @@unique([artistId, rankingType])
+  @@index([rankingType, count, followers])
+}
+
+model TrackRanking {
+  id           Int         @id @default(autoincrement())
+  track        Track       @relation(fields: [trackId], references: [id])
+  trackId      String
+  rankingType  TrackRankingType
+  count        Int
+  popularity   Int
+  updatedAt    DateTime    @updatedAt
+
+  @@unique([trackId, rankingType])
+  @@index([rankingType, count, popularity])
 }
