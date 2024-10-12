@@ -1,10 +1,10 @@
-// /components/FavoriteSection.tsx
+// /features/profile/FavoriteSection.tsx
 import AddIcon from "@/assets/icons/add.svg";
 import ArtistIcon from "@/assets/icons/artist.svg";
 import TrackIcon from "@/assets/icons/track.svg";
 import { FavoriteSectionProps } from "@/types/types";
 import { useTranslation } from "next-i18next";
-import ItemImage from "./ItemImage";
+import TImage from "../common/TImage";
 
 const FavoriteSection = ({
   title,
@@ -24,7 +24,7 @@ const FavoriteSection = ({
             {item && (
               <div className="relative flex flex-col items-center">
                 <div className="relative w-24 h-24">
-                  <ItemImage
+                  <TImage
                     imageUrl={
                       type === "artist" ? item?.imageUrl : item?.albumImageUrl
                     }

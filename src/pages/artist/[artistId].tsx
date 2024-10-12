@@ -1,7 +1,7 @@
 // /pages/artist/[artistId].tsx
-import ErrorComponent from "@/components/ErrorComponent";
-import LoadingBar from "@/components/LoadingBar";
-import RankingItem from "@/components/RankingItem"; // RankingItem 컴포넌트 임포트
+import ErrorComponent from "@/features/common/ErrorComponent";
+import LoadingBar from "@/features/common/LoadingBar";
+import TItem from "@/features/common/TItem";
 import { dehydrate, QueryClient, useQuery } from "@tanstack/react-query";
 import axios from "axios";
 import { GetServerSideProps } from "next";
@@ -80,7 +80,7 @@ const ArtistPage = ({ artistId }: ArtistPageProps) => {
         </h2>
         <ul className="space-y-4">
           {topTracks.tracks.map((track, index) => (
-            <RankingItem
+            <TItem
               key={track.id}
               index={index}
               item={{

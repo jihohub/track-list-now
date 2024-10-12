@@ -1,7 +1,7 @@
 // /pages/index.tsx
-import ErrorComponent from "@/components/ErrorComponent";
-import LoadingBar from "@/components/LoadingBar";
-import RankingSection from "@/components/RankingSection";
+import ErrorComponent from "@/features/common/ErrorComponent";
+import LoadingBar from "@/features/common/LoadingBar";
+import RankingSection from "@/features/main/RankingSection";
 import useRankingData from "@/hooks/useRankingData";
 import {
   FullRankingData,

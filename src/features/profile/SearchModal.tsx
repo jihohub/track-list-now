@@ -1,5 +1,5 @@
-// /components/SearchModal.tsx
-import ItemImage from "@/components/ItemImage";
+// /features/profile/SearchModal.tsx
+import TImage from "@/features/common/TImage";
 import spotifyApi from "@/libs/axios/axiosInstance";
 import { Artist, Track } from "@/types/types";
 import { useTranslation } from "next-i18next";
@@ -126,7 +126,7 @@ const SearchModal = ({
                 className="flex items-center justify-between text-sm text-white cursor-pointer hover:bg-gray-700 p-2 rounded-lg"
               >
                 <div className="flex items-center">
-                  <ItemImage
+                  <TImage
                     imageUrl={
                       modalType === "artist"
                         ? result?.images?.[0]?.url

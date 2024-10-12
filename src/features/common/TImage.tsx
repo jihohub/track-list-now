@@ -1,10 +1,10 @@
-// /components/ItemImage.tsx
+// /features/common/TImage.tsx
 import ArtistIcon from "@/assets/icons/artist.svg";
 import TrackIcon from "@/assets/icons/track.svg";
 import { ArtistOrTrackImageProps } from "@/types/types";
 import Image from "next/image";
 
-const ItemImage = ({
+const TImage = ({
   imageUrl,
   type,
   alt,
@@ -39,4 +39,4 @@ const ItemImage = ({
   );
 };
 
-export default ItemImage;
+export default TImage;

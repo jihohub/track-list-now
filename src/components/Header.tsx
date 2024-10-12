@@ -1,7 +1,7 @@
 // /components/Header.tsx
+import LanguageToggle from "@/features/common/LanguageToggle";
 import { signIn, signOut, useSession } from "next-auth/react";
 import Link from "next/link";
-import LanguageToggle from "./LanguageToggle";
 
 const Header = () => {
   const { data: session, status } = useSession();

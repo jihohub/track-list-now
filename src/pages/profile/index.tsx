@@ -1,7 +1,7 @@
 // /pages/profile/index.tsx
 
-import FavoriteSection from "@/components/FavoriteSection";
-import SearchModal from "@/components/SearchModal";
+import FavoriteSection from "@/features/profile/FavoriteSection";
+import SearchModal from "@/features/profile/SearchModal";
 import axios from "axios";
 import download from "downloadjs";
 import * as htmlToImage from "html-to-image";

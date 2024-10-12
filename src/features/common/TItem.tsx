@@ -1,18 +1,22 @@
-// /components/RankingItem.tsx
-import { RankingItemProps } from "@/types/types";
+// /features/common/TItem.tsx
+import { TItemProps } from "@/types/types";
 import { useTranslation } from "next-i18next";
 import Link from "next/link";
-import ItemImage from "./ItemImage";
+import TImage from "./TImage";
 
-const RankingItem = ({
-  index,
-  item,
-  type,
-  isFeatured = false,
-}: RankingItemProps) => {
+const getLinkHref = (type: string, isFeatured: boolean, item: any): string => {
+  if (type === "artist") {
+    return isFeatured ? `/artist/${item.id}` : `/artist/${item.artistId}`;
+  }
+  if (type === "track") {
+    return isFeatured ? `/track/${item.id}` : `/track/${item.trackId}`;
+  }
+  return "/";
+};
+
+const TItem = ({ index, item, type, isFeatured = false }: TItemProps) => {
   const { t } = useTranslation("common");
-  const linkHref =
-    type === "artist" ? `/artist/${item.artistId}` : `/track/${item.trackId}`;
+  const linkHref = getLinkHref(type, isFeatured, item);
 
   return (
     <li
@@ -28,7 +32,7 @@ const RankingItem = ({
           >
             {index + 1}
           </span>
-          <ItemImage
+          <TImage
             imageUrl={
               isFeatured
                 ? type === "artist"
@@ -75,4 +79,4 @@ const RankingItem = ({
   );
 };
 
-export default RankingItem;
+export default TItem;

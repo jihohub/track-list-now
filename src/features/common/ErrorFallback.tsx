@@ -1,4 +1,4 @@
-// /components/ErrorFallback.tsx
+// /features/common/ErrorFallback.tsx
 import { useTranslation } from "next-i18next";
 import { FallbackProps } from "react-error-boundary";
 

@@ -1,4 +1,4 @@
-// /components/ErrorBoundaryWrapper.tsx
+// /features/common/ErrorBoundaryWrapper.tsx
 import { ReactNode } from "react";
 import { ErrorBoundary } from "react-error-boundary";
 import ErrorFallback from "./ErrorFallback";

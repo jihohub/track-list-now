@@ -1,6 +1,6 @@
-// /components/LoadingBar.tsx
+// /features/common/LoadingBar.tsx
 const LoadingBar = () => (
-  <div className="flex justify-center items-center w-screen h-screen">
+  <div className="flex justify-center items-center h-screen">
     <div className="flex space-x-2">
       <div className="w-2 h-2 bg-lime-200 rounded-full animate-wave animation-delay-200" />
       <div className="w-2 h-2 bg-lime-200 rounded-full animate-wave animation-delay-400" />

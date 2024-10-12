@@ -115,7 +115,7 @@ export interface SearchModalProps {
   handleAddItem: (section: string, item: SpotifyArtist | SpotifyTrack) => void;
 }
 
-export interface RankingItemProps {
+export interface TItemProps {
   index: number;
   item: Artist | Track;
   type: "artist" | "track";

@@ -1,6 +1,6 @@
 // /pages/track/[trackId].tsx
-import ErrorComponent from "@/components/ErrorComponent";
-import LoadingBar from "@/components/LoadingBar";
+import ErrorComponent from "@/features/common/ErrorComponent";
+import LoadingBar from "@/features/common/LoadingBar";
 import { TrackDetail } from "@/types/types";
 import { dehydrate, QueryClient, useQuery } from "@tanstack/react-query";
 import axios from "axios";
