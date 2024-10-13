@@ -1,4 +1,3 @@
-// /features/common/ErrorBoundaryWrapper.tsx
 import { ReactNode } from "react";
 import { ErrorBoundary } from "react-error-boundary";
 import ErrorFallback from "./ErrorFallback";
@@ -14,10 +13,9 @@ const ErrorBoundaryWrapper = ({ children }: ErrorBoundaryWrapperProps) => (
       // TODO: 리셋 시 동작
       window.location.reload();
     }}
-    onError={(error, info) => {
-      // TODO: 추후 Sentry 연결 가능
-      console.error("에러 발생:", error, info);
-    }}
+    // onError={(error, info) => {
+    //   // TODO: 추후 Sentry 연결 가능
+    // }}
   >
     {children}
   </ErrorBoundary>

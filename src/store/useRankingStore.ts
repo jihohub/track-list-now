@@ -26,7 +26,7 @@ interface RankingState {
   addCurrentTrack: (track: Track) => void;
 }
 
-export const useRankingStore = create(
+const useRankingStore = create(
   persist<RankingState>(
     (set) => ({
       allTimeArtists: [],
@@ -57,3 +57,5 @@ export const useRankingStore = create(
     },
   ),
 );
+
+export default useRankingStore;

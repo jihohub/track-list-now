@@ -1,4 +1,3 @@
-// /pages/ranking/[category].tsx
 import ErrorComponent from "@/features/common/ErrorComponent";
 import LoadingBar from "@/features/common/LoadingBar";
 import TItem from "@/features/common/TItem";
@@ -62,7 +61,6 @@ const RankingPage = () => {
   useEffect(() => {
     const processData = async () => {
       if (rankingData) {
-        // 카테고리에 따라 트랙인지 아티스트인지 결정
         const isTrack =
           category === "allTimeTracks" || category === "currentTracks";
         const updatedData = rankingData.map((item) => ({
@@ -70,10 +68,10 @@ const RankingPage = () => {
           imageUrl: isTrack ? item.track.albumImageUrl : item.artist.imageUrl,
           followers: isTrack ? 0 : item.artist.followers,
           popularity: isTrack ? item.track.popularity || 0 : 0,
-          artists: isTrack ? item.track.artists : null, // artistNames 필드 활용
+          artists: isTrack ? item.track.artists : null,
           count: item.count,
-          trackId: isTrack ? item.trackId : undefined, // 트랙일 경우 trackId 포함
-          artistId: isTrack ? undefined : item.artistId, // 아티스트일 경우 artistId 포함
+          trackId: isTrack ? item.trackId : undefined,
+          artistId: isTrack ? undefined : item.artistId,
         }));
 
         setData(updatedData);
@@ -82,7 +80,6 @@ const RankingPage = () => {
     };
 
     processData();
-    console.log(rankingData);
   }, [rankingData, category]);
 
   if (isLoading || queryLoading) {
@@ -97,7 +94,6 @@ const RankingPage = () => {
     return <div className="text-center text-gray-400">{t("no_data")}</div>;
   }
 
-  // 카테고리에 따라 단일 섹션만 렌더링
   let sectionType: "artist" | "track" = "artist";
   let sectionData: TItemType[] = [];
 
@@ -155,7 +151,6 @@ export const getServerSideProps: GetServerSideProps = async ({
   const category = params?.category as string;
 
   try {
-    // 서버 사이드에서 데이터 패칭
     await queryClient.prefetchQuery(["ranking", category], () =>
       fetchRankingData(category),
     );
@@ -167,7 +162,9 @@ export const getServerSideProps: GetServerSideProps = async ({
       },
     };
   } catch (error) {
+    // eslint-disable-next-line no-console
     console.error("Error in getServerSideProps:", error);
+
     return {
       props: {
         ...(await serverSideTranslations(locale ?? "ko", ["common"])),

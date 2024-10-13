@@ -1,4 +1,3 @@
-// /pages/api/ranking.ts
 import prisma from "@/libs/prisma/prismaClient";
 import { NextApiRequest, NextApiResponse } from "next";
 
@@ -8,7 +7,7 @@ type RankingCategory =
   | "currentArtists"
   | "currentTracks";
 
-async function getRankingData(category: RankingCategory) {
+const getRankingData = async (category: RankingCategory) => {
   const TAKE_COUNT = 100;
 
   switch (category) {
@@ -47,12 +46,9 @@ async function getRankingData(category: RankingCategory) {
     default:
       throw new Error("Invalid category");
   }
-}
+};
 
-export default async function handler(
-  req: NextApiRequest,
-  res: NextApiResponse,
-) {
+const handler = async (req: NextApiRequest, res: NextApiResponse) => {
   const { method } = req;
 
   if (method !== "GET") {
@@ -62,7 +58,6 @@ export default async function handler(
 
   const { category } = req.query;
 
-  // 런타임 타입 검증
   const validCategories: RankingCategory[] = [
     "allTimeArtists",
     "allTimeTracks",
@@ -80,7 +75,8 @@ export default async function handler(
     const rankingData = await getRankingData(category as RankingCategory);
     return res.status(200).json(rankingData);
   } catch (error) {
-    console.error("API Error:", error);
-    return res.status(500).json({ error: "Internal Server Error" });
+    return res.status(500).json({ error: error.message });
   }
-}
+};
+
+export default handler;

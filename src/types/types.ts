@@ -99,6 +99,12 @@ export interface RankingSectionProps {
   category: string;
 }
 
+export interface FavoriteItemProps {
+  item: SpotifyArtist | SpotifyTrack;
+  type: "artist" | "track";
+  isEditing: boolean;
+  handleDelete: (id: string) => void;
+}
 export interface FavoriteSectionProps {
   title: string;
   items: SpotifyArtist[] | SpotifyTrack[];

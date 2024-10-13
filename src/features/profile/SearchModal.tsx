@@ -1,4 +1,3 @@
-// /features/profile/SearchModal.tsx
 import TImage from "@/features/common/TImage";
 import spotifyApi from "@/libs/axios/axiosInstance";
 import { SpotifyArtist, SpotifyTrack } from "@/types/types";
@@ -43,6 +42,9 @@ const SearchModal = ({
         setSearchResults([]);
       }
     } catch (error) {
+      // TODO: error 처리
+      const errorMessage = error;
+      JSON.stringify(errorMessage);
       setSearchResults([]);
     }
   };
@@ -74,8 +76,11 @@ const SearchModal = ({
     }
   };
 
-  const getTargetLabel = (modalType: "artist" | "track", locale: string) => {
-    if (modalType === "artist") {
+  const getTargetLabel = (
+    currentModalType: "artist" | "track",
+    locale: string,
+  ) => {
+    if (currentModalType === "artist") {
       return locale === "en" ? "Artist" : "아티스트";
     }
     return locale === "en" ? "Track" : "곡";
@@ -95,6 +100,7 @@ const SearchModal = ({
         <button
           onClick={closeModal}
           className="absolute top-3 right-3 text-white hover:text-gray-300 text-xl"
+          type="button"
         >
           &times;
         </button>
@@ -115,6 +121,7 @@ const SearchModal = ({
           <button
             onClick={handleSearch}
             className="absolute right-0 top-0 h-full bg-blue-600 text-white px-4 rounded-r-lg"
+            type="button"
           >
             {t("search", { ns: "profile" })}
           </button>
@@ -122,9 +129,9 @@ const SearchModal = ({
 
         {searchResults.length > 0 && (
           <ul ref={resultsRef} className="mt-4 max-h-48 overflow-y-auto">
-            {searchResults.map((result, index) => (
+            {searchResults.map((result) => (
               <li
-                key={index}
+                key={result.id}
                 className="flex items-center justify-between text-sm text-white cursor-pointer hover:bg-gray-700 p-2 rounded-lg"
               >
                 <div className="flex items-center">
@@ -151,6 +158,7 @@ const SearchModal = ({
                 <button
                   onClick={() => handleSelectItem(result)}
                   className="bg-green-500 text-white px-2 py-1 rounded-lg ml-4"
+                  type="button"
                 >
                   {t("add", { ns: "profile" })}
                 </button>

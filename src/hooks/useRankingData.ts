@@ -1,4 +1,3 @@
-// /hooks/useRankingData.ts
 import { FullRankingData, RankedArtist, RankedTrack } from "@/types/types";
 import { useQuery, UseQueryResult } from "@tanstack/react-query";
 

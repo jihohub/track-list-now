@@ -1,4 +1,3 @@
-// services/fetchSpotifyDataBatch.ts
 import axiosInstance from "@/libs/axios/axiosInstance";
 import { SpotifyArtist, SpotifyTrack } from "@/types/types";
 
@@ -23,6 +22,7 @@ async function fetchSpotifyDataBatch<T extends "artists" | "tracks">(
     }
     return result.data.tracks as SpotifyTrack[];
   } catch (error) {
+    // eslint-disable-next-line no-console
     console.error("Error fetching Spotify data:", error);
     return [];
   }

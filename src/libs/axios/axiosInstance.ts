@@ -1,4 +1,3 @@
-// /libs/axios/axiosInstance.ts
 import axios from "axios";
 import { getCookie, setCookie } from "cookies-next";
 
@@ -10,11 +9,16 @@ const axiosInstance = axios.create({
 axiosInstance.interceptors.request.use(
   async (config) => {
     const accessToken = getCookie("access_token");
+
+    const newConfig = { ...config };
     if (accessToken) {
-      config.headers.Authorization = `Bearer ${accessToken}`;
+      newConfig.headers = {
+        ...newConfig.headers,
+        Authorization: `Bearer ${accessToken}`,
+      };
     }
 
-    return config;
+    return newConfig;
   },
   (error) => Promise.reject(error),
 );
@@ -28,12 +32,12 @@ axiosInstance.interceptors.response.use(
     if (
       error.response &&
       error.response.status === 401 &&
-      !originalRequest._retry
+      !originalRequest.retry
     ) {
-      originalRequest._retry = true;
+      originalRequest.retry = true;
 
       try {
-        const tokenResponse = await axios.post("/api/token"); // 클라이언트 사이드에서는 상대 경로 사용 가능
+        const tokenResponse = await axios.post("/api/token");
         const newAccessToken = tokenResponse.data.access_token;
 
         setCookie("access_token", newAccessToken);
