@@ -1,20 +1,30 @@
-import prisma from "@/libs/prisma/prismaClient";
+// /pages/api/users.ts
 
-export default async function handler(req, res) {
-  const users = await prisma.user.findMany();
-  const artistRanking = await prisma.artistRanking.findMany();
-  const trackRanking = await prisma.trackRanking.findMany();
-  const userFavoriteArtists = await prisma.userFavoriteArtists.findMany();
-  const userFavoriteTracks = await prisma.userFavoriteTracks.findMany();
-  const artist = await prisma.artist.findMany();
-  const track = await prisma.track.findMany();
-  res.status(200).json({
-    users,
-    artistRanking,
-    trackRanking,
-    userFavoriteArtists,
-    userFavoriteTracks,
-    artist,
-    track,
+import prisma from "@/libs/prisma/prismaClient";
+import { NextApiRequest, NextApiResponse } from "next";
+
+const handler = async (req: NextApiRequest, res: NextApiResponse) => {
+  const { userId } = req.query;
+
+  if (!userId || Array.isArray(userId)) {
+    return res.status(400).json({ error: "Invalid or missing userId" });
+  }
+
+  const parsedUserId = parseInt(userId, 10);
+
+  if (Number.isNaN(parsedUserId)) {
+    return res.status(400).json({ error: "userId must be a number" });
+  }
+
+  const user = await prisma.user.findFirst({
+    where: { id: parsedUserId },
   });
-}
+
+  if (!user.isPublic) {
+    return res.status(403).json({ error: "This profile is private" });
+  }
+
+  res.status(200).json(user);
+};
+
+export default handler;
