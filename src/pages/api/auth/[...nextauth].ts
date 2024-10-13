@@ -1,4 +1,3 @@
-// /pages/api/auth/[...nextauth].ts
 import prisma from "@/libs/prisma/prismaClient";
 import NextAuth from "next-auth";
 import GoogleProvider from "next-auth/providers/google";
@@ -19,7 +18,7 @@ export default NextAuth({
       if (!existingUser) {
         await prisma.user.create({
           data: {
-            googleId: account.providerAccountId,
+            googleId: account?.providerAccountId,
             email: user.email,
             name: user.name,
             profileImage: user.image,
@@ -35,8 +34,15 @@ export default NextAuth({
       });
 
       if (dbUser) {
-        session.user.id = dbUser.id;
+        return {
+          ...session,
+          user: {
+            ...session.user,
+            id: dbUser.id,
+          },
+        };
       }
+
       return session;
     },
   },

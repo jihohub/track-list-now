@@ -1,4 +1,3 @@
-// /pages/track/[trackId].tsx
 import ErrorComponent from "@/features/common/ErrorComponent";
 import LoadingBar from "@/features/common/LoadingBar";
 import { TrackDetail } from "@/types/types";
@@ -63,9 +62,9 @@ const TrackPage = ({ trackId }: TrackPageProps) => {
             {track.artists.map((artist, index) => (
               <span key={artist.id} className="inline-flex items-center">
                 <Link href={`/artist/${artist.id}`}>
-                  <p className="text-green-500 hover:underline">
+                  <span className="text-green-500 hover:underline">
                     {artist.name}
-                  </p>
+                  </span>
                 </Link>
                 {index < track.artists.length - 1 && (
                   <span className="ml-1 mr-2">,</span>
@@ -85,10 +84,8 @@ const TrackPage = ({ trackId }: TrackPageProps) => {
             {`0${Math.floor((track.duration_ms % 60000) / 1000)}`.slice(-2)}
           </p>
         </div>
-        {track.explicit && (
-          <p className="text-red-500 mt-1">{t("explicit_content")}</p>
-        )}
         {track.preview_url && (
+          /* eslint-disable jsx-a11y/media-has-caption */
           <audio controls className="mt-4 w-80" ref={audioRef}>
             <source src={track.preview_url} type="audio/mpeg" />
             Your browser does not support the audio element.
@@ -121,7 +118,9 @@ export const getServerSideProps: GetServerSideProps = async ({
       },
     };
   } catch (error) {
+    // eslint-disable-next-line no-console
     console.error("Error in getServerSideProps:", error);
+
     return {
       props: {
         ...(await serverSideTranslations(locale ?? "ko", ["common", "track"])),

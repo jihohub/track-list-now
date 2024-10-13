@@ -11,13 +11,13 @@ const parseSizes = (size: string): string => {
   const sizes: Array<{ breakpoint: string; width: number }> = [];
 
   let match;
+  // eslint-disable-next-line no-cond-assign
   while ((match = sizeRegex.exec(size)) !== null) {
     const breakpoint = match[1] || "base";
-    const sizeValue = parseInt(match[2], 10) * 4; // Tailwind의 w-12는 48px, w-16은 64px 등
+    const sizeValue = parseInt(match[2], 10) * 4;
     sizes.push({ breakpoint, width: sizeValue });
   }
 
-  // 브레이크포인트 순서에 따라 정렬: base < sm < md < lg < xl < 2xl
   const breakpointOrder = ["base", "sm", "md", "lg", "xl", "2xl"];
   sizes.sort(
     (a, b) =>
@@ -25,7 +25,6 @@ const parseSizes = (size: string): string => {
       breakpointOrder.indexOf(b.breakpoint),
   );
 
-  // sizes 문자열 구성
   let sizesString = "";
   sizes.forEach((sizeObj) => {
     if (sizeObj.breakpoint === "base") {
@@ -35,7 +34,6 @@ const parseSizes = (size: string): string => {
     }
   });
 
-  // 마지막 쉼표와 공백 제거
   return sizesString.slice(0, -2);
 };
 

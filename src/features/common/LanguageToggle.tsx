@@ -1,4 +1,3 @@
-// /features/common/LanguageToggle.tsx
 import { useRouter } from "next/router";
 import { useState } from "react";
 
@@ -6,7 +5,7 @@ const LanguageToggle = () => {
   const router = useRouter();
   const [isKorean, setIsKorean] = useState(router.locale === "ko"); // 현재 locale에 맞춰 초기 값 설정
 
-  const changeLanguage = (lang) => {
+  const changeLanguage = (lang: string) => {
     if (router.locale !== lang) {
       router.push(router.pathname, router.asPath, { locale: lang });
     }
@@ -22,9 +21,11 @@ const LanguageToggle = () => {
 
   return (
     <div className="flex items-center space-x-3">
-      <div
+      <button
         onClick={handleToggle}
-        className="relative inline-block w-14 h-8 rounded-full bg-zinc-400 cursor-pointer transition-colors duration-300 ease-in-out"
+        className="relative inline-flex w-14 h-8 rounded-full bg-zinc-400 cursor-pointer transition-colors duration-300 ease-in-out"
+        type="button"
+        aria-label="Toggle Language"
       >
         <span
           className={`absolute w-8 h-8 rounded-full transition-transform duration-300 ease-in-out bg-zinc-900 flex items-center justify-center ${
@@ -33,7 +34,7 @@ const LanguageToggle = () => {
         >
           {isKorean ? "KO" : "EN"}
         </span>
-      </div>
+      </button>
     </div>
   );
 };

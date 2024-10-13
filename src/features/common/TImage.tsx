@@ -1,4 +1,3 @@
-// /features/common/TImage.tsx
 import ArtistIcon from "@/assets/icons/artist.svg";
 import TrackIcon from "@/assets/icons/track.svg";
 import parseSizes from "@/libs/utils/parseSizes";

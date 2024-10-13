@@ -22,7 +22,8 @@
     "operator-linebreak": "off",
     "react/jsx-props-no-spreading": "off",
     "object-curly-newline": "off",
-    "import/extensions": "off"
+    "import/extensions": "off",
+    "no-nested-ternary": "off"
   },
   "settings": {
     "import/resolver": {
