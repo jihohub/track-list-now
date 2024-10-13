@@ -18,7 +18,7 @@ const Header = () => {
               <LanguageToggle />
             </li>
             <li>
-              <Link href="/profile">Profile</Link>
+              <Link href={`/profile/${session?.user.id}`}>Profile</Link>
             </li>
             <li>
               {status === "authenticated" ? (

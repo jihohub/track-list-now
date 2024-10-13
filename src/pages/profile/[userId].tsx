@@ -10,17 +10,17 @@ import { getSession, useSession } from "next-auth/react";
 import { useTranslation } from "next-i18next";
 import { serverSideTranslations } from "next-i18next/serverSideTranslations";
 import Image from "next/image";
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 interface UserFavoriteArtist {
-  id: string;
+  artistId: string;
   name: string;
   imageUrl: string;
   followers: number;
 }
 
 interface UserFavoriteTrack {
-  id: string;
+  trackId: string;
   name: string;
   albumImageUrl: string;
   artists: { name: string }[];
@@ -36,9 +36,37 @@ interface UserFavorites {
 
 interface ProfilePageProps {
   userFavorites: UserFavorites;
+  viewedUserName: string;
+  profileImage: string | null;
+  isPublic: boolean;
+  isOwnProfile: boolean;
 }
 
-const ProfilePage = ({ userFavorites }: ProfilePageProps) => {
+const isArtist = (
+  item: UserFavoriteArtist | UserFavoriteTrack,
+): item is UserFavoriteArtist => {
+  return (item as UserFavoriteArtist).artistId !== undefined;
+};
+
+const isTrack = (
+  item: UserFavoriteArtist | UserFavoriteTrack,
+): item is UserFavoriteTrack => {
+  return (item as UserFavoriteTrack).trackId !== undefined;
+};
+
+const sectionKeyMap: Record<keyof UserFavorites, "artistId" | "trackId"> = {
+  allTimeArtists: "artistId",
+  currentArtists: "artistId",
+  allTimeTracks: "trackId",
+  currentTracks: "trackId",
+};
+
+const ProfilePage = ({
+  userFavorites,
+  viewedUserName,
+  profileImage,
+  isOwnProfile,
+}: ProfilePageProps) => {
   const { t } = useTranslation(["common", "profile"]);
   const { data: session } = useSession();
   const [favorites, setFavorites] = useState<UserFavorites>(userFavorites);
@@ -51,7 +79,6 @@ const ProfilePage = ({ userFavorites }: ProfilePageProps) => {
   >("");
 
   const pageRef = useRef<HTMLDivElement>(null);
-  const userId = session?.user?.id;
 
   const openModal = (type: "artist" | "track", section: string) => {
     setModalType(type);
@@ -70,18 +97,21 @@ const ProfilePage = ({ userFavorites }: ProfilePageProps) => {
   };
 
   const handleSaveChanges = async () => {
-    if (!userId) {
-      console.error("User ID is undefined");
+    if (!isOwnProfile || !session?.user?.id) {
+      console.error("Not authorized to save changes");
       return;
     }
 
     try {
       await axios.patch("/api/userFavorites", {
-        userId,
+        userId: session.user.id,
         allTimeArtists: favorites.allTimeArtists,
         allTimeTracks: favorites.allTimeTracks,
         currentArtists: favorites.currentArtists,
         currentTracks: favorites.currentTracks,
+      });
+      await axios.patch(`/api/users/${session.user.id}`, {
+        isPublic: !isPublic,
       });
       setIsEditing(false);
       alert("즐겨찾기가 성공적으로 저장되었습니다!");
@@ -113,18 +143,28 @@ const ProfilePage = ({ userFavorites }: ProfilePageProps) => {
         ).padStart(2, "0")}${String(now.getDate()).padStart(2, "0")}${String(
           now.getHours(),
         ).padStart(2, "0")}${String(now.getMinutes()).padStart(2, "0")}`;
-        const fileName = `${session?.user?.name}-${formattedDate}.jpeg`;
+        const fileName = `${isOwnProfile ? session?.user?.name : viewedUserName}-${formattedDate}.jpeg`;
         download(dataUrl, fileName);
       })
       .catch((error) => {
         console.error("이미지로 저장 실패:", error);
       });
-  }, [pageRef, session]);
+  }, [pageRef, session, viewedUserName, isOwnProfile]);
 
   const handleDelete = (section: keyof UserFavorites, id: string) => {
+    const keyToCompare = sectionKeyMap[section];
+
     setFavorites((prev) => ({
       ...prev,
-      [section]: prev[section].filter((item) => item.id !== id),
+      [section]: prev[section].filter((item) => {
+        if (keyToCompare === "artistId" && isArtist(item)) {
+          return item.artistId !== id;
+        }
+        if (keyToCompare === "trackId" && isTrack(item)) {
+          return item.trackId !== id;
+        }
+        return true;
+      }),
     }));
   };
 
@@ -138,32 +178,45 @@ const ProfilePage = ({ userFavorites }: ProfilePageProps) => {
     }));
   };
 
+  useEffect(() => {
+    setFavorites(userFavorites);
+  }, [userFavorites]);
+
   return (
     <div className="max-w-3xl mx-auto text-white">
       <div ref={pageRef} className="p-6">
-        {session && (
-          <div className="text-center mb-8">
-            <Image
-              className="rounded-full mx-auto"
-              src={session.user?.image || ""}
-              alt={session.user?.name || ""}
-              width={100}
-              height={100}
-            />
-            <h1 className="text-3xl font-bold">{session.user?.name}</h1>
+        {isOwnProfile ? (
+          <div className="flex flex-col gap-4 text-center mb-4">
+            {profileImage ? (
+              <Image
+                className="rounded-full mx-auto"
+                src={isOwnProfile ? session?.user?.image : profileImage}
+                alt={viewedUserName}
+                width={100}
+                height={100}
+              />
+            ) : (
+              <div className="w-24 h-24" />
+            )}
+
+            <h1 className="text-3xl font-bold">{viewedUserName}</h1>
           </div>
+        ) : (
+          <div className="w-[150px] h-[150px]"></div>
         )}
 
-        <div className="flex justify-end mb-6">
-          <button
-            onClick={isEditing ? handleSaveChanges : toggleEditing}
-            className="not-contain bg-sky-800 text-white px-4 py-2 rounded-lg"
-          >
-            {isEditing
-              ? t("save", { ns: "profile" })
-              : t("edit", { ns: "profile" })}
-          </button>
-        </div>
+        {isOwnProfile && (
+          <div className="flex justify-end mb-6">
+            <button
+              onClick={isEditing ? handleSaveChanges : toggleEditing}
+              className="not-contain bg-sky-800 text-white px-4 py-2 rounded-lg"
+            >
+              {isEditing
+                ? t("save", { ns: "profile" })
+                : t("edit", { ns: "profile" })}
+            </button>
+          </div>
+        )}
 
         <div>
           <FavoriteSection
@@ -171,7 +224,7 @@ const ProfilePage = ({ userFavorites }: ProfilePageProps) => {
             items={favorites.allTimeArtists}
             openModal={() => openModal("artist", "allTimeArtists")}
             type="artist"
-            isEditing={isEditing}
+            isEditing={isOwnProfile && isEditing}
             handleDelete={(id) => handleDelete("allTimeArtists", id)}
           />
           <FavoriteSection
@@ -179,7 +232,7 @@ const ProfilePage = ({ userFavorites }: ProfilePageProps) => {
             items={favorites.allTimeTracks}
             openModal={() => openModal("track", "allTimeTracks")}
             type="track"
-            isEditing={isEditing}
+            isEditing={isOwnProfile && isEditing}
             handleDelete={(id) => handleDelete("allTimeTracks", id)}
           />
           <FavoriteSection
@@ -187,7 +240,7 @@ const ProfilePage = ({ userFavorites }: ProfilePageProps) => {
             items={favorites.currentArtists}
             openModal={() => openModal("artist", "currentArtists")}
             type="artist"
-            isEditing={isEditing}
+            isEditing={isOwnProfile && isEditing}
             handleDelete={(id) => handleDelete("currentArtists", id)}
           />
           <FavoriteSection
@@ -195,7 +248,7 @@ const ProfilePage = ({ userFavorites }: ProfilePageProps) => {
             items={favorites.currentTracks}
             openModal={() => openModal("track", "currentTracks")}
             type="track"
-            isEditing={isEditing}
+            isEditing={isOwnProfile && isEditing}
             handleDelete={(id) => handleDelete("currentTracks", id)}
           />
         </div>
@@ -244,17 +297,7 @@ export default ProfilePage;
 export const getServerSideProps: GetServerSideProps = async (context) => {
   const locale = context.locale ?? "ko";
   const session = await getSession(context);
-
-  if (!session?.user?.id) {
-    return {
-      redirect: {
-        destination: "/api/auth/signin",
-        permanent: false,
-      },
-    };
-  }
-
-  const userId = session.user.id;
+  const { userId } = context.params!;
 
   try {
     const response = await axios.get(
@@ -270,10 +313,19 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
       currentTracks,
     };
 
+    const userResponse = await axios.get(
+      `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/users?userId=${userId}`,
+    );
+    const { name: viewedUserName, profileImage, isPublic } = userResponse.data;
+    const isOwnProfile = session?.user?.id === parseInt(userId, 10);
+
     return {
       props: {
         ...(await serverSideTranslations(locale, ["common", "profile"])),
         userFavorites,
+        viewedUserName,
+        profileImage,
+        isOwnProfile,
       },
     };
   } catch (error) {
@@ -287,6 +339,9 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
           currentArtists: [],
           currentTracks: [],
         },
+        viewedUserName: "Unknown User",
+        profileImage: null,
+        isOwnProfile: false,
       },
     };
   }
