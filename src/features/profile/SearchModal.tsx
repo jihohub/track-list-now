@@ -1,7 +1,7 @@
-// /components/SearchModal.tsx
-import ItemImage from "@/components/ItemImage";
+// /features/profile/SearchModal.tsx
+import TImage from "@/features/common/TImage";
 import spotifyApi from "@/libs/axios/axiosInstance";
-import { Artist, Track } from "@/types/types";
+import { SpotifyArtist, SpotifyTrack } from "@/types/types";
 import { useTranslation } from "next-i18next";
 import { useRouter } from "next/router";
 import { useEffect, useRef, useState } from "react";
@@ -15,7 +15,9 @@ const SearchModal = ({
   const { t } = useTranslation(["common", "profile"]);
   const router = useRouter();
   const [searchQuery, setSearchQuery] = useState<string>("");
-  const [searchResults, setSearchResults] = useState<(Artist | Track)[]>([]);
+  const [searchResults, setSearchResults] = useState<
+    (SpotifyArtist | SpotifyTrack)[]
+  >([]);
   const [hasSearched, setHasSearched] = useState<boolean>(false);
 
   const resultsRef = useRef<HTMLUListElement>(null);
@@ -45,17 +47,17 @@ const SearchModal = ({
     }
   };
 
-  const handleSelectItem = (item: Artist | Track) => {
+  const handleSelectItem = (item: SpotifyArtist | SpotifyTrack) => {
     if (modalType === "artist") {
       handleAddItem(activeSection, {
-        id: item.id,
+        artistId: item.id,
         name: item.name,
         imageUrl: item.images[0]?.url || "/default-artist.png",
         followers: item.followers.total,
       });
     } else if (modalType === "track") {
       handleAddItem(activeSection, {
-        id: item.id,
+        trackId: item.id,
         name: item.name,
         albumImageUrl: item.album.images[0]?.url || "/default-artist.png",
         artists: item.artists.map((artist) => ({ name: artist.name })),
@@ -126,7 +128,7 @@ const SearchModal = ({
                 className="flex items-center justify-between text-sm text-white cursor-pointer hover:bg-gray-700 p-2 rounded-lg"
               >
                 <div className="flex items-center">
-                  <ItemImage
+                  <TImage
                     imageUrl={
                       modalType === "artist"
                         ? result?.images?.[0]?.url
@@ -150,7 +152,7 @@ const SearchModal = ({
                   onClick={() => handleSelectItem(result)}
                   className="bg-green-500 text-white px-2 py-1 rounded-lg ml-4"
                 >
-                  {t("add")}
+                  {t("add", { ns: "profile" })}
                 </button>
               </li>
             ))}
@@ -158,7 +160,9 @@ const SearchModal = ({
         )}
 
         {hasSearched && searchResults.length === 0 && (
-          <p className="mt-4 text-sm text-white">{t("no_result")}</p>
+          <p className="mt-4 text-sm text-white">
+            {t("no_result", { ns: "profile" })}
+          </p>
         )}
       </div>
     </div>

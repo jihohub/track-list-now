@@ -1,4 +1,4 @@
-// /components/LanguageToggle.tsx
+// /features/common/LanguageToggle.tsx
 import { useRouter } from "next/router";
 import { useState } from "react";
 

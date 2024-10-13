@@ -1,7 +1,7 @@
 // /pages/artist/[artistId].tsx
-import ErrorComponent from "@/components/ErrorComponent";
-import LoadingBar from "@/components/LoadingBar";
-import RankingItem from "@/components/RankingItem"; // RankingItem 컴포넌트 임포트
+import ErrorComponent from "@/features/common/ErrorComponent";
+import LoadingBar from "@/features/common/LoadingBar";
+import TItem from "@/features/common/TItem";
 import { dehydrate, QueryClient, useQuery } from "@tanstack/react-query";
 import axios from "axios";
 import { GetServerSideProps } from "next";
@@ -20,7 +20,7 @@ const fetchArtistData = async (artistId: string) => {
 };
 
 const ArtistPage = ({ artistId }: ArtistPageProps) => {
-  const { t } = useTranslation("common");
+  const { t } = useTranslation(["common", "artist"]);
 
   const { data, error, isLoading } = useQuery({
     queryKey: ["artist", artistId],
@@ -76,11 +76,11 @@ const ArtistPage = ({ artistId }: ArtistPageProps) => {
       {/* 탑 트랙 */}
       <div className="mt-8">
         <h2 className="text-2xl font-semibold text-white mb-4">
-          {t("top_tracks")}
+          {t("top_tracks", { ns: "artist" })}
         </h2>
         <ul className="space-y-4">
           {topTracks.tracks.map((track, index) => (
-            <RankingItem
+            <TItem
               key={track.id}
               index={index}
               item={{
@@ -98,7 +98,7 @@ const ArtistPage = ({ artistId }: ArtistPageProps) => {
       {/* 연관 아티스트 */}
       <div className="mt-8">
         <h2 className="text-2xl font-semibold text-white mb-4">
-          {t("related_artists")}
+          {t("related_artists", { ns: "artist" })}
         </h2>
         <ul className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-6">
           {relatedArtists.artists.map((relatedArtist) => (
@@ -144,7 +144,7 @@ export const getServerSideProps: GetServerSideProps = async ({
 
     return {
       props: {
-        ...(await serverSideTranslations(locale ?? "ko", ["common"])),
+        ...(await serverSideTranslations(locale ?? "ko", ["common", "artist"])),
         dehydratedState: dehydrate(queryClient),
         artistId,
       },
@@ -153,7 +153,7 @@ export const getServerSideProps: GetServerSideProps = async ({
     console.error("Error in getServerSideProps:", error);
     return {
       props: {
-        ...(await serverSideTranslations(locale ?? "ko", ["common"])),
+        ...(await serverSideTranslations(locale ?? "ko", ["common", "artist"])),
         dehydratedState: dehydrate(queryClient),
         artistId,
       },

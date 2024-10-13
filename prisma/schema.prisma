@@ -30,6 +30,7 @@ model User {
   email            String               @unique
   name             String?
   profileImage     String?
+  isPublic         Boolean              @default(true)
   createdAt        DateTime             @default(now())
   updatedAt        DateTime             @updatedAt
 
@@ -47,7 +48,7 @@ model UserFavoriteArtists {
   createdAt    DateTime     @default(now())
   updatedAt    DateTime     @updatedAt
 
-  artist       Artist       @relation(fields: [artistId], references: [id])
+  artist       Artist       @relation(fields: [artistId], references: [artistId])
 
   @@unique([userId, artistId, favoriteType], name: "userId_artistId_favoriteType")
   @@index([userId, artistId], name: "user_artist_idx")
@@ -63,32 +64,34 @@ model UserFavoriteTracks {
   createdAt    DateTime     @default(now())
   updatedAt    DateTime     @updatedAt
 
-  track        Track        @relation(fields: [trackId], references: [id])
+  track        Track        @relation(fields: [trackId], references: [trackId])
 
   @@unique([userId, trackId, favoriteType], name: "userId_trackId_favoriteType")
   @@index([userId, trackId], name: "user_track_idx")
 }
 
 model Artist {
-  id                  String              @id
+  id                  Int                  @id @default(autoincrement())
+  artistId            String               @unique
   name                String
   imageUrl            String
   followers           Int
-  createdAt           DateTime            @default(now())
-  updatedAt           DateTime            @updatedAt
+  createdAt           DateTime             @default(now())
+  updatedAt           DateTime             @updatedAt
 
   userFavoriteArtists UserFavoriteArtists[]
   artistRanking       ArtistRanking[]
 }
 
 model Track {
-  id                String              @id
+  id                Int                  @id @default(autoincrement())
+  trackId           String               @unique
   name              String
   albumImageUrl     String
-  artistNames       String
+  artists           String
   popularity        Int
-  createdAt         DateTime            @default(now())
-  updatedAt         DateTime            @updatedAt
+  createdAt         DateTime             @default(now())
+  updatedAt         DateTime             @updatedAt
 
   userFavoriteTracks UserFavoriteTracks[]
   trackRanking      TrackRanking[]
@@ -96,7 +99,7 @@ model Track {
 
 model ArtistRanking {
   id           Int         @id @default(autoincrement())
-  artist       Artist      @relation(fields: [artistId], references: [id])
+  artist       Artist      @relation(fields: [artistId], references: [artistId])
   artistId     String
   rankingType  ArtistRankingType
   count        Int
@@ -109,7 +112,7 @@ model ArtistRanking {
 
 model TrackRanking {
   id           Int         @id @default(autoincrement())
-  track        Track       @relation(fields: [trackId], references: [id])
+  track        Track       @relation(fields: [trackId], references: [trackId])
   trackId      String
   rankingType  TrackRankingType
   count        Int

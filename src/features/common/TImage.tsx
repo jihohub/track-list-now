@@ -1,10 +1,11 @@
-// /components/ItemImage.tsx
+// /features/common/TImage.tsx
 import ArtistIcon from "@/assets/icons/artist.svg";
 import TrackIcon from "@/assets/icons/track.svg";
+import parseSizes from "@/libs/utils/parseSizes";
 import { ArtistOrTrackImageProps } from "@/types/types";
 import Image from "next/image";
 
-const ItemImage = ({
+const TImage = ({
   imageUrl,
   type,
   alt,
@@ -14,6 +15,8 @@ const ItemImage = ({
   const defaultStyle = `flex items-center justify-center bg-black relative ${size} ${
     type === "artist" ? "rounded-full" : "rounded-lg"
   }`;
+
+  const sizes = parseSizes(size);
 
   return (
     <div className={`${defaultStyle} ${className}`}>
@@ -27,6 +30,7 @@ const ItemImage = ({
             src={imageUrl}
             alt={alt}
             fill
+            sizes={sizes}
             className={`${type === "artist" ? "rounded-full" : "rounded-lg"} object-cover`}
           />
         </div>
@@ -39,4 +43,4 @@ const ItemImage = ({
   );
 };
 
-export default ItemImage;
+export default TImage;
