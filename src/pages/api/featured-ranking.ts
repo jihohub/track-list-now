@@ -1,4 +1,3 @@
-// /pages/api/featured-ranking.ts
 import prisma from "@/libs/prisma/prismaClient";
 import { NextApiRequest, NextApiResponse } from "next";
 
@@ -11,7 +10,6 @@ interface ArtistRanking {
     name: string;
     imageUrl: string;
     followers: number;
-    // 필요한 다른 필드
   };
 }
 
@@ -24,7 +22,6 @@ interface TrackRanking {
     name: string;
     albumImageUrl: string;
     popularity: number;
-    // 필요한 다른 필드
   };
 }
 
@@ -35,10 +32,10 @@ interface FullRankingData {
   currentTracksRanking: TrackRanking[];
 }
 
-export default async function handler(
+const handler = async (
   req: NextApiRequest,
   res: NextApiResponse<FullRankingData | { error: string }>,
-) {
+) => {
   const { method } = req;
 
   if (method !== "GET") {
@@ -88,7 +85,8 @@ export default async function handler(
 
     return res.status(200).json(rankingData);
   } catch (error) {
-    console.error("API Error:", error);
-    return res.status(500).json({ error: "Internal Server Error" });
+    return res.status(500).json({ error: error.message });
   }
-}
+};
+
+export default handler;

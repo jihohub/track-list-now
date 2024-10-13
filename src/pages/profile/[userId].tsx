@@ -1,5 +1,3 @@
-// /pages/profile/index.tsx
-
 import FavoriteSection from "@/features/profile/FavoriteSection";
 import SearchModal from "@/features/profile/SearchModal";
 import axios from "axios";
@@ -38,9 +36,15 @@ interface ProfilePageProps {
   userFavorites: UserFavorites;
   viewedUserName: string;
   profileImage: string | null;
-  isPublic: boolean;
   isOwnProfile: boolean;
 }
+
+type Section =
+  | "allTimeArtists"
+  | "allTimeTracks"
+  | "currentArtists"
+  | "currentTracks"
+  | "";
 
 const isArtist = (
   item: UserFavoriteArtist | UserFavoriteTrack,
@@ -82,7 +86,7 @@ const ProfilePage = ({
 
   const openModal = (type: "artist" | "track", section: string) => {
     setModalType(type);
-    setActiveSection(section as any);
+    setActiveSection(section as Section);
     setIsModalOpen(true);
   };
 
@@ -98,7 +102,6 @@ const ProfilePage = ({
 
   const handleSaveChanges = async () => {
     if (!isOwnProfile || !session?.user?.id) {
-      console.error("Not authorized to save changes");
       return;
     }
 
@@ -110,14 +113,11 @@ const ProfilePage = ({
         currentArtists: favorites.currentArtists,
         currentTracks: favorites.currentTracks,
       });
-      await axios.patch(`/api/users/${session.user.id}`, {
-        isPublic: !isPublic,
-      });
+
       setIsEditing(false);
-      alert("즐겨찾기가 성공적으로 저장되었습니다!");
     } catch (error) {
-      console.error("Error saving changes:", error);
-      alert("즐겨찾기 저장에 실패했습니다. 다시 시도해주세요.");
+      // TODO: 에러 처리
+      JSON.stringify(error);
     }
   };
 
@@ -147,7 +147,8 @@ const ProfilePage = ({
         download(dataUrl, fileName);
       })
       .catch((error) => {
-        console.error("이미지로 저장 실패:", error);
+        // TODO: 에러 처리
+        JSON.stringify(error);
       });
   }, [pageRef, session, viewedUserName, isOwnProfile]);
 
@@ -196,13 +197,13 @@ const ProfilePage = ({
                 height={100}
               />
             ) : (
-              <div className="w-24 h-24" />
+              <div className="w-24 h-24">{null}</div>
             )}
 
             <h1 className="text-3xl font-bold">{viewedUserName}</h1>
           </div>
         ) : (
-          <div className="w-[150px] h-[150px]"></div>
+          <div className="w-[150px] h-[150px]">{null}</div>
         )}
 
         {isOwnProfile && (
@@ -210,6 +211,7 @@ const ProfilePage = ({
             <button
               onClick={isEditing ? handleSaveChanges : toggleEditing}
               className="not-contain bg-sky-800 text-white px-4 py-2 rounded-lg"
+              type="button"
             >
               {isEditing
                 ? t("save", { ns: "profile" })
@@ -258,6 +260,7 @@ const ProfilePage = ({
             <button
               onClick={handleSaveAsImage}
               className="not-contain bg-sky-800 text-white px-4 py-2 rounded-lg"
+              type="button"
             >
               {t("to_image", { ns: "profile" })}
             </button>
@@ -316,7 +319,7 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
     const userResponse = await axios.get(
       `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/users?userId=${userId}`,
     );
-    const { name: viewedUserName, profileImage, isPublic } = userResponse.data;
+    const { name: viewedUserName, profileImage } = userResponse.data;
     const isOwnProfile = session?.user?.id === parseInt(userId, 10);
 
     return {
@@ -329,7 +332,9 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
       },
     };
   } catch (error) {
+    // eslint-disable-next-line no-console
     console.error("서버 사이드 데이터 페칭 실패:", error);
+
     return {
       props: {
         ...(await serverSideTranslations(locale, ["common", "profile"])),

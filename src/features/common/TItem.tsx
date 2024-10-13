@@ -1,4 +1,3 @@
-// /features/common/TItem.tsx
 import { TItemProps } from "@/types/types";
 import { useTranslation } from "next-i18next";
 import Link from "next/link";

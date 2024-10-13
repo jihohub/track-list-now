@@ -1,4 +1,3 @@
-// /components/Header.tsx
 import LanguageToggle from "@/features/common/LanguageToggle";
 import { signIn, signOut, useSession } from "next-auth/react";
 import Link from "next/link";
@@ -22,9 +21,13 @@ const Header = () => {
             </li>
             <li>
               {status === "authenticated" ? (
-                <button onClick={() => signOut()}>Logout</button>
+                <button onClick={() => signOut()} type="button">
+                  Logout
+                </button>
               ) : (
-                <button onClick={() => signIn()}>Login</button>
+                <button onClick={() => signIn()} type="button">
+                  Login
+                </button>
               )}
             </li>
           </ul>

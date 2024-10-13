@@ -1,4 +1,3 @@
-// /pages/index.tsx
 import ErrorComponent from "@/features/common/ErrorComponent";
 import LoadingBar from "@/features/common/LoadingBar";
 import RankingSection from "@/features/main/RankingSection";
@@ -13,7 +12,7 @@ import { serverSideTranslations } from "next-i18next/serverSideTranslations";
 const fetchFeaturedRanking = async (): Promise<FullRankingData> => {
   const response = await axios.get(
     "http://localhost:3000/api/featured-ranking",
-  ); // 절대 경로 사용
+  );
   return response.data;
 };
 
@@ -122,7 +121,7 @@ export const getServerSideProps: GetServerSideProps = async ({ locale }) => {
         currentArtistsRanking,
         currentTracksRanking,
       } = rankingData;
-      // React Query에 데이터 설정
+
       queryClient.setQueryData(["allTimeArtists"], allTimeArtistsRanking);
       queryClient.setQueryData(["allTimeTracks"], allTimeTracksRanking);
       queryClient.setQueryData(["currentArtists"], currentArtistsRanking);
@@ -136,7 +135,9 @@ export const getServerSideProps: GetServerSideProps = async ({ locale }) => {
       },
     };
   } catch (error) {
+    // eslint-disable-next-line no-console
     console.error("Error in getServerSideProps:", error);
+
     return {
       props: {
         ...(await serverSideTranslations(locale ?? "ko", ["common", "main"])),

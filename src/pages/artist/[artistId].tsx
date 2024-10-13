@@ -1,4 +1,3 @@
-// /pages/artist/[artistId].tsx
 import ErrorComponent from "@/features/common/ErrorComponent";
 import LoadingBar from "@/features/common/LoadingBar";
 import TItem from "@/features/common/TItem";
@@ -25,7 +24,7 @@ const ArtistPage = ({ artistId }: ArtistPageProps) => {
   const { data, error, isLoading } = useQuery({
     queryKey: ["artist", artistId],
     queryFn: () => fetchArtistData(artistId),
-    staleTime: 5 * 60 * 1000, // 5분
+    staleTime: 5 * 60 * 1000,
   });
 
   if (isLoading) {
@@ -73,7 +72,6 @@ const ArtistPage = ({ artistId }: ArtistPageProps) => {
         </div>
       </div>
 
-      {/* 탑 트랙 */}
       <div className="mt-8">
         <h2 className="text-2xl font-semibold text-white mb-4">
           {t("top_tracks", { ns: "artist" })}
@@ -87,7 +85,7 @@ const ArtistPage = ({ artistId }: ArtistPageProps) => {
                 trackId: track.id,
                 imageUrl: track.album.images[0]?.url || "/default-image.jpg",
                 name: track.name,
-                artists: track.artists.map((artist) => artist.name).join(", "), // 아티스트 이름이 필요 없으므로 빈 문자열
+                artists: track.artists.map((a) => a.name).join(", "),
               }}
               type="track"
             />
@@ -95,7 +93,6 @@ const ArtistPage = ({ artistId }: ArtistPageProps) => {
         </ul>
       </div>
 
-      {/* 연관 아티스트 */}
       <div className="mt-8">
         <h2 className="text-2xl font-semibold text-white mb-4">
           {t("related_artists", { ns: "artist" })}
@@ -107,7 +104,6 @@ const ArtistPage = ({ artistId }: ArtistPageProps) => {
                 href={`/artist/${relatedArtist.id}`}
                 className="flex flex-col items-center"
               >
-                {/* 이미지 컨테이너를 정사각형으로 설정 */}
                 <div className="relative w-24 h-24">
                   <Image
                     src={relatedArtist.images[0]?.url || "/default-image.jpg"}
@@ -150,7 +146,9 @@ export const getServerSideProps: GetServerSideProps = async ({
       },
     };
   } catch (error) {
+    // eslint-disable-next-line no-console
     console.error("Error in getServerSideProps:", error);
+
     return {
       props: {
         ...(await serverSideTranslations(locale ?? "ko", ["common", "artist"])),

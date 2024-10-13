@@ -17,7 +17,7 @@ interface FavoritesState {
   removeCurrentTrack: (id: string) => void;
 }
 
-export const useFavoritesStore = create(
+const useFavoritesStore = create(
   persist<FavoritesState>(
     (set) => ({
       allTimeArtists: [],
@@ -69,3 +69,5 @@ export const useFavoritesStore = create(
     },
   ),
 );
+
+export default useFavoritesStore;

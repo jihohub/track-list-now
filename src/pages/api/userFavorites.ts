@@ -1,5 +1,3 @@
-// /pages/api/userFavorites.ts
-
 import prisma from "@/libs/prisma/prismaClient";
 import { NextApiRequest, NextApiResponse } from "next";
 
@@ -47,29 +45,6 @@ interface UserFavoriteTrack {
   artists: { name: string }[];
   popularity: number;
 }
-
-interface UserFavorites {
-  allTimeArtists: UserFavoriteArtist[];
-  allTimeTracks: UserFavoriteTrack[];
-  currentArtists: UserFavoriteArtist[];
-  currentTracks: UserFavoriteTrack[];
-}
-
-const handler = async (req: NextApiRequest, res: NextApiResponse) => {
-  const { method } = req;
-
-  switch (method) {
-    case "GET":
-      await handleGet(req, res);
-      break;
-    case "PATCH":
-      await handlePatch(req, res);
-      break;
-    default:
-      res.setHeader("Allow", ["GET", "PATCH"]);
-      res.status(405).end(`Method ${method} Not Allowed`);
-  }
-};
 
 const handleGet = async (req: NextApiRequest, res: NextApiResponse) => {
   const { userId } = req.query;
@@ -148,8 +123,7 @@ const handleGet = async (req: NextApiRequest, res: NextApiResponse) => {
 
     return res.status(200).json(userFavorites);
   } catch (error) {
-    console.error("Error fetching user favorites:", error);
-    return res.status(500).json({ error: "Internal Server Error" });
+    return res.status(500).json({ error: error.message });
   }
 };
 
@@ -167,12 +141,15 @@ const handlePatch = async (req: NextApiRequest, res: NextApiResponse) => {
   }
 
   try {
-    await prisma.$transaction(async (prisma) => {
+    await prisma.$transaction(async (prismaTransaction) => {
       const existingFavoritesArtists =
-        await prisma.userFavoriteArtists.findMany({ where: { userId } });
-      const existingFavoritesTracks = await prisma.userFavoriteTracks.findMany({
-        where: { userId },
-      });
+        await prismaTransaction.userFavoriteArtists.findMany({
+          where: { userId },
+        });
+      const existingFavoritesTracks =
+        await prismaTransaction.userFavoriteTracks.findMany({
+          where: { userId },
+        });
 
       const computeDifference = (
         existing: UserFavoriteArtist[] | UserFavoriteTrack[],
@@ -236,7 +213,7 @@ const handlePatch = async (req: NextApiRequest, res: NextApiResponse) => {
 
       const upsertArtists = async (artists: UserFavoriteArtist[]) => {
         const upsertPromises = artists.map((artist) =>
-          prisma.artist.upsert({
+          prismaTransaction.artist.upsert({
             where: { artistId: artist.artistId },
             update: {
               name: artist.name,
@@ -256,7 +233,7 @@ const handlePatch = async (req: NextApiRequest, res: NextApiResponse) => {
 
       const upsertTracks = async (tracks: UserFavoriteTrack[]) => {
         const upsertPromises = tracks.map((track) =>
-          prisma.track.upsert({
+          prismaTransaction.track.upsert({
             where: { trackId: track.trackId },
             update: {
               name: track.name,
@@ -293,7 +270,7 @@ const handlePatch = async (req: NextApiRequest, res: NextApiResponse) => {
         const createPromises = favorites.map(async (item) => {
           if (isArtist) {
             // 아티스트 즐겨찾기 추가
-            await prisma.userFavoriteArtists.upsert({
+            await prismaTransaction.userFavoriteArtists.upsert({
               where: {
                 userId_artistId_favoriteType: {
                   userId,
@@ -310,7 +287,7 @@ const handlePatch = async (req: NextApiRequest, res: NextApiResponse) => {
             });
 
             // 아티스트 랭킹 업데이트
-            await prisma.artistRanking.upsert({
+            await prismaTransaction.artistRanking.upsert({
               where: {
                 artistId_rankingType: {
                   artistId: (item as UserFavoriteArtist).artistId,
@@ -330,7 +307,7 @@ const handlePatch = async (req: NextApiRequest, res: NextApiResponse) => {
             });
           } else {
             // 트랙 즐겨찾기 추가
-            await prisma.userFavoriteTracks.upsert({
+            await prismaTransaction.userFavoriteTracks.upsert({
               where: {
                 userId_trackId_favoriteType: {
                   userId,
@@ -347,7 +324,7 @@ const handlePatch = async (req: NextApiRequest, res: NextApiResponse) => {
             });
 
             // 트랙 랭킹 업데이트
-            await prisma.trackRanking.upsert({
+            await prismaTransaction.trackRanking.upsert({
               where: {
                 trackId_rankingType: {
                   trackId: (item as UserFavoriteTrack).trackId,
@@ -379,7 +356,7 @@ const handlePatch = async (req: NextApiRequest, res: NextApiResponse) => {
         const deletePromises = favorites.map(async (item) => {
           if (isArtist) {
             // 아티스트 즐겨찾기 제거
-            await prisma.userFavoriteArtists.deleteMany({
+            await prismaTransaction.userFavoriteArtists.deleteMany({
               where: {
                 userId,
                 artistId: (item as UserFavoriteArtist).artistId,
@@ -388,18 +365,20 @@ const handlePatch = async (req: NextApiRequest, res: NextApiResponse) => {
             });
 
             // 아티스트 랭킹 업데이트
-            const updatedRanking = await prisma.artistRanking.update({
-              where: {
-                artistId_rankingType: {
-                  artistId: (item as UserFavoriteArtist).artistId,
-                  rankingType: favoriteType as ArtistRankingType,
+            const updatedRanking = await prismaTransaction.artistRanking.update(
+              {
+                where: {
+                  artistId_rankingType: {
+                    artistId: (item as UserFavoriteArtist).artistId,
+                    rankingType: favoriteType as ArtistRankingType,
+                  },
                 },
+                data: { count: { decrement: 1 } },
               },
-              data: { count: { decrement: 1 } },
-            });
+            );
 
             if (updatedRanking.count <= 0) {
-              await prisma.artistRanking.delete({
+              await prismaTransaction.artistRanking.delete({
                 where: {
                   artistId_rankingType: {
                     artistId: (item as UserFavoriteArtist).artistId,
@@ -410,7 +389,7 @@ const handlePatch = async (req: NextApiRequest, res: NextApiResponse) => {
             }
           } else {
             // 트랙 즐겨찾기 제거
-            await prisma.userFavoriteTracks.deleteMany({
+            await prismaTransaction.userFavoriteTracks.deleteMany({
               where: {
                 userId,
                 trackId: (item as UserFavoriteTrack).trackId,
@@ -419,7 +398,7 @@ const handlePatch = async (req: NextApiRequest, res: NextApiResponse) => {
             });
 
             // 트랙 랭킹 업데이트
-            const updatedRanking = await prisma.trackRanking.update({
+            const updatedRanking = await prismaTransaction.trackRanking.update({
               where: {
                 trackId_rankingType: {
                   trackId: (item as UserFavoriteTrack).trackId,
@@ -430,7 +409,7 @@ const handlePatch = async (req: NextApiRequest, res: NextApiResponse) => {
             });
 
             if (updatedRanking.count <= 0) {
-              await prisma.trackRanking.delete({
+              await prismaTransaction.trackRanking.delete({
                 where: {
                   trackId_rankingType: {
                     trackId: (item as UserFavoriteTrack).trackId,
@@ -472,10 +451,23 @@ const handlePatch = async (req: NextApiRequest, res: NextApiResponse) => {
       ]);
     });
 
-    res.status(200).json({ message: "Favorites updated successfully" });
+    return res.status(200).json({ message: "Favorites updated successfully" });
   } catch (error) {
-    console.error("Error updating favorites:", error);
-    res.status(500).json({ error: "Internal Server Error" });
+    return res.status(500).json({ error: error.message });
+  }
+};
+
+const handler = async (req: NextApiRequest, res: NextApiResponse) => {
+  const { method } = req;
+
+  switch (method) {
+    case "GET":
+      return handleGet(req, res);
+    case "PATCH":
+      return handlePatch(req, res);
+    default:
+      res.setHeader("Allow", ["GET", "PATCH"]);
+      return res.status(405).end(`Method ${method} Not Allowed`);
   }
 };
 

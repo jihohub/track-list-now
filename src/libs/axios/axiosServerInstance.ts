@@ -1,11 +1,6 @@
-// /libs/axios/axiosServerInstance.ts
-import axios, { AxiosRequestConfig } from "axios";
+import axios from "axios";
 import { getCookie } from "cookies-next";
 import { NextApiRequest, NextApiResponse } from "next";
-
-interface CustomAxiosRequestConfig extends AxiosRequestConfig {
-  _retry?: boolean;
-}
 
 const getServerAxiosInstance = (req: NextApiRequest, res: NextApiResponse) => {
   const protocol = req.headers["x-forwarded-proto"] || "http";
@@ -20,8 +15,13 @@ const getServerAxiosInstance = (req: NextApiRequest, res: NextApiResponse) => {
   serverAxiosInstance.interceptors.request.use(
     async (config) => {
       const accessToken = getCookie("access_token", { req, res });
+
+      const newConfig = { ...config };
       if (accessToken) {
-        config.headers.Authorization = `Bearer ${accessToken}`;
+        newConfig.headers = {
+          ...newConfig.headers,
+          Authorization: `Bearer ${accessToken}`,
+        };
       }
       return config;
     },
@@ -32,25 +32,21 @@ const getServerAxiosInstance = (req: NextApiRequest, res: NextApiResponse) => {
   serverAxiosInstance.interceptors.response.use(
     (response) => response,
     async (error) => {
-      const originalRequest: CustomAxiosRequestConfig = error.config;
+      const originalRequest = error.config;
 
       if (
         error.response &&
         error.response.status === 401 &&
-        !originalRequest._retry
+        !originalRequest.retry
       ) {
-        originalRequest._retry = true;
+        originalRequest.retry = true;
 
         try {
-          // 절대 URL 사용
           const tokenUrl = `${baseUrl}/api/token`;
 
           const tokenResponse = await axios.post(tokenUrl);
           const newAccessToken = tokenResponse.data.access_token;
 
-          // 쿠키에 새 토큰 설정 (이미 /api/token 에서 설정됨)
-
-          // Authorization 헤더 수동 설정
           originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
 
           return serverAxiosInstance(originalRequest);

@@ -1,4 +1,3 @@
-// /features/common/ErrorFallback.tsx
 import { useTranslation } from "next-i18next";
 import { FallbackProps } from "react-error-boundary";
 
@@ -15,6 +14,7 @@ const ErrorFallback = ({ error, resetErrorBoundary }: FallbackProps) => {
       <button
         onClick={resetErrorBoundary}
         className="bg-sky-800 text-white px-4 py-2 rounded-lg"
+        type="button"
       >
         {t("try_again")}
       </button>

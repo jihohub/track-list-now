@@ -1,4 +1,3 @@
-// /features/main/RankingSection.tsx
 import { RankingSectionProps } from "@/types/types";
 import { useTranslation } from "next-i18next";
 import Link from "next/link";

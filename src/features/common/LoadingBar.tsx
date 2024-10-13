@@ -1,4 +1,3 @@
-// /features/common/LoadingBar.tsx
 const LoadingBar = () => (
   <div className="flex justify-center items-center h-screen">
     <div className="flex space-x-2">
