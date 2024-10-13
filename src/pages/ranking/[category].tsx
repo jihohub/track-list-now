@@ -2,7 +2,7 @@
 import ErrorComponent from "@/features/common/ErrorComponent";
 import LoadingBar from "@/features/common/LoadingBar";
 import TItem from "@/features/common/TItem";
-import { TItemType } from "@/types/types";
+import { TItemProps } from "@/types/types";
 import { dehydrate, QueryClient, useQuery } from "@tanstack/react-query";
 import axios from "axios";
 import { GetServerSideProps } from "next";
@@ -11,7 +11,7 @@ import { serverSideTranslations } from "next-i18next/serverSideTranslations";
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
 
-const fetchRankingData = async (category: string): Promise<TItemType[]> => {
+const fetchRankingData = async (category: string): Promise<TItemProps[]> => {
   const response = await axios.get(
     `http://localhost:3000/api/ranking?category=${category}`,
   );
@@ -23,14 +23,14 @@ const RankingPage = () => {
   const router = useRouter();
   const { category } = router.query;
   const [title, setTitle] = useState<string>("");
-  const [data, setData] = useState<TItemType[]>([]);
+  const [data, setData] = useState<TItemProps[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(true);
 
   const {
     data: rankingData,
     error,
     isLoading: queryLoading,
-  } = useQuery<TItemType[], Error>({
+  } = useQuery<TItemProps[], Error>({
     queryKey: ["ranking", category],
     queryFn: () => fetchRankingData(category as string),
     enabled: !!category,
@@ -70,7 +70,7 @@ const RankingPage = () => {
           imageUrl: isTrack ? item.track.albumImageUrl : item.artist.imageUrl,
           followers: isTrack ? 0 : item.artist.followers,
           popularity: isTrack ? item.track.popularity || 0 : 0,
-          artistNames: isTrack ? item.track.artistNames : null, // artistNames 필드 활용
+          artists: isTrack ? item.track.artists : null, // artistNames 필드 활용
           count: item.count,
           trackId: isTrack ? item.trackId : undefined, // 트랙일 경우 trackId 포함
           artistId: isTrack ? undefined : item.artistId, // 아티스트일 경우 artistId 포함

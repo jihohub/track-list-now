@@ -1,12 +1,12 @@
 export interface Artist {
-  id: string;
+  artistId: string;
   name: string;
   imageUrl: string;
   followers: number;
 }
 
 export interface Track {
-  id: string;
+  trackId: string;
   name: string;
   albumImageUrl: string;
   artistNames: string;

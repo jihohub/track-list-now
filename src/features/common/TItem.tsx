@@ -4,19 +4,10 @@ import { useTranslation } from "next-i18next";
 import Link from "next/link";
 import TImage from "./TImage";
 
-const getLinkHref = (type: string, isFeatured: boolean, item: any): string => {
-  if (type === "artist") {
-    return isFeatured ? `/artist/${item.id}` : `/artist/${item.artistId}`;
-  }
-  if (type === "track") {
-    return isFeatured ? `/track/${item.id}` : `/track/${item.trackId}`;
-  }
-  return "/";
-};
-
 const TItem = ({ index, item, type, isFeatured = false }: TItemProps) => {
   const { t } = useTranslation("common");
-  const linkHref = getLinkHref(type, isFeatured, item);
+  const linkHref =
+    type === "artist" ? `/artist/${item.artistId}` : `/track/${item.trackId}`;
 
   return (
     <li
@@ -61,7 +52,7 @@ const TItem = ({ index, item, type, isFeatured = false }: TItemProps) => {
               <p
                 className={`text-xs sm:text-sm text-gray-400 ${isFeatured ? "max-w-[100px] sm:max-w-[220px]" : "max-w-[150px] sm:max-w-max"}`}
               >
-                {item.artistNames}
+                {item.artists}
               </p>
             )}
           </div>

@@ -1,6 +1,7 @@
 // /features/common/TImage.tsx
 import ArtistIcon from "@/assets/icons/artist.svg";
 import TrackIcon from "@/assets/icons/track.svg";
+import parseSizes from "@/libs/utils/parseSizes";
 import { ArtistOrTrackImageProps } from "@/types/types";
 import Image from "next/image";
 
@@ -15,6 +16,8 @@ const TImage = ({
     type === "artist" ? "rounded-full" : "rounded-lg"
   }`;
 
+  const sizes = parseSizes(size);
+
   return (
     <div className={`${defaultStyle} ${className}`}>
       {imageUrl ? (
@@ -27,6 +30,7 @@ const TImage = ({
             src={imageUrl}
             alt={alt}
             fill
+            sizes={sizes}
             className={`${type === "artist" ? "rounded-full" : "rounded-lg"} object-cover`}
           />
         </div>
