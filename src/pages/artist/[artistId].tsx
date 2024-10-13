@@ -1,12 +1,12 @@
 import ErrorComponent from "@/features/common/ErrorComponent";
 import LoadingBar from "@/features/common/LoadingBar";
+import TImage from "@/features/common/TImage";
 import TItem from "@/features/common/TItem";
 import { dehydrate, QueryClient, useQuery } from "@tanstack/react-query";
 import axios from "axios";
 import { GetServerSideProps } from "next";
 import { useTranslation } from "next-i18next";
 import { serverSideTranslations } from "next-i18next/serverSideTranslations";
-import Image from "next/image";
 import Link from "next/link";
 
 interface ArtistPageProps {
@@ -46,11 +46,12 @@ const ArtistPage = ({ artistId }: ArtistPageProps) => {
       {/* 아티스트 기본 정보 */}
       <div className="flex flex-col items-center">
         <div className="relative w-[300px] h-[300px] rounded-full overflow-hidden">
-          <Image
-            src={artist.images[0]?.url || "/default-image.jpg"}
+          <TImage
+            imageUrl={artist.images[0]?.url || "/default-image.jpg"}
+            type="artist"
             alt={artist.name}
-            fill
-            className="rounded-full object-cover"
+            size="w-[300px] h-[300px]"
+            className="rounded-full overflow-hidden"
           />
         </div>
         <h1 className="text-4xl font-bold text-white mt-4">{artist.name}</h1>
@@ -105,10 +106,13 @@ const ArtistPage = ({ artistId }: ArtistPageProps) => {
                 className="flex flex-col items-center"
               >
                 <div className="relative w-24 h-24">
-                  <Image
-                    src={relatedArtist.images[0]?.url || "/default-image.jpg"}
+                  <TImage
+                    imageUrl={
+                      relatedArtist.images[0]?.url || "/default-image.jpg"
+                    }
+                    type="artist"
                     alt={relatedArtist.name}
-                    fill
+                    size="w-24 h-24"
                     className="rounded-full object-cover"
                   />
                 </div>
