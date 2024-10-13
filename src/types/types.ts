@@ -1,12 +1,12 @@
 export interface Artist {
-  id: string;
+  artistId: string;
   name: string;
   imageUrl: string;
   followers: number;
 }
 
 export interface Track {
-  id: string;
+  trackId: string;
   name: string;
   albumImageUrl: string;
   artistNames: string;
@@ -115,10 +115,11 @@ export interface SearchModalProps {
   handleAddItem: (section: string, item: SpotifyArtist | SpotifyTrack) => void;
 }
 
-export interface RankedItemProps {
+export interface TItemProps {
   index: number;
   item: Artist | Track;
   type: "artist" | "track";
+  isFeatured?: boolean;
 }
 
 export interface ArtistOrTrackImageProps {

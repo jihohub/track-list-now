@@ -1,7 +1,7 @@
 // /components/Header.tsx
+import LanguageToggle from "@/features/common/LanguageToggle";
 import { signIn, signOut, useSession } from "next-auth/react";
 import Link from "next/link";
-import LanguageToggle from "./LanguageToggle";
 
 const Header = () => {
   const { data: session, status } = useSession();
@@ -18,7 +18,7 @@ const Header = () => {
               <LanguageToggle />
             </li>
             <li>
-              <Link href="/profile">Profile</Link>
+              <Link href={`/profile/${session?.user.id}`}>Profile</Link>
             </li>
             <li>
               {status === "authenticated" ? (

@@ -1,6 +1,6 @@
 // /pages/track/[trackId].tsx
-import ErrorComponent from "@/components/ErrorComponent";
-import LoadingBar from "@/components/LoadingBar";
+import ErrorComponent from "@/features/common/ErrorComponent";
+import LoadingBar from "@/features/common/LoadingBar";
 import { TrackDetail } from "@/types/types";
 import { dehydrate, QueryClient, useQuery } from "@tanstack/react-query";
 import axios from "axios";
@@ -21,7 +21,7 @@ const fetchTrackDetail = async (trackId: string): Promise<TrackDetail> => {
 };
 
 const TrackPage = ({ trackId }: TrackPageProps) => {
-  const { t } = useTranslation("common");
+  const { t } = useTranslation(["common", "track"]);
   const audioRef = useRef<HTMLAudioElement>(null);
 
   const {
@@ -59,7 +59,7 @@ const TrackPage = ({ trackId }: TrackPageProps) => {
         <h1 className="text-4xl font-bold text-white mt-4">{track.name}</h1>
         <div className="w-80">
           <p className="text-gray-400 mt-2">
-            {t("artists")}:{" "}
+            {t("artists", { ns: "track" })}:{" "}
             {track.artists.map((artist, index) => (
               <span key={artist.id} className="inline-flex items-center">
                 <Link href={`/artist/${artist.id}`}>
@@ -74,13 +74,14 @@ const TrackPage = ({ trackId }: TrackPageProps) => {
             ))}
           </p>
           <p className="text-gray-400 mt-1">
-            {t("album")}: {track.album.name}
+            {t("album", { ns: "track" })}: {track.album.name}
           </p>
           <p className="text-gray-400 mt-1">
-            {t("release_date")}: {track.album.release_date}
+            {t("release_date", { ns: "track" })}: {track.album.release_date}
           </p>
           <p className="text-gray-400 mt-1">
-            {t("duration")}: {Math.floor(track.duration_ms / 60000)}:
+            {t("duration", { ns: "track" })}:{" "}
+            {Math.floor(track.duration_ms / 60000)}:
             {`0${Math.floor((track.duration_ms % 60000) / 1000)}`.slice(-2)}
           </p>
         </div>
@@ -88,7 +89,7 @@ const TrackPage = ({ trackId }: TrackPageProps) => {
           <p className="text-red-500 mt-1">{t("explicit_content")}</p>
         )}
         {track.preview_url && (
-          <audio controls className="mt-4 w-80">
+          <audio controls className="mt-4 w-80" ref={audioRef}>
             <source src={track.preview_url} type="audio/mpeg" />
             Your browser does not support the audio element.
           </audio>
@@ -114,7 +115,7 @@ export const getServerSideProps: GetServerSideProps = async ({
 
     return {
       props: {
-        ...(await serverSideTranslations(locale ?? "ko", ["common"])),
+        ...(await serverSideTranslations(locale ?? "ko", ["common", "track"])),
         dehydratedState: dehydrate(queryClient),
         trackId,
       },
@@ -123,7 +124,7 @@ export const getServerSideProps: GetServerSideProps = async ({
     console.error("Error in getServerSideProps:", error);
     return {
       props: {
-        ...(await serverSideTranslations(locale ?? "ko", ["common"])),
+        ...(await serverSideTranslations(locale ?? "ko", ["common", "track"])),
         dehydratedState: dehydrate(queryClient),
         trackId,
       },

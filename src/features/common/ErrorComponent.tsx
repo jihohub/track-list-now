@@ -1,4 +1,4 @@
-// /components/ErrorComponent.tsx
+// /features/common/ErrorComponent.tsx
 interface ErrorComponentProps {
   message: string;
 }
