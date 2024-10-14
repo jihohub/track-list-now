@@ -9,7 +9,7 @@ export interface Track {
   trackId: string;
   name: string;
   albumImageUrl: string;
-  artistNames: string;
+  artists: string;
   popularity: number;
 }
 

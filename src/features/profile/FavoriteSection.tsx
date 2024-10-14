@@ -1,8 +1,32 @@
 import AddIcon from "@/assets/icons/add.svg";
 import ArtistIcon from "@/assets/icons/artist.svg";
 import TrackIcon from "@/assets/icons/track.svg";
-import { FavoriteSectionProps } from "@/types/types";
+// import { FavoriteSectionProps } from "@/types/types";
 import FavoriteItem from "./FavoriteItem";
+
+export interface UserFavoriteArtist {
+  artistId: string;
+  name: string;
+  imageUrl: string;
+  followers: number;
+}
+
+export interface UserFavoriteTrack {
+  trackId: string;
+  name: string;
+  albumImageUrl: string;
+  artists: string;
+  popularity: number;
+}
+
+export interface FavoriteSectionProps {
+  title: string;
+  items: UserFavoriteArtist[] | UserFavoriteTrack[];
+  openModal: () => void;
+  type: "artist" | "track";
+  isEditing: boolean;
+  handleDelete: (id: string) => void;
+}
 
 const FavoriteSection = ({
   title,
@@ -17,7 +41,11 @@ const FavoriteSection = ({
     <div className="grid grid-cols-3 gap-4">
       {items.map((item) => (
         <FavoriteItem
-          key={item.artistId || item.trackId}
+          key={
+            type === "artist"
+              ? (item as UserFavoriteArtist).artistId
+              : (item as UserFavoriteTrack).trackId
+          }
           item={item}
           type={type}
           isEditing={isEditing}

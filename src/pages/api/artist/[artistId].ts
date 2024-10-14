@@ -1,8 +1,117 @@
 import getServerAxiosInstance from "@/libs/axios/axiosServerInstance";
-import axios from "axios";
 import type { NextApiRequest, NextApiResponse } from "next";
 
-const handler = async (req: NextApiRequest, res: NextApiResponse) => {
+interface SpotifyArtist {
+  external_urls: {
+    spotify: string;
+  };
+  followers: {
+    href: string | null;
+    total: number;
+  };
+  genres: string[];
+  href: string;
+  id: string;
+  images: Array<{
+    url: string;
+    height: number;
+    width: number;
+  }>;
+  name: string;
+  popularity: number;
+  type: "artist";
+  uri: string;
+}
+
+interface SpotifyArtistBrief {
+  external_urls: {
+    spotify: string;
+  };
+  href: string;
+  id: string;
+  name: string;
+  type: "artist";
+  uri: string;
+}
+
+interface SpotifyTrack {
+  album: {
+    album_type: string;
+    total_tracks: number;
+    available_markets: string[];
+    external_urls: {
+      spotify: string;
+    };
+    href: string;
+    id: string;
+    images: Array<{
+      url: string;
+      height: number;
+      width: number;
+    }>;
+    name: string;
+    release_date: string;
+    release_date_precision: string;
+    restrictions?: {
+      reason: string;
+    };
+    type: "album";
+    uri: string;
+    artists: SpotifyArtistBrief[];
+  };
+  artists: SpotifyArtistBrief[];
+  available_markets: string[];
+  disc_number: number;
+  duration_ms: number;
+  explicit: boolean;
+  external_ids: {
+    isrc: string;
+    ean?: string;
+    upc?: string;
+  };
+  external_urls: {
+    spotify: string;
+  };
+  href: string;
+  id: string;
+  is_playable: boolean;
+  linked_from?: unknown;
+  restrictions?: {
+    reason: string;
+  };
+  name: string;
+  popularity: number;
+  preview_url: string | null;
+  track_number: number;
+  type: "track";
+  uri: string;
+  is_local: boolean;
+}
+
+interface SpotifyTopTracks {
+  tracks: SpotifyTrack[];
+}
+
+interface SpotifyRelatedArtists {
+  artists: SpotifyArtist[];
+}
+
+interface CombinedArtistData {
+  artist: SpotifyArtist;
+  topTracks: SpotifyTopTracks;
+  relatedArtists: SpotifyRelatedArtists;
+}
+
+interface ErrorResponse {
+  error: string;
+}
+
+type ResponseData = CombinedArtistData | ErrorResponse;
+
+const handler = async (
+  req: NextApiRequest,
+  res: NextApiResponse<ResponseData>,
+) => {
   const { artistId } = req.query;
 
   if (!artistId || typeof artistId !== "string") {
@@ -12,11 +121,13 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
   try {
     const serverAxios = getServerAxiosInstance(req, res);
 
-    const artistResponse = await serverAxios.get(`/artists/${artistId}`);
+    const artistResponse = await serverAxios.get<SpotifyArtist>(
+      `/artists/${artistId}`,
+    );
     const artistData = artistResponse.data;
 
     // 아티스트 탑 트랙 Fetch
-    const topTracksResponse = await serverAxios.get(
+    const topTracksResponse = await serverAxios.get<SpotifyTopTracks>(
       `/artists/${artistId}/top-tracks`,
       {
         params: {
@@ -27,30 +138,25 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
     const topTracksData = topTracksResponse.data;
 
     // 연관 아티스트 Fetch
-    const relatedArtistsResponse = await serverAxios.get(
+    const relatedArtistsResponse = await serverAxios.get<SpotifyRelatedArtists>(
       `/artists/${artistId}/related-artists`,
     );
     const relatedArtistsData = relatedArtistsResponse.data;
 
     // 모든 데이터를 결합
-    const combinedData = {
+    const combinedData: CombinedArtistData = {
       artist: artistData,
       topTracks: topTracksData,
       relatedArtists: relatedArtistsData,
     };
 
     return res.status(200).json(combinedData);
-  } catch (error) {
-    // Spotify API 에러 메시지 전달
-    if (axios.isAxiosError(error)) {
-      if (error.response && error.response.data && error.response.data.error) {
-        return res
-          .status(error.response.status)
-          .json({ error: error.response.data.error.message });
-      }
-    }
-
-    return res.status(500).json({ error: "Failed to fetch artist details" });
+  } catch (error: unknown) {
+    const errorMessage =
+      error instanceof Error
+        ? error.message
+        : "알 수 없는 오류가 발생했습니다.";
+    return res.status(500).json({ error: errorMessage });
   }
 };
 

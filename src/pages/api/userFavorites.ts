@@ -1,52 +1,103 @@
 import prisma from "@/libs/prisma/prismaClient";
+import {
+  Artist,
+  ArtistRankingType,
+  FavoriteType,
+  Track,
+  TrackRankingType,
+  UserFavoriteArtists,
+  UserFavoriteTracks,
+} from "@prisma/client";
 import { NextApiRequest, NextApiResponse } from "next";
 
-interface UpdateFavorites {
-  userId: number;
-  allTimeArtists: {
-    artistId: string;
-    name: string;
-    imageUrl: string;
-    followers: number;
-  }[];
-  allTimeTracks: {
-    trackId: string;
-    name: string;
-    albumImageUrl: string;
-    artists: { name: string }[];
-    popularity: number;
-  }[];
-  currentArtists: {
-    artistId: string;
-    name: string;
-    imageUrl: string;
-    followers: number;
-  }[];
-  currentTracks: {
-    trackId: string;
-    name: string;
-    albumImageUrl: string;
-    artists: { name: string }[];
-    popularity: number;
-  }[];
+interface UserFavoritesResponse {
+  allTimeArtists: Artist[];
+  currentArtists: Artist[];
+  allTimeTracks: Track[];
+  currentTracks: Track[];
 }
 
-interface UserFavoriteArtist {
+type ResponseData =
+  | UserFavoritesResponse
+  | { message: string }
+  | { error: string };
+
+interface UserFavoriteArtistInput {
   artistId: string;
   name: string;
   imageUrl: string;
   followers: number;
 }
 
-interface UserFavoriteTrack {
+interface UserFavoriteTrackInput {
   trackId: string;
   name: string;
   albumImageUrl: string;
-  artists: { name: string }[];
+  artists: string;
   popularity: number;
 }
 
-const handleGet = async (req: NextApiRequest, res: NextApiResponse) => {
+interface UpdateFavorites {
+  userId: number;
+  allTimeArtists: UserFavoriteArtistInput[];
+  allTimeTracks: UserFavoriteTrackInput[];
+  currentArtists: UserFavoriteArtistInput[];
+  currentTracks: UserFavoriteTrackInput[];
+}
+
+const mapFavoriteTypeToArtistRankingType = (
+  favoriteType: FavoriteType,
+): ArtistRankingType => {
+  switch (favoriteType) {
+    case FavoriteType.ALL_TIME_ARTIST:
+      return ArtistRankingType.ALL_TIME_ARTIST;
+    case FavoriteType.CURRENT_ARTIST:
+      return ArtistRankingType.CURRENT_ARTIST;
+    default:
+      throw new Error(
+        `Invalid favoriteType for ArtistRankingType: ${favoriteType}`,
+      );
+  }
+};
+
+const mapFavoriteTypeToTrackRankingType = (
+  favoriteType: FavoriteType,
+): TrackRankingType => {
+  switch (favoriteType) {
+    case FavoriteType.ALL_TIME_TRACK:
+      return TrackRankingType.ALL_TIME_TRACK;
+    case FavoriteType.CURRENT_TRACK:
+      return TrackRankingType.CURRENT_TRACK;
+    default:
+      throw new Error(
+        `Invalid favoriteType for TrackRankingType: ${favoriteType}`,
+      );
+  }
+};
+
+const computeDifference = <ExistingItem, NewItem>(
+  existing: ExistingItem[],
+  newItems: NewItem[],
+  keyExisting: keyof ExistingItem & string,
+  keyNew: keyof NewItem & string,
+): { toAdd: NewItem[]; toRemove: ExistingItem[] } => {
+  const existingIds = new Set<string>(
+    existing.map((item) => String(item[keyExisting])),
+  );
+  const newIds = new Set<string>(newItems.map((item) => String(item[keyNew])));
+  const toAdd = newItems.filter(
+    (item) => !existingIds.has(String(item[keyNew])),
+  );
+  const toRemove = existing.filter(
+    (item) => !newIds.has(String(item[keyExisting])),
+  );
+  return { toAdd, toRemove };
+};
+
+const handleGet = async (
+  req: NextApiRequest,
+  res: NextApiResponse<ResponseData>,
+) => {
   const { userId } = req.query;
 
   if (!userId || Array.isArray(userId)) {
@@ -77,44 +128,22 @@ const handleGet = async (req: NextApiRequest, res: NextApiResponse) => {
     });
 
     const allTimeArtists = userFavoriteArtists
-      .filter((fav) => fav.favoriteType === "ALL_TIME_ARTIST")
-      .map((fav) => ({
-        artistId: fav.artist.artistId,
-        name: fav.artist.name,
-        imageUrl: fav.artist.imageUrl,
-        followers: fav.artist.followers,
-      }));
+      .filter((fav) => fav.favoriteType === FavoriteType.ALL_TIME_ARTIST)
+      .map((fav) => fav.artist);
 
     const currentArtists = userFavoriteArtists
-      .filter((fav) => fav.favoriteType === "CURRENT_ARTIST")
-      .map((fav) => ({
-        artistId: fav.artist.artistId,
-        name: fav.artist.name,
-        imageUrl: fav.artist.imageUrl,
-        followers: fav.artist.followers,
-      }));
+      .filter((fav) => fav.favoriteType === FavoriteType.CURRENT_ARTIST)
+      .map((fav) => fav.artist);
 
     const allTimeTracks = userFavoriteTracks
-      .filter((fav) => fav.favoriteType === "ALL_TIME_TRACK")
-      .map((fav) => ({
-        trackId: fav.track.trackId,
-        name: fav.track.name,
-        albumImageUrl: fav.track.albumImageUrl,
-        artists: fav.track.artists.split(", ").map((name) => ({ name })),
-        popularity: fav.track.popularity,
-      }));
+      .filter((fav) => fav.favoriteType === FavoriteType.ALL_TIME_TRACK)
+      .map((fav) => fav.track);
 
     const currentTracks = userFavoriteTracks
-      .filter((fav) => fav.favoriteType === "CURRENT_TRACK")
-      .map((fav) => ({
-        trackId: fav.track.trackId,
-        name: fav.track.name,
-        albumImageUrl: fav.track.albumImageUrl,
-        artists: fav.track.artists.split(", ").map((name) => ({ name })),
-        popularity: fav.track.popularity,
-      }));
+      .filter((fav) => fav.favoriteType === FavoriteType.CURRENT_TRACK)
+      .map((fav) => fav.track);
 
-    const userFavorites = {
+    const userFavorites: UserFavoritesResponse = {
       allTimeArtists,
       currentArtists,
       allTimeTracks,
@@ -122,12 +151,19 @@ const handleGet = async (req: NextApiRequest, res: NextApiResponse) => {
     };
 
     return res.status(200).json(userFavorites);
-  } catch (error) {
-    return res.status(500).json({ error: error.message });
+  } catch (error: unknown) {
+    const errorMessage =
+      error instanceof Error
+        ? error.message
+        : "알 수 없는 오류가 발생했습니다.";
+    return res.status(500).json({ error: errorMessage });
   }
 };
 
-const handlePatch = async (req: NextApiRequest, res: NextApiResponse) => {
+const handlePatch = async (
+  req: NextApiRequest,
+  res: NextApiResponse<ResponseData>,
+) => {
   const {
     userId,
     allTimeArtists,
@@ -151,67 +187,40 @@ const handlePatch = async (req: NextApiRequest, res: NextApiResponse) => {
           where: { userId },
         });
 
-      const computeDifference = (
-        existing: UserFavoriteArtist[] | UserFavoriteTrack[],
-        newItems: UserFavoriteArtist[] | UserFavoriteTrack[],
-      ) => {
-        const existingIds = new Set(
-          existing.map(
-            (item) =>
-              (item as UserFavoriteArtist).artistId ||
-              (item as UserFavoriteTrack).trackId,
-          ),
-        );
-        const newIds = new Set(
-          newItems.map(
-            (item) =>
-              (item as UserFavoriteArtist).artistId ||
-              (item as UserFavoriteTrack).trackId,
-          ),
-        );
-        const toAdd = newItems.filter(
-          (item) =>
-            !existingIds.has(
-              (item as UserFavoriteArtist).artistId ||
-                (item as UserFavoriteTrack).trackId,
-            ),
-        );
-        const toRemove = existing.filter(
-          (item) =>
-            !newIds.has(
-              (item as UserFavoriteArtist).artistId ||
-                (item as UserFavoriteTrack).trackId,
-            ),
-        );
-        return { toAdd, toRemove };
-      };
-
       const allTimeArtistsDiff = computeDifference(
         existingFavoritesArtists.filter(
-          (fav) => fav.favoriteType === "ALL_TIME_ARTIST",
+          (fav) => fav.favoriteType === FavoriteType.ALL_TIME_ARTIST,
         ),
         allTimeArtists,
+        "artistId",
+        "artistId",
       );
       const currentArtistsDiff = computeDifference(
         existingFavoritesArtists.filter(
-          (fav) => fav.favoriteType === "CURRENT_ARTIST",
+          (fav) => fav.favoriteType === FavoriteType.CURRENT_ARTIST,
         ),
         currentArtists,
+        "artistId",
+        "artistId",
       );
       const allTimeTracksDiff = computeDifference(
         existingFavoritesTracks.filter(
-          (fav) => fav.favoriteType === "ALL_TIME_TRACK",
+          (fav) => fav.favoriteType === FavoriteType.ALL_TIME_TRACK,
         ),
         allTimeTracks,
+        "trackId",
+        "trackId",
       );
       const currentTracksDiff = computeDifference(
         existingFavoritesTracks.filter(
-          (fav) => fav.favoriteType === "CURRENT_TRACK",
+          (fav) => fav.favoriteType === FavoriteType.CURRENT_TRACK,
         ),
         currentTracks,
+        "trackId",
+        "trackId",
       );
 
-      const upsertArtists = async (artists: UserFavoriteArtist[]) => {
+      const upsertArtists = async (artists: UserFavoriteArtistInput[]) => {
         const upsertPromises = artists.map((artist) =>
           prismaTransaction.artist.upsert({
             where: { artistId: artist.artistId },
@@ -231,21 +240,21 @@ const handlePatch = async (req: NextApiRequest, res: NextApiResponse) => {
         await Promise.all(upsertPromises);
       };
 
-      const upsertTracks = async (tracks: UserFavoriteTrack[]) => {
+      const upsertTracks = async (tracks: UserFavoriteTrackInput[]) => {
         const upsertPromises = tracks.map((track) =>
           prismaTransaction.track.upsert({
             where: { trackId: track.trackId },
             update: {
               name: track.name,
               albumImageUrl: track.albumImageUrl,
-              artists: track.artists.map((a) => a.name).join(", "),
+              artists: track.artists,
               popularity: track.popularity,
             },
             create: {
               trackId: track.trackId,
               name: track.name,
               albumImageUrl: track.albumImageUrl,
-              artists: track.artists.map((a) => a.name).join(", "),
+              artists: track.artists,
               popularity: track.popularity,
             },
           }),
@@ -263,25 +272,26 @@ const handlePatch = async (req: NextApiRequest, res: NextApiResponse) => {
       ]);
 
       const addUserFavorites = async (
-        favorites: UserFavoriteArtist[] | UserFavoriteTrack[],
+        favorites: UserFavoriteArtistInput[] | UserFavoriteTrackInput[],
         isArtist: boolean,
-        favoriteType,
+        favoriteType: FavoriteType,
       ) => {
         const createPromises = favorites.map(async (item) => {
           if (isArtist) {
             // 아티스트 즐겨찾기 추가
+            const artist = item as UserFavoriteArtistInput;
             await prismaTransaction.userFavoriteArtists.upsert({
               where: {
                 userId_artistId_favoriteType: {
                   userId,
-                  artistId: (item as UserFavoriteArtist).artistId,
+                  artistId: artist.artistId,
                   favoriteType,
                 },
               },
               update: {},
               create: {
                 userId,
-                artistId: (item as UserFavoriteArtist).artistId,
+                artistId: artist.artistId,
                 favoriteType,
               },
             });
@@ -290,35 +300,36 @@ const handlePatch = async (req: NextApiRequest, res: NextApiResponse) => {
             await prismaTransaction.artistRanking.upsert({
               where: {
                 artistId_rankingType: {
-                  artistId: (item as UserFavoriteArtist).artistId,
-                  rankingType: favoriteType as ArtistRankingType,
+                  artistId: artist.artistId,
+                  rankingType: mapFavoriteTypeToArtistRankingType(favoriteType),
                 },
               },
               update: {
                 count: { increment: 1 },
-                followers: (item as UserFavoriteArtist).followers,
+                followers: artist.followers,
               },
               create: {
-                artistId: (item as UserFavoriteArtist).artistId,
-                rankingType: favoriteType as ArtistRankingType,
+                artistId: artist.artistId,
+                rankingType: mapFavoriteTypeToArtistRankingType(favoriteType),
                 count: 1,
-                followers: (item as UserFavoriteArtist).followers,
+                followers: artist.followers,
               },
             });
           } else {
             // 트랙 즐겨찾기 추가
+            const track = item as UserFavoriteTrackInput;
             await prismaTransaction.userFavoriteTracks.upsert({
               where: {
                 userId_trackId_favoriteType: {
                   userId,
-                  trackId: (item as UserFavoriteTrack).trackId,
+                  trackId: track.trackId,
                   favoriteType,
                 },
               },
               update: {},
               create: {
                 userId,
-                trackId: (item as UserFavoriteTrack).trackId,
+                trackId: track.trackId,
                 favoriteType,
               },
             });
@@ -327,19 +338,19 @@ const handlePatch = async (req: NextApiRequest, res: NextApiResponse) => {
             await prismaTransaction.trackRanking.upsert({
               where: {
                 trackId_rankingType: {
-                  trackId: (item as UserFavoriteTrack).trackId,
-                  rankingType: favoriteType as TrackRankingType,
+                  trackId: track.trackId,
+                  rankingType: mapFavoriteTypeToTrackRankingType(favoriteType),
                 },
               },
               update: {
                 count: { increment: 1 },
-                popularity: (item as UserFavoriteTrack).popularity,
+                popularity: track.popularity,
               },
               create: {
-                trackId: (item as UserFavoriteTrack).trackId,
-                rankingType: favoriteType as TrackRankingType,
+                trackId: track.trackId,
+                rankingType: mapFavoriteTypeToTrackRankingType(favoriteType),
                 count: 1,
-                popularity: (item as UserFavoriteTrack).popularity,
+                popularity: track.popularity,
               },
             });
           }
@@ -349,17 +360,18 @@ const handlePatch = async (req: NextApiRequest, res: NextApiResponse) => {
       };
 
       const removeUserFavorites = async (
-        favorites: UserFavoriteArtist[] | UserFavoriteTrack[],
+        favorites: UserFavoriteArtists[] | UserFavoriteTracks[],
         isArtist: boolean,
-        favoriteType,
+        favoriteType: FavoriteType,
       ) => {
         const deletePromises = favorites.map(async (item) => {
           if (isArtist) {
             // 아티스트 즐겨찾기 제거
+            const artist = item as UserFavoriteArtists;
             await prismaTransaction.userFavoriteArtists.deleteMany({
               where: {
                 userId,
-                artistId: (item as UserFavoriteArtist).artistId,
+                artistId: artist.artistId,
                 favoriteType,
               },
             });
@@ -369,8 +381,9 @@ const handlePatch = async (req: NextApiRequest, res: NextApiResponse) => {
               {
                 where: {
                   artistId_rankingType: {
-                    artistId: (item as UserFavoriteArtist).artistId,
-                    rankingType: favoriteType as ArtistRankingType,
+                    artistId: artist.artistId,
+                    rankingType:
+                      mapFavoriteTypeToArtistRankingType(favoriteType),
                   },
                 },
                 data: { count: { decrement: 1 } },
@@ -381,18 +394,20 @@ const handlePatch = async (req: NextApiRequest, res: NextApiResponse) => {
               await prismaTransaction.artistRanking.delete({
                 where: {
                   artistId_rankingType: {
-                    artistId: (item as UserFavoriteArtist).artistId,
-                    rankingType: favoriteType as ArtistRankingType,
+                    artistId: artist.artistId,
+                    rankingType:
+                      mapFavoriteTypeToArtistRankingType(favoriteType),
                   },
                 },
               });
             }
           } else {
             // 트랙 즐겨찾기 제거
+            const track = item as UserFavoriteTracks;
             await prismaTransaction.userFavoriteTracks.deleteMany({
               where: {
                 userId,
-                trackId: (item as UserFavoriteTrack).trackId,
+                trackId: track.trackId,
                 favoriteType,
               },
             });
@@ -401,8 +416,8 @@ const handlePatch = async (req: NextApiRequest, res: NextApiResponse) => {
             const updatedRanking = await prismaTransaction.trackRanking.update({
               where: {
                 trackId_rankingType: {
-                  trackId: (item as UserFavoriteTrack).trackId,
-                  rankingType: favoriteType as TrackRankingType,
+                  trackId: track.trackId,
+                  rankingType: mapFavoriteTypeToTrackRankingType(favoriteType),
                 },
               },
               data: { count: { decrement: 1 } },
@@ -412,8 +427,9 @@ const handlePatch = async (req: NextApiRequest, res: NextApiResponse) => {
               await prismaTransaction.trackRanking.delete({
                 where: {
                   trackId_rankingType: {
-                    trackId: (item as UserFavoriteTrack).trackId,
-                    rankingType: favoriteType as TrackRankingType,
+                    trackId: track.trackId,
+                    rankingType:
+                      mapFavoriteTypeToTrackRankingType(favoriteType),
                   },
                 },
               });
@@ -425,39 +441,66 @@ const handlePatch = async (req: NextApiRequest, res: NextApiResponse) => {
       };
 
       await Promise.all([
-        addUserFavorites(allTimeArtistsDiff.toAdd, true, "ALL_TIME_ARTIST"),
-        addUserFavorites(currentArtistsDiff.toAdd, true, "CURRENT_ARTIST"),
-        addUserFavorites(allTimeTracksDiff.toAdd, false, "ALL_TIME_TRACK"),
-        addUserFavorites(currentTracksDiff.toAdd, false, "CURRENT_TRACK"),
+        addUserFavorites(
+          allTimeArtistsDiff.toAdd,
+          true,
+          FavoriteType.ALL_TIME_ARTIST,
+        ),
+        addUserFavorites(
+          currentArtistsDiff.toAdd,
+          true,
+          FavoriteType.CURRENT_ARTIST,
+        ),
+        addUserFavorites(
+          allTimeTracksDiff.toAdd,
+          false,
+          FavoriteType.ALL_TIME_TRACK,
+        ),
+        addUserFavorites(
+          currentTracksDiff.toAdd,
+          false,
+          FavoriteType.CURRENT_TRACK,
+        ),
       ]);
 
       await Promise.all([
         removeUserFavorites(
           allTimeArtistsDiff.toRemove,
           true,
-          "ALL_TIME_ARTIST",
+          FavoriteType.ALL_TIME_ARTIST,
         ),
         removeUserFavorites(
           currentArtistsDiff.toRemove,
           true,
-          "CURRENT_ARTIST",
+          FavoriteType.CURRENT_ARTIST,
         ),
         removeUserFavorites(
           allTimeTracksDiff.toRemove,
           false,
-          "ALL_TIME_TRACK",
+          FavoriteType.ALL_TIME_TRACK,
         ),
-        removeUserFavorites(currentTracksDiff.toRemove, false, "CURRENT_TRACK"),
+        removeUserFavorites(
+          currentTracksDiff.toRemove,
+          false,
+          FavoriteType.CURRENT_TRACK,
+        ),
       ]);
     });
 
     return res.status(200).json({ message: "Favorites updated successfully" });
-  } catch (error) {
-    return res.status(500).json({ error: error.message });
+  } catch (error: unknown) {
+    const errorMessage =
+      error instanceof Error
+        ? error.message
+        : "알 수 없는 오류가 발생했습니다.";
+    return res.status(500).json({ error: errorMessage });
   }
 };
 
-const handler = async (req: NextApiRequest, res: NextApiResponse) => {
+const handler = async (
+  req: NextApiRequest,
+  res: NextApiResponse<ResponseData>,
+) => {
   const { method } = req;
 
   switch (method) {

@@ -1,40 +1,57 @@
 import prisma from "@/libs/prisma/prismaClient";
+import { ArtistRanking, TrackRanking } from "@prisma/client";
 import { NextApiRequest, NextApiResponse } from "next";
 
-interface ArtistRanking {
-  artistId: string;
-  count: number;
-  followers: number;
-  artist: {
-    id: string;
-    name: string;
-    imageUrl: string;
-    followers: number;
-  };
-}
-
-interface TrackRanking {
-  trackId: string;
-  count: number;
-  popularity: number;
-  track: {
-    id: string;
-    name: string;
-    albumImageUrl: string;
-    popularity: number;
-  };
-}
-
 interface FullRankingData {
-  allTimeArtistsRanking: ArtistRanking[];
-  allTimeTracksRanking: TrackRanking[];
-  currentArtistsRanking: ArtistRanking[];
-  currentTracksRanking: TrackRanking[];
+  allTimeArtistsRanking: (ArtistRanking & {
+    artist: {
+      id: number;
+      artistId: string;
+      name: string;
+      imageUrl: string;
+      followers: number;
+    };
+  })[];
+  allTimeTracksRanking: (TrackRanking & {
+    track: {
+      id: number;
+      trackId: string;
+      name: string;
+      albumImageUrl: string;
+      artists: string;
+      popularity: number;
+    };
+  })[];
+  currentArtistsRanking: (ArtistRanking & {
+    artist: {
+      id: number;
+      artistId: string;
+      name: string;
+      imageUrl: string;
+      followers: number;
+    };
+  })[];
+  currentTracksRanking: (TrackRanking & {
+    track: {
+      id: number;
+      trackId: string;
+      name: string;
+      albumImageUrl: string;
+      artists: string;
+      popularity: number;
+    };
+  })[];
 }
+
+interface ErrorResponse {
+  error: string;
+}
+
+type ResponseData = FullRankingData | ErrorResponse;
 
 const handler = async (
   req: NextApiRequest,
-  res: NextApiResponse<FullRankingData | { error: string }>,
+  res: NextApiResponse<ResponseData>,
 ) => {
   const { method } = req;
 
@@ -54,25 +71,67 @@ const handler = async (
         where: { rankingType: "ALL_TIME_ARTIST" },
         orderBy: [{ count: "desc" }, { followers: "desc" }],
         take: 3,
-        include: { artist: true },
+        include: {
+          artist: {
+            select: {
+              id: true,
+              artistId: true,
+              name: true,
+              imageUrl: true,
+              followers: true,
+            },
+          },
+        },
       }),
       prisma.trackRanking.findMany({
         where: { rankingType: "ALL_TIME_TRACK" },
         orderBy: [{ count: "desc" }, { popularity: "desc" }],
         take: 3,
-        include: { track: true },
+        include: {
+          track: {
+            select: {
+              id: true,
+              trackId: true,
+              name: true,
+              albumImageUrl: true,
+              artists: true,
+              popularity: true,
+            },
+          },
+        },
       }),
       prisma.artistRanking.findMany({
         where: { rankingType: "CURRENT_ARTIST" },
         orderBy: [{ count: "desc" }, { followers: "desc" }],
         take: 3,
-        include: { artist: true },
+        include: {
+          artist: {
+            select: {
+              id: true,
+              artistId: true,
+              name: true,
+              imageUrl: true,
+              followers: true,
+            },
+          },
+        },
       }),
       prisma.trackRanking.findMany({
         where: { rankingType: "CURRENT_TRACK" },
         orderBy: [{ count: "desc" }, { popularity: "desc" }],
         take: 3,
-        include: { track: true },
+        include: {
+          track: {
+            select: {
+              id: true,
+              trackId: true,
+              name: true,
+              albumImageUrl: true,
+              artists: true,
+              popularity: true,
+            },
+          },
+        },
       }),
     ]);
 
@@ -84,8 +143,12 @@ const handler = async (
     };
 
     return res.status(200).json(rankingData);
-  } catch (error) {
-    return res.status(500).json({ error: error.message });
+  } catch (error: unknown) {
+    const errorMessage =
+      error instanceof Error
+        ? error.message
+        : "알 수 없는 오류가 발생했습니다.";
+    return res.status(500).json({ error: errorMessage });
   }
 };
 
