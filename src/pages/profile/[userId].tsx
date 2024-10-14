@@ -7,6 +7,7 @@ import { GetServerSideProps } from "next";
 import { getSession, useSession } from "next-auth/react";
 import { useTranslation } from "next-i18next";
 import { serverSideTranslations } from "next-i18next/serverSideTranslations";
+import { NextSeo } from "next-seo";
 import Image from "next/image";
 import { useCallback, useEffect, useRef, useState } from "react";
 
@@ -37,6 +38,7 @@ interface ProfilePageProps {
   viewedUserName: string;
   profileImage: string | null;
   isOwnProfile: boolean;
+  userId: number;
 }
 
 const isArtist = (
@@ -63,6 +65,7 @@ const ProfilePage = ({
   viewedUserName,
   profileImage,
   isOwnProfile,
+  userId,
 }: ProfilePageProps) => {
   const { t } = useTranslation(["common", "profile"]);
   const { data: session } = useSession();
@@ -197,6 +200,29 @@ const ProfilePage = ({
 
   return (
     <div className="max-w-3xl mx-auto text-white">
+      <NextSeo
+        title={`Track List Now - ${viewedUserName}`}
+        description={`${viewedUserName}'s favorite artists and tracks on Track List Now`}
+        openGraph={{
+          type: "profile",
+          url: `https://www.tracklistnow.com/profile/${userId}`,
+          title: `Track List Now - ${viewedUserName}`,
+          description: `${viewedUserName}'s favorite artists and tracks`,
+          images: [
+            {
+              url: profileImage || "/default-profile-image.jpg",
+              width: 800,
+              height: 800,
+              alt: `${viewedUserName}'s Profile Image`,
+            },
+          ],
+        }}
+        twitter={{
+          handle: "@TrackListNow",
+          site: "@TrackListNow",
+          cardType: "summary_large_image",
+        }}
+      />
       <div ref={pageRef} className="p-6">
         {isOwnProfile ? (
           <div className="flex flex-col gap-4 text-center mb-4">
@@ -319,7 +345,7 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
       `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/users?userId=${userId}`,
     );
     const { name: viewedUserName, profileImage } = userResponse.data;
-    const isOwnProfile = session?.user?.id === userId;
+    const isOwnProfile = JSON.stringify(session?.user?.id) === userId;
 
     return {
       props: {
@@ -328,6 +354,7 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
         viewedUserName,
         profileImage,
         isOwnProfile,
+        userId,
       },
     };
   } catch (error) {
@@ -346,6 +373,7 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
         viewedUserName: "Unknown User",
         profileImage: null,
         isOwnProfile: false,
+        userId: 0,
       },
     };
   }
