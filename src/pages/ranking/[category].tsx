@@ -1,88 +1,102 @@
 import ErrorComponent from "@/features/common/ErrorComponent";
 import LoadingBar from "@/features/common/LoadingBar";
 import TItem from "@/features/common/TItem";
-import { TItemProps } from "@/types/types";
+import { convertToCategory } from "@/libs/utils/categoryMapper";
+import { ArtistRanking, TrackRanking } from "@prisma/client";
 import { dehydrate, QueryClient, useQuery } from "@tanstack/react-query";
 import axios from "axios";
 import { GetServerSideProps } from "next";
 import { useTranslation } from "next-i18next";
 import { serverSideTranslations } from "next-i18next/serverSideTranslations";
-import { useRouter } from "next/router";
-import { useEffect, useState } from "react";
 
-const fetchRankingData = async (category: string): Promise<TItemProps[]> => {
-  const response = await axios.get(
-    `http://localhost:3000/api/ranking?category=${category}`,
-  );
+type RankingCategory =
+  | "ALL_TIME_ARTIST"
+  | "ALL_TIME_TRACK"
+  | "CURRENT_ARTIST"
+  | "CURRENT_TRACK";
+
+interface ArtistWithRanking
+  extends Omit<ArtistRanking, "updatedAt" | "rankingType"> {
+  rankingType: RankingCategory;
+  count: number;
+  updatedAt: string;
+  artist: {
+    id: number;
+    artistId: string;
+    name: string;
+    imageUrl: string;
+    followers: number;
+  };
+}
+
+interface TrackWithRanking
+  extends Omit<TrackRanking, "updatedAt" | "rankingType"> {
+  rankingType: RankingCategory;
+  count: number;
+  updatedAt: string;
+  track: {
+    id: number;
+    trackId: string;
+    name: string;
+    albumImageUrl: string;
+    artists: string;
+    popularity: number;
+  };
+}
+
+interface RankingPageProps {
+  category: RankingCategory;
+}
+
+type TItemData = ArtistWithRanking | TrackWithRanking;
+
+export interface TItemComponentProps {
+  index: number;
+  item: TItemData;
+  type: "artist" | "track";
+  isFeatured: boolean;
+}
+
+const isArtistWithRanking = (
+  item: ArtistWithRanking | TrackWithRanking,
+): item is ArtistWithRanking => {
+  return (item as ArtistWithRanking).artist !== undefined;
+};
+
+const fetchRankingData = async (category: string): Promise<TItemData[]> => {
+  const response = await axios.get(`/api/ranking?category=${category}`);
   return response.data;
 };
 
-const RankingPage = () => {
+const RankingPage = ({ category }: RankingPageProps) => {
   const { t } = useTranslation("common");
-  const router = useRouter();
-  const { category } = router.query;
-  const [title, setTitle] = useState<string>("");
-  const [data, setData] = useState<TItemProps[]>([]);
-  const [isLoading, setIsLoading] = useState<boolean>(true);
 
   const {
     data: rankingData,
     error,
-    isLoading: queryLoading,
-  } = useQuery<TItemProps[], Error>({
+    isLoading,
+  } = useQuery<TItemData[], Error>({
     queryKey: ["ranking", category],
-    queryFn: () => fetchRankingData(category as string),
-    enabled: !!category,
-    staleTime: 5 * 60 * 1000, // 5분
+    queryFn: () => fetchRankingData(category),
+    staleTime: 5 * 60 * 1000,
   });
 
-  useEffect(() => {
-    if (category) {
-      switch (category) {
-        case "allTimeArtists":
-          setTitle("all_time_favorite_artists");
-          break;
-        case "allTimeTracks":
-          setTitle("all_time_favorite_tracks");
-          break;
-        case "currentArtists":
-          setTitle("current_favorite_artists");
-          break;
-        case "currentTracks":
-          setTitle("current_favorite_tracks");
-          break;
-        default:
-          setTitle("Ranking");
-          break;
-      }
+  const title = (() => {
+    switch (category) {
+      case "ALL_TIME_ARTIST":
+        return "all_time_favorite_artists";
+      case "ALL_TIME_TRACK":
+        return "all_time_favorite_tracks";
+      case "CURRENT_ARTIST":
+        return "current_favorite_artists";
+      case "CURRENT_TRACK":
+        return "current_favorite_tracks";
+      default:
+        return "Ranking";
     }
-  }, [category]);
+  })();
 
-  useEffect(() => {
-    const processData = async () => {
-      if (rankingData) {
-        const isTrack =
-          category === "allTimeTracks" || category === "currentTracks";
-        const updatedData = rankingData.map((item) => ({
-          name: isTrack ? item.track.name : item.artist.name,
-          imageUrl: isTrack ? item.track.albumImageUrl : item.artist.imageUrl,
-          followers: isTrack ? 0 : item.artist.followers,
-          popularity: isTrack ? item.track.popularity || 0 : 0,
-          artists: isTrack ? item.track.artists : null,
-          count: item.count,
-          trackId: isTrack ? item.trackId : undefined,
-          artistId: isTrack ? undefined : item.artistId,
-        }));
-
-        setData(updatedData);
-        setIsLoading(false);
-      }
-    };
-
-    processData();
-  }, [rankingData, category]);
-
-  if (isLoading || queryLoading) {
+  if (isLoading) {
     return <LoadingBar />;
   }
 
@@ -95,28 +109,22 @@ const RankingPage = () => {
   }
 
   let sectionType: "artist" | "track" = "artist";
-  let sectionData: TItemType[] = [];
+  let sectionData: TItemData[] = [];
 
   switch (category) {
-    case "allTimeArtists":
+    case "ALL_TIME_ARTIST":
+    case "CURRENT_ARTIST":
       sectionType = "artist";
-      sectionData = data.filter((item) => item.artistId);
+      sectionData = rankingData.filter((item) => "artist" in item);
       break;
-    case "allTimeTracks":
+    case "ALL_TIME_TRACK":
+    case "CURRENT_TRACK":
       sectionType = "track";
-      sectionData = data.filter((item) => item.trackId);
-      break;
-    case "currentArtists":
-      sectionType = "artist";
-      sectionData = data.filter((item) => item.artistId);
-      break;
-    case "currentTracks":
-      sectionType = "track";
-      sectionData = data.filter((item) => item.trackId);
+      sectionData = rankingData.filter((item) => "track" in item);
       break;
     default:
       sectionType = "artist";
-      sectionData = data;
+      sectionData = rankingData;
       break;
   }
 
@@ -127,14 +135,29 @@ const RankingPage = () => {
         <p className="text-gray-400 text-center mt-4">{t("no_data")}</p>
       ) : (
         <ul className="space-y-4">
-          {sectionData.map((item, index) => (
-            <TItem
-              key={item.id || item.trackId || item.artistId || index}
-              index={index}
-              item={item}
-              type={sectionType}
-            />
-          ))}
+          {sectionData.map((item, index) => {
+            if (sectionType === "artist" && isArtistWithRanking(item)) {
+              return (
+                <TItem
+                  key={item.artist.artistId}
+                  index={index}
+                  item={item}
+                  type="artist"
+                />
+              );
+            }
+            if (sectionType === "track" && !isArtistWithRanking(item)) {
+              return (
+                <TItem
+                  key={item.track.trackId}
+                  index={index}
+                  item={item}
+                  type="track"
+                />
+              );
+            }
+            return null;
+          })}
         </ul>
       )}
     </div>
@@ -150,15 +173,26 @@ export const getServerSideProps: GetServerSideProps = async ({
   const queryClient = new QueryClient();
   const category = params?.category as string;
 
+  const categoryURL = convertToCategory(category);
+
+  if (!categoryURL) {
+    return {
+      notFound: true,
+    };
+  }
+
   try {
-    await queryClient.prefetchQuery(["ranking", category], () =>
-      fetchRankingData(category),
-    );
+    await queryClient.prefetchQuery({
+      queryKey: ["ranking", category],
+      queryFn: () => fetchRankingData(categoryURL),
+      staleTime: 5 * 60 * 1000,
+    });
 
     return {
       props: {
         ...(await serverSideTranslations(locale ?? "ko", ["common"])),
         dehydratedState: dehydrate(queryClient),
+        category: categoryURL,
       },
     };
   } catch (error) {
@@ -169,6 +203,7 @@ export const getServerSideProps: GetServerSideProps = async ({
       props: {
         ...(await serverSideTranslations(locale ?? "ko", ["common"])),
         dehydratedState: dehydrate(queryClient),
+        category: categoryURL,
       },
     };
   }

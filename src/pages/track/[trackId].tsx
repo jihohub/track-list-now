@@ -30,7 +30,7 @@ const TrackPage = ({ trackId }: TrackPageProps) => {
   } = useQuery<TrackDetail, Error>({
     queryKey: ["track", trackId],
     queryFn: () => fetchTrackDetail(trackId),
-    staleTime: 5 * 60 * 1000, // 5분
+    staleTime: 5 * 60 * 1000,
   });
 
   if (isLoading) {
@@ -106,9 +106,11 @@ export const getServerSideProps: GetServerSideProps = async ({
   const trackId = params?.trackId as string;
 
   try {
-    await queryClient.prefetchQuery(["track", trackId], () =>
-      fetchTrackDetail(trackId),
-    );
+    await queryClient.prefetchQuery({
+      queryKey: ["track", trackId],
+      queryFn: () => fetchTrackDetail(trackId),
+      staleTime: 5 * 60 * 1000,
+    });
 
     return {
       props: {

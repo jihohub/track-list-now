@@ -1,4 +1,4 @@
-import axios from "axios";
+import axios, { AxiosHeaders } from "axios";
 import { getCookie, setCookie } from "cookies-next";
 
 const axiosInstance = axios.create({
@@ -10,15 +10,14 @@ axiosInstance.interceptors.request.use(
   async (config) => {
     const accessToken = getCookie("access_token");
 
-    const newConfig = { ...config };
     if (accessToken) {
-      newConfig.headers = {
-        ...newConfig.headers,
-        Authorization: `Bearer ${accessToken}`,
-      };
+      const headers = AxiosHeaders.from(config.headers);
+      headers.set("Authorization", `Bearer ${accessToken}`);
+      /* eslint-disable no-param-reassign */
+      config.headers = headers;
     }
 
-    return newConfig;
+    return config;
   },
   (error) => Promise.reject(error),
 );
@@ -42,7 +41,9 @@ axiosInstance.interceptors.response.use(
 
         setCookie("access_token", newAccessToken);
 
-        originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
+        const headers = AxiosHeaders.from(originalRequest.headers);
+        headers.set("Authorization", `Bearer ${newAccessToken}`);
+        originalRequest.headers = headers;
 
         return axiosInstance(originalRequest);
       } catch (tokenError) {

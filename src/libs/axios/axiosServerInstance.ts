@@ -1,5 +1,5 @@
-import axios from "axios";
-import { getCookie } from "cookies-next";
+import axios, { AxiosHeaders } from "axios";
+import { getCookie, setCookie } from "cookies-next";
 import { NextApiRequest, NextApiResponse } from "next";
 
 const getServerAxiosInstance = (req: NextApiRequest, res: NextApiResponse) => {
@@ -16,12 +16,11 @@ const getServerAxiosInstance = (req: NextApiRequest, res: NextApiResponse) => {
     async (config) => {
       const accessToken = getCookie("access_token", { req, res });
 
-      const newConfig = { ...config };
-      if (accessToken) {
-        newConfig.headers = {
-          ...newConfig.headers,
-          Authorization: `Bearer ${accessToken}`,
-        };
+      if (accessToken && typeof accessToken === "string") {
+        const headers = AxiosHeaders.from(config.headers);
+        headers.set("Authorization", `Bearer ${accessToken}`);
+        /* eslint-disable no-param-reassign */
+        config.headers = headers;
       }
       return config;
     },
@@ -46,6 +45,21 @@ const getServerAxiosInstance = (req: NextApiRequest, res: NextApiResponse) => {
 
           const tokenResponse = await axios.post(tokenUrl);
           const newAccessToken = tokenResponse.data.access_token;
+
+          setCookie("access_token", newAccessToken, {
+            req,
+            res,
+            httpOnly: true,
+            secure: process.env.NODE_ENV === "production",
+            sameSite: "strict",
+            path: "/",
+          });
+
+          if (newAccessToken && typeof newAccessToken === "string") {
+            const headers = AxiosHeaders.from(originalRequest.headers);
+            headers.set("Authorization", `Bearer ${newAccessToken}`);
+            originalRequest.headers = headers;
+          }
 
           originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
 

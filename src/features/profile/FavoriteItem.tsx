@@ -1,7 +1,28 @@
 import TImage from "@/features/common/TImage";
-import { FavoriteItemProps } from "@/types/types";
 import { useTranslation } from "next-i18next";
 import Link from "next/link";
+
+export interface UserFavoriteArtist {
+  artistId: string;
+  name: string;
+  imageUrl: string;
+  followers: number;
+}
+
+export interface UserFavoriteTrack {
+  trackId: string;
+  name: string;
+  albumImageUrl: string;
+  artists: string;
+  popularity: number;
+}
+
+export interface FavoriteItemProps {
+  item: UserFavoriteArtist | UserFavoriteTrack;
+  type: "artist" | "track";
+  isEditing: boolean;
+  handleDelete: (id: string) => void;
+}
 
 const FavoriteItem = ({
   item,
@@ -15,7 +36,11 @@ const FavoriteItem = ({
     <div className="relative flex flex-col items-center">
       <div className="relative w-24 h-24">
         <TImage
-          imageUrl={type === "artist" ? item.imageUrl : item.albumImageUrl}
+          imageUrl={
+            type === "artist"
+              ? (item as UserFavoriteArtist).imageUrl
+              : (item as UserFavoriteTrack).albumImageUrl
+          }
           type={type}
           alt={item.name}
           size="w-24 h-24"
@@ -25,7 +50,11 @@ const FavoriteItem = ({
           <button
             onClick={(e) => {
               e.stopPropagation();
-              handleDelete(item.artistId || item.trackId);
+              handleDelete(
+                type === "artist"
+                  ? (item as UserFavoriteArtist).artistId
+                  : (item as UserFavoriteTrack).trackId,
+              );
             }}
             className={`absolute inset-0 flex items-center justify-center bg-black bg-opacity-50 text-white text-3xl ${
               type === "artist" ? "rounded-full" : "rounded-lg"
@@ -41,14 +70,14 @@ const FavoriteItem = ({
       <p className="text-white text-sm text-center mt-1 w-24 truncate">
         {item.name}
       </p>
-      {type === "artist" && item.followers && (
+      {type === "artist" && "followers" in item && (
         <p className="text-gray-400 text-sm text-center mt-1 w-24">
           {item.followers.toLocaleString()} {t("followers")}
         </p>
       )}
-      {type === "track" && item.artists && (
+      {type === "track" && "artists" in item && (
         <p className="text-gray-400 text-sm text-center mt-1 w-24 truncate">
-          {item.artists.map((a) => a.name).join(", ")}
+          {item.artists}
         </p>
       )}
     </div>
@@ -60,8 +89,8 @@ const FavoriteItem = ({
     <Link
       href={
         type === "artist"
-          ? `/artist/${item.artistId}`
-          : `/track/${item.trackId}`
+          ? `/artist/${(item as UserFavoriteArtist).artistId}`
+          : `/track/${(item as UserFavoriteTrack).trackId}`
       }
     >
       {content}

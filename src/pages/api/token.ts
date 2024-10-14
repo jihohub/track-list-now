@@ -56,8 +56,12 @@ const handler = async (req: NextApiRequest, res: NextApiResponse<Data>) => {
     }
 
     return res.status(400).json({ error: "Failed to retrieve access token" });
-  } catch (error) {
-    return res.status(500).json({ error: error.message });
+  } catch (error: unknown) {
+    const errorMessage =
+      error instanceof Error
+        ? error.message
+        : "알 수 없는 오류가 발생했습니다.";
+    return res.status(500).json({ error: errorMessage });
   }
 };
 
