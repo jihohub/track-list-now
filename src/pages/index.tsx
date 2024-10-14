@@ -7,6 +7,7 @@ import axios from "axios";
 import { GetServerSideProps } from "next";
 import { useTranslation } from "next-i18next";
 import { serverSideTranslations } from "next-i18next/serverSideTranslations";
+import { NextSeo } from "next-seo";
 
 type RankingCategory =
   | "ALL_TIME_ARTIST"
@@ -123,6 +124,30 @@ const MainPage = () => {
 
   return (
     <div className="max-w-5xl mx-auto p-6 grid grid-cols-1 md:grid-cols-2 gap-8">
+      <NextSeo
+        title="Track List Now"
+        description="Explore the top-ranked artists and tracks, featuring all-time favorites and current trends on Track List Now."
+        openGraph={{
+          type: "website",
+          url: "https://www.tracklistnow.com",
+          title: "Track List Now",
+          description:
+            "Explore the top-ranked artists and tracks, featuring all-time favorites and current trends on Track List Now.",
+          images: [
+            {
+              url: "/default-image.jpg",
+              width: 800,
+              height: 600,
+              alt: "Track List Now",
+            },
+          ],
+        }}
+        twitter={{
+          handle: "@TrackListNow",
+          site: "@TrackListNow",
+          cardType: "summary_large_image",
+        }}
+      />
       {sections.map((section) => (
         <RankingSection
           key={section.category}

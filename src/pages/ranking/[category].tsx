@@ -8,6 +8,7 @@ import axios from "axios";
 import { GetServerSideProps } from "next";
 import { useTranslation } from "next-i18next";
 import { serverSideTranslations } from "next-i18next/serverSideTranslations";
+import { NextSeo } from "next-seo";
 
 type RankingCategory =
   | "ALL_TIME_ARTIST"
@@ -128,8 +129,34 @@ const RankingPage = ({ category }: RankingPageProps) => {
       break;
   }
 
+  const pageTitle = t(title);
+  const pageDescription = `Top ${sectionType === "artist" ? "Artists" : "Tracks"} ranking for ${pageTitle.replace("_", " ")} on Track List Now`;
+
   return (
     <div className="max-w-5xl mx-auto p-6 mt-8">
+      <NextSeo
+        title={`Track List Now - ${pageTitle}`}
+        description={pageDescription}
+        openGraph={{
+          type: "website",
+          url: `https://www.tracklistnow.com/ranking/${category.toLowerCase()}`,
+          title: `Track List Now - ${pageTitle}`,
+          description: pageDescription,
+          images: [
+            {
+              url: "/default-image.jpg",
+              width: 800,
+              height: 600,
+              alt: "Track List Now",
+            },
+          ],
+        }}
+        twitter={{
+          handle: "@TrackListNow",
+          site: "@TrackListNow",
+          cardType: "summary_large_image",
+        }}
+      />
       <h1 className="text-3xl font-bold text-white mb-6">{t(title)}</h1>
       {sectionData.length === 0 ? (
         <p className="text-gray-400 text-center mt-4">{t("no_data")}</p>
