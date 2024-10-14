@@ -21,7 +21,7 @@ interface UserFavoriteTrack {
   trackId: string;
   name: string;
   albumImageUrl: string;
-  artists: { name: string }[];
+  artists: string;
   popularity: number;
 }
 
@@ -38,13 +38,6 @@ interface ProfilePageProps {
   profileImage: string | null;
   isOwnProfile: boolean;
 }
-
-type Section =
-  | "allTimeArtists"
-  | "allTimeTracks"
-  | "currentArtists"
-  | "currentTracks"
-  | "";
 
 const isArtist = (
   item: UserFavoriteArtist | UserFavoriteTrack,
@@ -77,23 +70,28 @@ const ProfilePage = ({
 
   const [isEditing, setIsEditing] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [modalType, setModalType] = useState<"artist" | "track" | "">("");
+  const [modalType, setModalType] = useState<"artist" | "track" | undefined>(
+    undefined,
+  );
   const [activeSection, setActiveSection] = useState<
-    "allTimeArtists" | "allTimeTracks" | "currentArtists" | "currentTracks" | ""
-  >("");
+    keyof UserFavorites | undefined
+  >(undefined);
 
   const pageRef = useRef<HTMLDivElement>(null);
 
-  const openModal = (type: "artist" | "track", section: string) => {
+  const openModal = (
+    type: "artist" | "track",
+    section: keyof UserFavorites,
+  ) => {
     setModalType(type);
-    setActiveSection(section as Section);
+    setActiveSection(section);
     setIsModalOpen(true);
   };
 
   const closeModal = () => {
     setIsModalOpen(false);
-    setModalType("artist");
-    setActiveSection("");
+    setModalType(undefined);
+    setActiveSection(undefined);
   };
 
   const toggleEditing = () => {
@@ -173,10 +171,24 @@ const ProfilePage = ({
     section: keyof UserFavorites,
     item: UserFavoriteArtist | UserFavoriteTrack,
   ) => {
-    setFavorites((prev) => ({
-      ...prev,
-      [section]: [...prev[section], item],
-    }));
+    if (isArtist(item)) {
+      setFavorites((prev) => ({
+        ...prev,
+        [section]: [...prev[section], item],
+      }));
+    } else if (isTrack(item)) {
+      const mappedItem: UserFavoriteTrack = {
+        trackId: item.trackId,
+        name: item.name,
+        albumImageUrl: item.albumImageUrl,
+        artists: item.artists,
+        popularity: item.popularity,
+      };
+      setFavorites((prev) => ({
+        ...prev,
+        [section]: [...prev[section], mappedItem],
+      }));
+    }
   };
 
   useEffect(() => {
@@ -191,7 +203,7 @@ const ProfilePage = ({
             {profileImage ? (
               <Image
                 className="rounded-full mx-auto"
-                src={isOwnProfile ? session?.user?.image : profileImage}
+                src={profileImage}
                 alt={viewedUserName}
                 width={100}
                 height={100}
@@ -267,26 +279,13 @@ const ProfilePage = ({
           </div>
         )}
 
-        {isModalOpen && (
+        {isModalOpen && modalType && activeSection && (
           <SearchModal
             closeModal={closeModal}
             modalType={modalType}
             activeSection={activeSection}
             handleAddItem={(section, item) => {
-              if (
-                section === "allTimeArtists" ||
-                section === "currentArtists"
-              ) {
-                handleAddItem(
-                  section as keyof UserFavorites,
-                  item as UserFavoriteArtist,
-                );
-              } else {
-                handleAddItem(
-                  section as keyof UserFavorites,
-                  item as UserFavoriteTrack,
-                );
-              }
+              handleAddItem(section as keyof UserFavorites, item);
             }}
           />
         )}
@@ -320,7 +319,7 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
       `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/users?userId=${userId}`,
     );
     const { name: viewedUserName, profileImage } = userResponse.data;
-    const isOwnProfile = session?.user?.id === parseInt(userId, 10);
+    const isOwnProfile = session?.user?.id === userId;
 
     return {
       props: {

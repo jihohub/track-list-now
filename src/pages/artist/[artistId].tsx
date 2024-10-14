@@ -13,7 +13,34 @@ interface ArtistPageProps {
   artistId: string;
 }
 
-const fetchArtistData = async (artistId: string) => {
+interface ArtistPageData {
+  artist: {
+    name: string;
+    images: { url: string }[];
+    genres: string[];
+  };
+  topTracks: {
+    tracks: {
+      id: string;
+      name: string;
+      album: { images: { url: string }[] };
+      artists: { name: string }[];
+    }[];
+  };
+  relatedArtists: {
+    artists: {
+      id: string;
+      name: string;
+      images: { url: string }[];
+    }[];
+  };
+}
+
+interface ArtistPageProps {
+  artistId: string;
+}
+
+const fetchArtistData = async (artistId: string): Promise<ArtistPageData> => {
   const response = await axios.get(`/api/artist/${artistId}`);
   return response.data;
 };
@@ -83,10 +110,14 @@ const ArtistPage = ({ artistId }: ArtistPageProps) => {
               key={track.id}
               index={index}
               item={{
-                trackId: track.id,
-                imageUrl: track.album.images[0]?.url || "/default-image.jpg",
-                name: track.name,
-                artists: track.artists.map((a) => a.name).join(", "),
+                track: {
+                  id: 0,
+                  trackId: track.id,
+                  name: track.name,
+                  albumImageUrl: track.album.images[0].url,
+                  artists: track.artists.map((a) => a.name).join(", "),
+                  popularity: 0,
+                },
               }}
               type="track"
             />
@@ -138,9 +169,11 @@ export const getServerSideProps: GetServerSideProps = async ({
   const artistId = params?.artistId as string;
 
   try {
-    await queryClient.prefetchQuery(["artist", artistId], () =>
-      fetchArtistData(artistId),
-    );
+    await queryClient.prefetchQuery({
+      queryKey: ["artist", artistId],
+      queryFn: () => fetchArtistData(artistId),
+      staleTime: 5 * 60 * 1000,
+    });
 
     return {
       props: {

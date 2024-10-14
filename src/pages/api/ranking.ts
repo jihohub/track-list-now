@@ -1,17 +1,37 @@
 import prisma from "@/libs/prisma/prismaClient";
+import { Artist, ArtistRanking, Track, TrackRanking } from "@prisma/client";
 import { NextApiRequest, NextApiResponse } from "next";
 
 type RankingCategory =
-  | "allTimeArtists"
-  | "allTimeTracks"
-  | "currentArtists"
-  | "currentTracks";
+  | "ALL_TIME_ARTIST"
+  | "ALL_TIME_TRACK"
+  | "CURRENT_ARTIST"
+  | "CURRENT_TRACK";
 
-const getRankingData = async (category: RankingCategory) => {
+type AllTimeArtistsResponse = (ArtistRanking & { artist: Artist })[];
+type AllTimeTracksResponse = (TrackRanking & { track: Track })[];
+type CurrentArtistsResponse = (ArtistRanking & { artist: Artist })[];
+type CurrentTracksResponse = (TrackRanking & { track: Track })[];
+
+type ResponseData =
+  | AllTimeArtistsResponse
+  | AllTimeTracksResponse
+  | CurrentArtistsResponse
+  | CurrentTracksResponse
+  | { error: string };
+
+const getRankingData = async (
+  category: RankingCategory,
+): Promise<
+  | AllTimeArtistsResponse
+  | AllTimeTracksResponse
+  | CurrentArtistsResponse
+  | CurrentTracksResponse
+> => {
   const TAKE_COUNT = 100;
 
   switch (category) {
-    case "allTimeArtists":
+    case "ALL_TIME_ARTIST":
       return prisma.artistRanking.findMany({
         where: { rankingType: "ALL_TIME_ARTIST" },
         orderBy: [{ count: "desc" }, { followers: "desc" }],
@@ -19,7 +39,7 @@ const getRankingData = async (category: RankingCategory) => {
         include: { artist: true },
       });
 
-    case "allTimeTracks":
+    case "ALL_TIME_TRACK":
       return prisma.trackRanking.findMany({
         where: { rankingType: "ALL_TIME_TRACK" },
         orderBy: [{ count: "desc" }, { popularity: "desc" }],
@@ -27,7 +47,7 @@ const getRankingData = async (category: RankingCategory) => {
         include: { track: true },
       });
 
-    case "currentArtists":
+    case "CURRENT_ARTIST":
       return prisma.artistRanking.findMany({
         where: { rankingType: "CURRENT_ARTIST" },
         orderBy: [{ count: "desc" }, { followers: "desc" }],
@@ -35,7 +55,7 @@ const getRankingData = async (category: RankingCategory) => {
         include: { artist: true },
       });
 
-    case "currentTracks":
+    case "CURRENT_TRACK":
       return prisma.trackRanking.findMany({
         where: { rankingType: "CURRENT_TRACK" },
         orderBy: [{ count: "desc" }, { popularity: "desc" }],
@@ -48,7 +68,10 @@ const getRankingData = async (category: RankingCategory) => {
   }
 };
 
-const handler = async (req: NextApiRequest, res: NextApiResponse) => {
+const handler = async (
+  req: NextApiRequest,
+  res: NextApiResponse<ResponseData>,
+) => {
   const { method } = req;
 
   if (method !== "GET") {
@@ -59,10 +82,10 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
   const { category } = req.query;
 
   const validCategories: RankingCategory[] = [
-    "allTimeArtists",
-    "allTimeTracks",
-    "currentArtists",
-    "currentTracks",
+    "ALL_TIME_ARTIST",
+    "ALL_TIME_TRACK",
+    "CURRENT_ARTIST",
+    "CURRENT_TRACK",
   ];
   if (
     typeof category !== "string" ||
@@ -74,8 +97,12 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
   try {
     const rankingData = await getRankingData(category as RankingCategory);
     return res.status(200).json(rankingData);
-  } catch (error) {
-    return res.status(500).json({ error: error.message });
+  } catch (error: unknown) {
+    const errorMessage =
+      error instanceof Error
+        ? error.message
+        : "알 수 없는 오류가 발생했습니다.";
+    return res.status(500).json({ error: errorMessage });
   }
 };
 

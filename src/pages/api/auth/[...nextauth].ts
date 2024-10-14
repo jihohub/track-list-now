@@ -5,32 +5,45 @@ import GoogleProvider from "next-auth/providers/google";
 export default NextAuth({
   providers: [
     GoogleProvider({
-      clientId: process.env.GOOGLE_CLIENT_ID,
-      clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+      clientId: process.env.GOOGLE_CLIENT_ID as string,
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET as string,
     }),
   ],
   callbacks: {
     async signIn({ user, account }) {
-      const existingUser = await prisma.user.findUnique({
-        where: { email: user.email },
-      });
-
-      if (!existingUser) {
-        await prisma.user.create({
-          data: {
-            googleId: account?.providerAccountId,
-            email: user.email,
-            name: user.name,
-            profileImage: user.image,
-          },
-        });
+      if (!user.email) {
+        return false;
       }
-      return true;
+
+      try {
+        const existingUser = await prisma.user.findUnique({
+          where: { email: user.email },
+        });
+
+        if (!existingUser) {
+          await prisma.user.create({
+            data: {
+              googleId: account?.providerAccountId || "",
+              email: user.email,
+              name: user.name || "",
+              profileImage: user.image || "",
+            },
+          });
+        }
+        return true;
+      } catch (error: unknown) {
+        const errorMessage =
+          error instanceof Error
+            ? error.message
+            : "알 수 없는 오류가 발생했습니다.";
+        JSON.stringify(errorMessage);
+        return false;
+      }
     },
 
     async session({ session }) {
       const dbUser = await prisma.user.findUnique({
-        where: { email: session.user.email },
+        where: { email: session.user.email as string },
       });
 
       if (dbUser) {
