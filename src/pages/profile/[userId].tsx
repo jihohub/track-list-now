@@ -135,6 +135,7 @@ const ProfilePage = ({
     htmlToImage
       .toJpeg(pageRef.current, {
         cacheBust: true,
+        includeQueryParams: true,
         filter,
       })
       .then((dataUrl) => {
@@ -345,7 +346,7 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
       `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/users?userId=${userId}`,
     );
     const { name: viewedUserName, profileImage } = userResponse.data;
-    const isOwnProfile = JSON.stringify(session?.user?.id) === userId;
+    const isOwnProfile = String(session?.user?.id) === String(userId);
 
     return {
       props: {
