@@ -7,6 +7,7 @@ import axios from "axios";
 import { GetServerSideProps } from "next";
 import { useTranslation } from "next-i18next";
 import { serverSideTranslations } from "next-i18next/serverSideTranslations";
+import { NextSeo } from "next-seo";
 import Link from "next/link";
 
 interface ArtistPageProps {
@@ -41,7 +42,8 @@ interface ArtistPageProps {
 }
 
 const fetchArtistData = async (artistId: string): Promise<ArtistPageData> => {
-  const response = await axios.get(`/api/artist/${artistId}`);
+  const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL;
+  const response = await axios.get(`${baseUrl}/api/artist/${artistId}`);
   return response.data;
 };
 
@@ -70,6 +72,29 @@ const ArtistPage = ({ artistId }: ArtistPageProps) => {
 
   return (
     <div className="max-w-4xl mx-auto p-6 mt-8 bg-zinc-800 rounded-lg shadow-md">
+      <NextSeo
+        title={`Track List Now - ${artist.name}`}
+        description={`Basic Information, Top tracks, Related artists of ${artist.name}`}
+        openGraph={{
+          type: "music.artist",
+          url: `https://www.tracklistnow.com/artist/${artistId}`,
+          title: `Track List Now - ${artist.name}`,
+          description: `Discover more about ${artist.name} on Track List Now!`,
+          images: [
+            {
+              url: artist.images[0]?.url || "/default-image.jpg",
+              width: 800,
+              height: 800,
+              alt: `${artist.name} Profile Picture`,
+            },
+          ],
+        }}
+        twitter={{
+          handle: "@TrackListNow",
+          site: "@TrackListNow",
+          cardType: "summary_large_image",
+        }}
+      />
       {/* 아티스트 기본 정보 */}
       <div className="flex flex-col items-center">
         <div className="relative w-[300px] h-[300px] rounded-full overflow-hidden">

@@ -60,6 +60,31 @@ const sectionKeyMap: Record<keyof UserFavorites, "artistId" | "trackId"> = {
   currentTracks: "trackId",
 };
 
+const fetchUserFavorites = async (userId: number): Promise<UserFavorites> => {
+  const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL;
+  const response = await axios.get(
+    `${baseUrl}/api/user-favorites?userId=${userId}`,
+  );
+  const { allTimeArtists, allTimeTracks, currentArtists, currentTracks } =
+    response.data;
+
+  return {
+    allTimeArtists,
+    allTimeTracks,
+    currentArtists,
+    currentTracks,
+  };
+};
+
+const fetchUserData = async (
+  userId: number,
+): Promise<{ name: string; profileImage: string | null }> => {
+  const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL;
+  const response = await axios.get(`${baseUrl}/api/users?userId=${userId}`);
+  const { name, profileImage } = response.data;
+  return { name, profileImage };
+};
+
 const ProfilePage = ({
   userFavorites,
   viewedUserName,
@@ -107,7 +132,7 @@ const ProfilePage = ({
     }
 
     try {
-      await axios.patch("/api/userFavorites", {
+      await axios.patch("/api/user-favorites", {
         userId: session.user.id,
         allTimeArtists: favorites.allTimeArtists,
         allTimeTracks: favorites.allTimeTracks,
@@ -330,23 +355,12 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
   const parsedUserId = Number(userId);
 
   try {
-    const response = await axios.get(
-      `/api/userFavorites?userId=${parsedUserId}`,
-    );
-    const { allTimeArtists, allTimeTracks, currentArtists, currentTracks } =
-      response.data;
+    const [userFavorites, userData] = await Promise.all([
+      fetchUserFavorites(parsedUserId),
+      fetchUserData(parsedUserId),
+    ]);
 
-    const userFavorites: UserFavorites = {
-      allTimeArtists,
-      allTimeTracks,
-      currentArtists,
-      currentTracks,
-    };
-
-    const userResponse = await axios.get(
-      `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/users?userId=${parsedUserId}`,
-    );
-    const { name: viewedUserName, profileImage } = userResponse.data;
+    const { name: viewedUserName, profileImage } = userData;
     const isOwnProfile = String(session?.user?.id) === String(userId);
 
     return {
