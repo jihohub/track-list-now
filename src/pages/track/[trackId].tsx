@@ -16,7 +16,8 @@ interface TrackPageProps {
 }
 
 const fetchTrackDetail = async (trackId: string): Promise<TrackDetail> => {
-  const response = await axios.get(`/api/track/${trackId}`);
+  const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL;
+  const response = await axios.get(`${baseUrl}/api/track/${trackId}`);
   return response.data;
 };
 

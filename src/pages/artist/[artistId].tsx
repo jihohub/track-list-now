@@ -42,7 +42,8 @@ interface ArtistPageProps {
 }
 
 const fetchArtistData = async (artistId: string): Promise<ArtistPageData> => {
-  const response = await axios.get(`/api/artist/${artistId}`);
+  const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL;
+  const response = await axios.get(`${baseUrl}/api/artist/${artistId}`);
   return response.data;
 };
 

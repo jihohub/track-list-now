@@ -65,7 +65,10 @@ const isArtistWithRanking = (
 };
 
 const fetchRankingData = async (category: string): Promise<TItemData[]> => {
-  const response = await axios.get(`/api/ranking?category=${category}`);
+  const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL;
+  const response = await axios.get(
+    `${baseUrl}/api/ranking?category=${category}`,
+  );
   return response.data;
 };
 
