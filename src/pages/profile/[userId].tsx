@@ -1,10 +1,12 @@
 import FavoriteSection from "@/features/profile/FavoriteSection";
 import SearchModal from "@/features/profile/SearchModal";
+import { authOptions } from "@/pages/api/auth/[...nextauth]";
 import axios from "axios";
 import download from "downloadjs";
 import * as htmlToImage from "html-to-image";
 import { GetServerSideProps } from "next";
-import { getSession, useSession } from "next-auth/react";
+import { getServerSession } from "next-auth/next";
+import { useSession } from "next-auth/react";
 import { useTranslation } from "next-i18next";
 import { serverSideTranslations } from "next-i18next/serverSideTranslations";
 import { NextSeo } from "next-seo";
@@ -60,6 +62,31 @@ const sectionKeyMap: Record<keyof UserFavorites, "artistId" | "trackId"> = {
   currentTracks: "trackId",
 };
 
+const fetchUserFavorites = async (userId: number): Promise<UserFavorites> => {
+  const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL;
+  const response = await axios.get(
+    `${baseUrl}/api/user-favorites?userId=${userId}`,
+  );
+  const { allTimeArtists, allTimeTracks, currentArtists, currentTracks } =
+    response.data;
+
+  return {
+    allTimeArtists,
+    allTimeTracks,
+    currentArtists,
+    currentTracks,
+  };
+};
+
+const fetchUserData = async (
+  userId: number,
+): Promise<{ name: string; profileImage: string | null }> => {
+  const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL;
+  const response = await axios.get(`${baseUrl}/api/users?userId=${userId}`);
+  const { name, profileImage } = response.data;
+  return { name, profileImage };
+};
+
 const ProfilePage = ({
   userFavorites,
   viewedUserName,
@@ -107,7 +134,7 @@ const ProfilePage = ({
     }
 
     try {
-      await axios.patch("/api/userFavorites", {
+      await axios.patch("/api/user-favorites", {
         userId: session.user.id,
         allTimeArtists: favorites.allTimeArtists,
         allTimeTracks: favorites.allTimeTracks,
@@ -135,6 +162,7 @@ const ProfilePage = ({
     htmlToImage
       .toJpeg(pageRef.current, {
         cacheBust: true,
+        includeQueryParams: true,
         filter,
       })
       .then((dataUrl) => {
@@ -324,28 +352,19 @@ export default ProfilePage;
 
 export const getServerSideProps: GetServerSideProps = async (context) => {
   const locale = context.locale ?? "ko";
-  const session = await getSession(context);
   const { userId } = context.params!;
+  const parsedUserId = Number(userId);
+
+  const session = await getServerSession(context.req, context.res, authOptions);
 
   try {
-    const response = await axios.get(
-      `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/userFavorites?userId=${userId}`,
-    );
-    const { allTimeArtists, allTimeTracks, currentArtists, currentTracks } =
-      response.data;
+    const [userFavorites, userData] = await Promise.all([
+      fetchUserFavorites(parsedUserId),
+      fetchUserData(parsedUserId),
+    ]);
 
-    const userFavorites: UserFavorites = {
-      allTimeArtists,
-      allTimeTracks,
-      currentArtists,
-      currentTracks,
-    };
-
-    const userResponse = await axios.get(
-      `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/users?userId=${userId}`,
-    );
-    const { name: viewedUserName, profileImage } = userResponse.data;
-    const isOwnProfile = JSON.stringify(session?.user?.id) === userId;
+    const { name: viewedUserName, profileImage } = userData;
+    const isOwnProfile = String(session?.user?.id) === String(userId);
 
     return {
       props: {

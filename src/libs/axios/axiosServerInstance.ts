@@ -14,7 +14,7 @@ const getServerAxiosInstance = (req: NextApiRequest, res: NextApiResponse) => {
   // 요청 인터셉터
   serverAxiosInstance.interceptors.request.use(
     async (config) => {
-      const accessToken = getCookie("access_token", { req, res });
+      const accessToken = getCookie("spotify_access_token", { req, res });
 
       if (accessToken && typeof accessToken === "string") {
         const headers = AxiosHeaders.from(config.headers);

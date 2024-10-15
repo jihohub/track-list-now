@@ -8,7 +8,7 @@ const axiosInstance = axios.create({
 // 요청 인터셉터
 axiosInstance.interceptors.request.use(
   async (config) => {
-    const accessToken = getCookie("access_token");
+    const accessToken = getCookie("spotify_access_token");
 
     if (accessToken) {
       const headers = AxiosHeaders.from(config.headers);
