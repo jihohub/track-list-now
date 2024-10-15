@@ -58,8 +58,7 @@ interface RankingSectionProps {
 
 const fetchFeaturedRanking = async (): Promise<FullRankingData> => {
   try {
-    const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL;
-    const response = await axios.get(`${baseUrl}/api/featured-ranking`);
+    const response = await axios.get("/api/featured-ranking");
     return response.data;
   } catch (error: unknown) {
     const errorMessage =

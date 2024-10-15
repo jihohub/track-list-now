@@ -329,9 +329,7 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
   const { userId } = context.params!;
 
   try {
-    const response = await axios.get(
-      `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/userFavorites?userId=${userId}`,
-    );
+    const response = await axios.get(`/api/userFavorites?userId=${userId}`);
     const { allTimeArtists, allTimeTracks, currentArtists, currentTracks } =
       response.data;
 

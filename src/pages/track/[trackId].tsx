@@ -6,7 +6,6 @@ import axios from "axios";
 import { GetServerSideProps } from "next";
 import { useTranslation } from "next-i18next";
 import { serverSideTranslations } from "next-i18next/serverSideTranslations";
-import { NextSeo } from "next-seo";
 import Image from "next/image";
 import Link from "next/link";
 import { useRef } from "react";
@@ -16,8 +15,7 @@ interface TrackPageProps {
 }
 
 const fetchTrackDetail = async (trackId: string): Promise<TrackDetail> => {
-  const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL;
-  const response = await axios.get(`${baseUrl}/api/track/${trackId}`);
+  const response = await axios.get(`/api/track/${trackId}`);
   return response.data;
 };
 
@@ -47,34 +45,8 @@ const TrackPage = ({ trackId }: TrackPageProps) => {
     return <div className="text-center text-gray-400">{t("no_data")}</div>;
   }
 
-  const trackTitle = track.name;
-  const artistNames = track.artists.map((artist) => artist.name).join(", ");
-
   return (
     <div className="max-w-4xl mx-auto p-6 mt-8 bg-zinc-800 rounded-lg shadow-md">
-      <NextSeo
-        title={`Track List Now - ${trackTitle}`}
-        description={`Listen to ${trackTitle} by ${artistNames}. Find information about the album, release date, and duration.`}
-        openGraph={{
-          type: "music.song",
-          url: `https://www.tracklistnow.com/track/${trackId}`,
-          title: `Track List Now - ${trackTitle}`,
-          description: `Listen to ${trackTitle} by ${artistNames}. Find information about the album, release date, and duration.`,
-          images: [
-            {
-              url: track.album.images[0]?.url || "/default-image.jpg",
-              width: 800,
-              height: 800,
-              alt: `${trackTitle} Album Cover`,
-            },
-          ],
-        }}
-        twitter={{
-          handle: "@TrackListNow",
-          site: "@TrackListNow",
-          cardType: "summary_large_image",
-        }}
-      />
       <div className="flex flex-col items-center">
         <Image
           src={track.album.images[0]?.url || "/default-image.jpg"}
