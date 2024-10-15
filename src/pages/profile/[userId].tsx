@@ -1,10 +1,12 @@
 import FavoriteSection from "@/features/profile/FavoriteSection";
 import SearchModal from "@/features/profile/SearchModal";
+import { authOptions } from "@/pages/api/auth/[...nextauth]";
 import axios from "axios";
 import download from "downloadjs";
 import * as htmlToImage from "html-to-image";
 import { GetServerSideProps } from "next";
-import { getSession, useSession } from "next-auth/react";
+import { getServerSession } from "next-auth/next";
+import { useSession } from "next-auth/react";
 import { useTranslation } from "next-i18next";
 import { serverSideTranslations } from "next-i18next/serverSideTranslations";
 import { NextSeo } from "next-seo";
@@ -350,9 +352,10 @@ export default ProfilePage;
 
 export const getServerSideProps: GetServerSideProps = async (context) => {
   const locale = context.locale ?? "ko";
-  const session = await getSession(context);
   const { userId } = context.params!;
   const parsedUserId = Number(userId);
+
+  const session = await getServerSession(context.req, context.res, authOptions);
 
   try {
     const [userFavorites, userData] = await Promise.all([
