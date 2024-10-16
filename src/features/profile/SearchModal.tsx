@@ -204,11 +204,7 @@ const SearchModal = ({
           </button>
         </div>
 
-        {isLoading && (
-          <div className="fixed w-screen h-screen top-0 left-0">
-            <LoadingBar />
-          </div>
-        )}
+        {isLoading && <LoadingBar />}
 
         {searchResults.length > 0 && (
           <ul ref={resultsRef} className="mt-4 max-h-48 overflow-y-auto">
