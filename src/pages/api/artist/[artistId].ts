@@ -1,116 +1,16 @@
 import getServerAxiosInstance from "@/libs/axios/axiosServerInstance";
+import {
+  ApiResponse,
+  CombinedArtistData,
+  SpotifyArtist,
+  SpotifyRelatedArtists,
+  SpotifyTopTracks,
+} from "@/types/artist";
 import type { NextApiRequest, NextApiResponse } from "next";
-
-interface SpotifyArtist {
-  external_urls: {
-    spotify: string;
-  };
-  followers: {
-    href: string | null;
-    total: number;
-  };
-  genres: string[];
-  href: string;
-  id: string;
-  images: Array<{
-    url: string;
-    height: number;
-    width: number;
-  }>;
-  name: string;
-  popularity: number;
-  type: "artist";
-  uri: string;
-}
-
-interface SpotifyArtistBrief {
-  external_urls: {
-    spotify: string;
-  };
-  href: string;
-  id: string;
-  name: string;
-  type: "artist";
-  uri: string;
-}
-
-interface SpotifyTrack {
-  album: {
-    album_type: string;
-    total_tracks: number;
-    available_markets: string[];
-    external_urls: {
-      spotify: string;
-    };
-    href: string;
-    id: string;
-    images: Array<{
-      url: string;
-      height: number;
-      width: number;
-    }>;
-    name: string;
-    release_date: string;
-    release_date_precision: string;
-    restrictions?: {
-      reason: string;
-    };
-    type: "album";
-    uri: string;
-    artists: SpotifyArtistBrief[];
-  };
-  artists: SpotifyArtistBrief[];
-  available_markets: string[];
-  disc_number: number;
-  duration_ms: number;
-  explicit: boolean;
-  external_ids: {
-    isrc: string;
-    ean?: string;
-    upc?: string;
-  };
-  external_urls: {
-    spotify: string;
-  };
-  href: string;
-  id: string;
-  is_playable: boolean;
-  linked_from?: unknown;
-  restrictions?: {
-    reason: string;
-  };
-  name: string;
-  popularity: number;
-  preview_url: string | null;
-  track_number: number;
-  type: "track";
-  uri: string;
-  is_local: boolean;
-}
-
-interface SpotifyTopTracks {
-  tracks: SpotifyTrack[];
-}
-
-interface SpotifyRelatedArtists {
-  artists: SpotifyArtist[];
-}
-
-interface CombinedArtistData {
-  artist: SpotifyArtist;
-  topTracks: SpotifyTopTracks;
-  relatedArtists: SpotifyRelatedArtists;
-}
-
-interface ErrorResponse {
-  error: string;
-}
-
-type ResponseData = CombinedArtistData | ErrorResponse;
 
 const handler = async (
   req: NextApiRequest,
-  res: NextApiResponse<ResponseData>,
+  res: NextApiResponse<ApiResponse>,
 ) => {
   const { artistId } = req.query;
 
