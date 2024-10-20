@@ -1,66 +1,35 @@
+import ErrorComponent from "@/features/common/ErrorComponent";
 import FavoriteSection from "@/features/profile/FavoriteSection";
 import SearchModal from "@/features/profile/SearchModal";
-import { authOptions } from "@/pages/api/auth/[...nextauth]";
+import {
+  isArtistSection,
+  isTrackSection,
+  SectionToItemType,
+  UserFavoriteArtist,
+  UserFavorites,
+  UserFavoriteTrack,
+} from "@/types/favorite";
+import {
+  dehydrate,
+  QueryClient,
+  useMutation,
+  useQuery,
+  useQueryClient,
+} from "@tanstack/react-query";
 import axios from "axios";
 import download from "downloadjs";
 import * as htmlToImage from "html-to-image";
 import { GetServerSideProps } from "next";
-import { getServerSession } from "next-auth/next";
 import { useSession } from "next-auth/react";
 import { useTranslation } from "next-i18next";
 import { serverSideTranslations } from "next-i18next/serverSideTranslations";
 import { NextSeo } from "next-seo";
 import Image from "next/image";
-import { useCallback, useEffect, useRef, useState } from "react";
-
-interface UserFavoriteArtist {
-  artistId: string;
-  name: string;
-  imageUrl: string;
-  followers: number;
-}
-
-interface UserFavoriteTrack {
-  trackId: string;
-  name: string;
-  albumImageUrl: string;
-  artists: string;
-  popularity: number;
-}
-
-interface UserFavorites {
-  allTimeArtists: UserFavoriteArtist[];
-  allTimeTracks: UserFavoriteTrack[];
-  currentArtists: UserFavoriteArtist[];
-  currentTracks: UserFavoriteTrack[];
-}
+import { useCallback, useRef, useState } from "react";
 
 interface ProfilePageProps {
-  userFavorites: UserFavorites;
-  viewedUserName: string;
-  profileImage: string | null;
-  isOwnProfile: boolean;
   userId: number;
 }
-
-const isArtist = (
-  item: UserFavoriteArtist | UserFavoriteTrack,
-): item is UserFavoriteArtist => {
-  return (item as UserFavoriteArtist).artistId !== undefined;
-};
-
-const isTrack = (
-  item: UserFavoriteArtist | UserFavoriteTrack,
-): item is UserFavoriteTrack => {
-  return (item as UserFavoriteTrack).trackId !== undefined;
-};
-
-const sectionKeyMap: Record<keyof UserFavorites, "artistId" | "trackId"> = {
-  allTimeArtists: "artistId",
-  currentArtists: "artistId",
-  allTimeTracks: "trackId",
-  currentTracks: "trackId",
-};
 
 const fetchUserFavorites = async (userId: number): Promise<UserFavorites> => {
   const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL;
@@ -71,10 +40,10 @@ const fetchUserFavorites = async (userId: number): Promise<UserFavorites> => {
     response.data;
 
   return {
-    allTimeArtists,
-    allTimeTracks,
-    currentArtists,
-    currentTracks,
+    allTimeArtists: allTimeArtists ?? [],
+    allTimeTracks: allTimeTracks ?? [],
+    currentArtists: currentArtists ?? [],
+    currentTracks: currentTracks ?? [],
   };
 };
 
@@ -87,18 +56,34 @@ const fetchUserData = async (
   return { name, profileImage };
 };
 
-const ProfilePage = ({
-  userFavorites,
-  viewedUserName,
-  profileImage,
-  isOwnProfile,
-  userId,
-}: ProfilePageProps) => {
+const ProfilePage = ({ userId }: ProfilePageProps) => {
   const { t } = useTranslation(["common", "profile"]);
   const { data: session } = useSession();
-  const [favorites, setFavorites] = useState<UserFavorites>(userFavorites);
+  const queryClient = useQueryClient();
+  const isOwnProfile = userId === Number(session?.user.id);
+
+  const { data: userFavorites, error: userFavoritesError } = useQuery<
+    UserFavorites,
+    Error
+  >({
+    queryKey: ["userFavorites", userId],
+    queryFn: () => fetchUserFavorites(userId),
+    staleTime: 5 * 60 * 1000,
+  });
+
+  const { data: userData, error: userDataError } = useQuery<
+    { name: string; profileImage: string | null },
+    Error
+  >({
+    queryKey: ["userData", userId],
+    queryFn: () => fetchUserData(userId),
+    staleTime: 5 * 60 * 1000,
+  });
 
   const [isEditing, setIsEditing] = useState(false);
+  const [editedFavorites, setEditedFavorites] = useState<UserFavorites | null>(
+    null,
+  );
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [modalType, setModalType] = useState<"artist" | "track" | undefined>(
     undefined,
@@ -108,6 +93,29 @@ const ProfilePage = ({
   >(undefined);
 
   const pageRef = useRef<HTMLDivElement>(null);
+
+  const mutation = useMutation<UserFavorites, Error, UserFavorites, unknown>({
+    mutationFn: async (newFavorites: UserFavorites) => {
+      const response = await axios.patch<UserFavorites>("/api/user-favorites", {
+        userId: session?.user?.id,
+        allTimeArtists: newFavorites.allTimeArtists,
+        allTimeTracks: newFavorites.allTimeTracks,
+        currentArtists: newFavorites.currentArtists,
+        currentTracks: newFavorites.currentTracks,
+      });
+      return response.data;
+    },
+    onSuccess: () => {
+      // 관련 쿼리 무효화 및 상태 업데이트
+      queryClient.invalidateQueries({ queryKey: ["userFavorites", userId] });
+      setIsEditing(false);
+      setEditedFavorites(null);
+    },
+    onError: (error: unknown) => {
+      // TODO: 에러 처리
+      JSON.stringify(error);
+    },
+  });
 
   const openModal = (
     type: "artist" | "track",
@@ -125,28 +133,21 @@ const ProfilePage = ({
   };
 
   const toggleEditing = () => {
+    if (!isEditing) {
+      // 편집 모드로 전환될 때, 현재 favorites를 로컬 상태로 복사
+      setEditedFavorites(userFavorites ? { ...userFavorites } : null);
+    } else {
+      // 편집 모드에서 나올 때, 로컬 상태 초기화
+      setEditedFavorites(null);
+    }
     setIsEditing((prev) => !prev);
   };
 
-  const handleSaveChanges = async () => {
-    if (!isOwnProfile || !session?.user?.id) {
+  const handleSaveChanges = () => {
+    if (!isOwnProfile || !session?.user?.id || !editedFavorites) {
       return;
     }
-
-    try {
-      await axios.patch("/api/user-favorites", {
-        userId: session.user.id,
-        allTimeArtists: favorites.allTimeArtists,
-        allTimeTracks: favorites.allTimeTracks,
-        currentArtists: favorites.currentArtists,
-        currentTracks: favorites.currentTracks,
-      });
-
-      setIsEditing(false);
-    } catch (error) {
-      // TODO: 에러 처리
-      JSON.stringify(error);
-    }
+    mutation.mutate(editedFavorites);
   };
 
   const handleSaveAsImage = useCallback(() => {
@@ -172,59 +173,73 @@ const ProfilePage = ({
         ).padStart(2, "0")}${String(now.getDate()).padStart(2, "0")}${String(
           now.getHours(),
         ).padStart(2, "0")}${String(now.getMinutes()).padStart(2, "0")}`;
-        const fileName = `${isOwnProfile ? session?.user?.name : viewedUserName}-${formattedDate}.jpeg`;
+        const fileName = `${isOwnProfile && session?.user?.name}-${formattedDate}.jpeg`;
         download(dataUrl, fileName);
       })
-      .catch((error) => {
+      .catch((error: unknown) => {
         // TODO: 에러 처리
         JSON.stringify(error);
       });
-  }, [pageRef, session, viewedUserName, isOwnProfile]);
+  }, [pageRef, session, isOwnProfile]);
 
-  const handleDelete = (section: keyof UserFavorites, id: string) => {
-    const keyToCompare = sectionKeyMap[section];
-
-    setFavorites((prev) => ({
-      ...prev,
-      [section]: prev[section].filter((item) => {
-        if (keyToCompare === "artistId" && isArtist(item)) {
-          return item.artistId !== id;
-        }
-        if (keyToCompare === "trackId" && isTrack(item)) {
-          return item.trackId !== id;
-        }
-        return true;
-      }),
-    }));
-  };
-
-  const handleAddItem = (
-    section: keyof UserFavorites,
-    item: UserFavoriteArtist | UserFavoriteTrack,
+  const handleDelete = <S extends keyof UserFavorites>(
+    section: S,
+    id: string,
   ) => {
-    if (isArtist(item)) {
-      setFavorites((prev) => ({
-        ...prev,
-        [section]: [...prev[section], item],
-      }));
-    } else if (isTrack(item)) {
-      const mappedItem: UserFavoriteTrack = {
-        trackId: item.trackId,
-        name: item.name,
-        albumImageUrl: item.albumImageUrl,
-        artists: item.artists,
-        popularity: item.popularity,
-      };
-      setFavorites((prev) => ({
-        ...prev,
-        [section]: [...prev[section], mappedItem],
-      }));
+    if (!editedFavorites) return;
+
+    const updatedFavorites: UserFavorites = { ...editedFavorites };
+
+    if (isArtistSection(section)) {
+      updatedFavorites[section] = (
+        updatedFavorites[section] as UserFavoriteArtist[]
+      ).filter((item) => item.artistId !== id);
+    } else if (isTrackSection(section)) {
+      updatedFavorites[section] = (
+        updatedFavorites[section] as UserFavoriteTrack[]
+      ).filter((item) => item.trackId !== id);
     }
+
+    setEditedFavorites(updatedFavorites);
   };
 
-  useEffect(() => {
-    setFavorites(userFavorites);
-  }, [userFavorites]);
+  const handleAddItem = <S extends keyof UserFavorites>(
+    section: S,
+    item: SectionToItemType<S>,
+  ) => {
+    if (!editedFavorites) return;
+
+    const updatedFavorites: UserFavorites = { ...editedFavorites };
+
+    if (isArtistSection(section)) {
+      updatedFavorites[section] = [
+        ...(updatedFavorites[section] as UserFavoriteArtist[]),
+        item as UserFavoriteArtist,
+      ];
+    } else if (isTrackSection(section)) {
+      updatedFavorites[section] = [
+        ...(updatedFavorites[section] as UserFavoriteTrack[]),
+        item as UserFavoriteTrack,
+      ];
+    }
+
+    setEditedFavorites(updatedFavorites);
+  };
+
+  const viewedUserName = userData?.name || "Unknown User";
+  const profileImageUrl = userData?.profileImage || null;
+
+  // 편집 모드일 때는 editedFavorites를, 아닐 때는 userFavorites를 사용
+  const displayFavorites =
+    isEditing && editedFavorites ? editedFavorites : userFavorites;
+
+  if (userFavoritesError || userDataError) {
+    return (
+      <ErrorComponent
+        message={`Error loading data: ${userFavoritesError?.message || userDataError?.message}`}
+      />
+    );
+  }
 
   return (
     <div className="max-w-3xl mx-auto text-white">
@@ -238,7 +253,7 @@ const ProfilePage = ({
           description: `${viewedUserName}'s favorite artists and tracks`,
           images: [
             {
-              url: profileImage || "/default-profile-image.jpg",
+              url: profileImageUrl || "/default-profile-image.jpg",
               width: 800,
               height: 800,
               alt: `${viewedUserName}'s Profile Image`,
@@ -254,11 +269,11 @@ const ProfilePage = ({
       <div ref={pageRef} className="p-6">
         {isOwnProfile ? (
           <div className="flex flex-col gap-4 text-center mb-4">
-            {profileImage ? (
+            {profileImageUrl ? (
               <Image
                 className="rounded-full mx-auto"
-                src={profileImage}
-                alt={viewedUserName}
+                src={profileImageUrl}
+                alt={`${viewedUserName}'s Profile Image`}
                 width={100}
                 height={100}
               />
@@ -289,7 +304,7 @@ const ProfilePage = ({
         <div>
           <FavoriteSection
             title={t("all_time_favorite_artists")}
-            items={favorites.allTimeArtists}
+            items={displayFavorites?.allTimeArtists || []}
             openModal={() => openModal("artist", "allTimeArtists")}
             type="artist"
             isEditing={isOwnProfile && isEditing}
@@ -297,7 +312,7 @@ const ProfilePage = ({
           />
           <FavoriteSection
             title={t("all_time_favorite_tracks")}
-            items={favorites.allTimeTracks}
+            items={displayFavorites?.allTimeTracks || []}
             openModal={() => openModal("track", "allTimeTracks")}
             type="track"
             isEditing={isOwnProfile && isEditing}
@@ -305,7 +320,7 @@ const ProfilePage = ({
           />
           <FavoriteSection
             title={t("current_favorite_artists")}
-            items={favorites.currentArtists}
+            items={displayFavorites?.currentArtists || []}
             openModal={() => openModal("artist", "currentArtists")}
             type="artist"
             isEditing={isOwnProfile && isEditing}
@@ -313,7 +328,7 @@ const ProfilePage = ({
           />
           <FavoriteSection
             title={t("current_favorite_tracks")}
-            items={favorites.currentTracks}
+            items={displayFavorites?.currentTracks || []}
             openModal={() => openModal("track", "currentTracks")}
             type="track"
             isEditing={isOwnProfile && isEditing}
@@ -355,25 +370,27 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
   const { userId } = context.params!;
   const parsedUserId = Number(userId);
 
-  const session = await getServerSession(context.req, context.res, authOptions);
+  const queryClient = new QueryClient();
 
   try {
-    const [userFavorites, userData] = await Promise.all([
-      fetchUserFavorites(parsedUserId),
-      fetchUserData(parsedUserId),
+    await Promise.all([
+      queryClient.prefetchQuery({
+        queryKey: ["userFavorites", parsedUserId],
+        queryFn: () => fetchUserFavorites(parsedUserId),
+        staleTime: 5 * 60 * 1000,
+      }),
+      queryClient.prefetchQuery({
+        queryKey: ["userData", parsedUserId],
+        queryFn: () => fetchUserData(parsedUserId),
+        staleTime: 5 * 60 * 1000,
+      }),
     ]);
-
-    const { name: viewedUserName, profileImage } = userData;
-    const isOwnProfile = String(session?.user?.id) === String(userId);
 
     return {
       props: {
         ...(await serverSideTranslations(locale, ["common", "profile"])),
-        userFavorites,
-        viewedUserName,
-        profileImage,
-        isOwnProfile,
-        userId,
+        dehydratedState: dehydrate(queryClient),
+        userId: parsedUserId,
       },
     };
   } catch (error) {
@@ -383,15 +400,7 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
     return {
       props: {
         ...(await serverSideTranslations(locale, ["common", "profile"])),
-        userFavorites: {
-          allTimeArtists: [],
-          allTimeTracks: [],
-          currentArtists: [],
-          currentTracks: [],
-        },
-        viewedUserName: "Unknown User",
-        profileImage: null,
-        isOwnProfile: false,
+        dehydratedState: dehydrate(queryClient),
         userId: 0,
       },
     };
