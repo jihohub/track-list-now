@@ -1,72 +1,20 @@
 import LoadingBar from "@/features/common/LoadingBar";
-import TImage from "@/features/common/TImage";
+import {
+  AddedArtist,
+  AddedItem,
+  AddedTrack,
+  ResponseData,
+  SimplifiedArtist,
+  SimplifiedTrack,
+} from "@/types/search";
 import { useQuery } from "@tanstack/react-query";
 import axios from "axios";
 import { useTranslation } from "next-i18next";
 import { useRouter } from "next/router";
 import { useEffect, useRef, useState } from "react";
-
-interface SimplifiedArtist {
-  imageUrl: string;
-  name: string;
-  id: string;
-  followers: number;
-}
-
-interface SimplifiedTrack {
-  albumImageUrl: string;
-  name: string;
-  artists: string;
-  id: string;
-  popularity: number;
-}
-
-type SimplifiedSearchResponse =
-  | {
-      artists: {
-        items: SimplifiedArtist[];
-        href: string;
-        limit: number;
-        next: string | null;
-        offset: number;
-        previous: string | null;
-        total: number;
-      };
-    }
-  | {
-      tracks: {
-        items: SimplifiedTrack[];
-        href: string;
-        limit: number;
-        next: string | null;
-        offset: number;
-        previous: string | null;
-        total: number;
-      };
-    };
-
-interface ErrorResponse {
-  error: string;
-}
-
-type ResponseData = SimplifiedSearchResponse | ErrorResponse;
-
-interface AddedArtist {
-  artistId: string;
-  name: string;
-  imageUrl: string;
-  followers: number;
-}
-
-interface AddedTrack {
-  trackId: string;
-  name: string;
-  albumImageUrl: string;
-  artists: string;
-  popularity: number;
-}
-
-type AddedItem = AddedArtist | AddedTrack;
+import NoResultsMessage from "./NoResultsMessage";
+import SearchInput from "./SearchInput";
+import SearchResultList from "./SearchResultList";
 
 interface SearchModalProps {
   closeModal: () => void;
@@ -161,6 +109,10 @@ const SearchModal = ({
   }, [data]);
 
   const target = getTargetLabel(modalType, router.locale || "ko");
+  const placeholder = t("placeholder", { target, ns: "profile" });
+  const searchButtonLabel = t("search", { ns: "profile" });
+  const addButtonLabel = t("add", { ns: "profile" });
+  const noResultMessage = t("no_result", { ns: "profile" });
 
   let searchResults: SimplifiedArtist[] | SimplifiedTrack[] = [];
   if (data) {
@@ -186,72 +138,28 @@ const SearchModal = ({
           {t("search_for", { target, ns: "profile" })}
         </h2>
 
-        <div className="relative w-full">
-          <input
-            type="text"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            onKeyDown={handleKeyPress}
-            placeholder={t("placeholder", { target, ns: "profile" })}
-            className="border p-2 pr-16 w-full rounded-lg bg-gray-800 text-white"
-          />
-          <button
-            onClick={handleSearch}
-            className="absolute right-0 top-0 h-full bg-blue-600 text-white px-4 rounded-r-lg"
-            type="button"
-          >
-            {t("search", { ns: "profile" })}
-          </button>
-        </div>
+        <SearchInput
+          searchQuery={searchQuery}
+          setSearchQuery={setSearchQuery}
+          handleSearch={handleSearch}
+          handleKeyPress={handleKeyPress}
+          placeholder={placeholder}
+          searchButtonLabel={searchButtonLabel}
+        />
 
         {isLoading && <LoadingBar />}
 
         {searchResults.length > 0 && (
-          <ul ref={resultsRef} className="mt-4 max-h-48 overflow-y-auto">
-            {searchResults.map((result) => (
-              <li
-                key={result.id}
-                className="flex items-center justify-between text-sm text-white cursor-pointer hover:bg-gray-700 p-2 rounded-lg"
-              >
-                <div className="flex items-center">
-                  <TImage
-                    imageUrl={
-                      modalType === "artist"
-                        ? (result as SimplifiedArtist).imageUrl
-                        : (result as SimplifiedTrack).albumImageUrl
-                    }
-                    type={modalType}
-                    alt={result.name}
-                    size="w-10 h-10"
-                    className="mr-4"
-                  />
-                  <div className="flex flex-col">
-                    <span>{result.name}</span>
-                    {modalType === "track" && "artists" in result && (
-                      <span className="text-gray-400 text-xs">
-                        {(result as SimplifiedTrack).artists}
-                      </span>
-                    )}
-                  </div>
-                </div>
-                <div className="min-w-[60px]">
-                  <button
-                    onClick={() => handleSelectItem(result)}
-                    className="bg-green-500 text-white px-2 py-1 rounded-lg ml-4"
-                    type="button"
-                  >
-                    {t("add", { ns: "profile" })}
-                  </button>
-                </div>
-              </li>
-            ))}
-          </ul>
+          <SearchResultList
+            searchResults={searchResults}
+            modalType={modalType}
+            handleSelectItem={handleSelectItem}
+            addButtonLabel={addButtonLabel}
+          />
         )}
 
         {hasSearched && searchResults.length === 0 && !isLoading && (
-          <p className="mt-4 text-sm text-white">
-            {t("no_result", { ns: "profile" })}
-          </p>
+          <NoResultsMessage message={noResultMessage} />
         )}
       </div>
     </div>
