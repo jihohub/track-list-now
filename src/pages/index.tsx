@@ -1,7 +1,5 @@
 import ErrorComponent from "@/features/common/ErrorComponent";
-import LoadingBar from "@/features/common/LoadingBar";
 import RankingSection from "@/features/main/RankingSection";
-import { ArtistRanking, TrackRanking } from "@prisma/client";
 import { dehydrate, QueryClient, useQuery } from "@tanstack/react-query";
 import axios from "axios";
 import { GetServerSideProps } from "next";
@@ -9,52 +7,7 @@ import { useTranslation } from "next-i18next";
 import { serverSideTranslations } from "next-i18next/serverSideTranslations";
 import { NextSeo } from "next-seo";
 
-type RankingCategory =
-  | "ALL_TIME_ARTIST"
-  | "ALL_TIME_TRACK"
-  | "CURRENT_ARTIST"
-  | "CURRENT_TRACK";
-
-interface ArtistWithRanking
-  extends Omit<ArtistRanking, "updatedAt" | "rankingType"> {
-  rankingType: RankingCategory;
-  updatedAt: string;
-  artist: {
-    id: number;
-    artistId: string;
-    name: string;
-    imageUrl: string;
-    followers: number;
-  };
-}
-
-interface TrackWithRanking
-  extends Omit<TrackRanking, "updatedAt" | "rankingType"> {
-  rankingType: RankingCategory;
-  updatedAt: string;
-  track: {
-    id: number;
-    trackId: string;
-    name: string;
-    albumImageUrl: string;
-    artists: string;
-    popularity: number;
-  };
-}
-
-interface FullRankingData {
-  allTimeArtistsRanking: ArtistWithRanking[];
-  allTimeTracksRanking: TrackWithRanking[];
-  currentArtistsRanking: ArtistWithRanking[];
-  currentTracksRanking: TrackWithRanking[];
-}
-
-interface RankingSectionProps {
-  title: string;
-  data: ArtistWithRanking[] | TrackWithRanking[];
-  type: "artist" | "track";
-  category: RankingCategory;
-}
+import { FullRankingData, RankingSectionProps } from "@/types/ranking";
 
 const fetchFeaturedRanking = async (): Promise<FullRankingData> => {
   try {
@@ -73,11 +26,7 @@ const fetchFeaturedRanking = async (): Promise<FullRankingData> => {
 const MainPage = () => {
   const { t } = useTranslation("common");
 
-  const {
-    data: rankingData,
-    error,
-    isLoading,
-  } = useQuery<FullRankingData, Error>({
+  const { data: rankingData, error } = useQuery<FullRankingData, Error>({
     queryKey: ["featuredRanking"],
     queryFn: fetchFeaturedRanking,
     staleTime: 5 * 60 * 1000,
@@ -87,10 +36,6 @@ const MainPage = () => {
   const allTimeTracks = rankingData?.allTimeTracksRanking || [];
   const currentArtists = rankingData?.currentArtistsRanking || [];
   const currentTracks = rankingData?.currentTracksRanking || [];
-
-  if (isLoading) {
-    return <LoadingBar />;
-  }
 
   if (error) {
     return <ErrorComponent message={`Error loading data: ${error.message}`} />;
@@ -173,24 +118,6 @@ export const getServerSideProps: GetServerSideProps = async ({ locale }) => {
       queryFn: fetchFeaturedRanking,
       staleTime: 5 * 60 * 1000,
     });
-
-    const rankingData = queryClient.getQueryData<FullRankingData>([
-      "featuredRanking",
-    ]);
-
-    if (rankingData) {
-      const {
-        allTimeArtistsRanking,
-        allTimeTracksRanking,
-        currentArtistsRanking,
-        currentTracksRanking,
-      } = rankingData;
-
-      queryClient.setQueryData(["allTimeArtists"], allTimeArtistsRanking);
-      queryClient.setQueryData(["allTimeTracks"], allTimeTracksRanking);
-      queryClient.setQueryData(["currentArtists"], currentArtistsRanking);
-      queryClient.setQueryData(["currentTracks"], currentTracksRanking);
-    }
 
     return {
       props: {
