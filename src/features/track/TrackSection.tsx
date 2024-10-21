@@ -37,7 +37,12 @@ const TrackSection = ({ track }: TrackSectionProps) => {
           ))}
         </p>
         <p className="text-gray-400 mt-1">
-          {t("album", { ns: "track" })}: {track.album.name}
+          {t("album", { ns: "track" })}:{" "}
+          <Link href={`/album/${track.album.id}`}>
+            <span className="text-green-500 hover:underline">
+              {track.album.name}
+            </span>
+          </Link>
         </p>
         <p className="text-gray-400 mt-1">
           {t("release_date", { ns: "track" })}: {track.album.release_date}

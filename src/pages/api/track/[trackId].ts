@@ -1,10 +1,10 @@
 import getServerAxiosInstance from "@/libs/axios/axiosServerInstance";
-import { ApiResponse, SpotifyTrack } from "@/types/track";
+import { SpotifyTrack, TrackResponseData } from "@/types/track";
 import type { NextApiRequest, NextApiResponse } from "next";
 
 const handler = async (
   req: NextApiRequest,
-  res: NextApiResponse<ApiResponse>,
+  res: NextApiResponse<TrackResponseData>,
 ) => {
   const { trackId } = req.query;
 

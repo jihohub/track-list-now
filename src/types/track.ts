@@ -74,7 +74,7 @@ export interface ErrorResponse {
   error: string;
 }
 
-export type ApiResponse = SuccessResponse | ErrorResponse;
+export type TrackResponseData = SuccessResponse | ErrorResponse;
 
 // **Frontend Page Interfaces**
 export interface TrackDetail {
