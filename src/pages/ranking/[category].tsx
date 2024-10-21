@@ -1,8 +1,12 @@
 import ErrorComponent from "@/features/common/ErrorComponent";
-import LoadingBar from "@/features/common/LoadingBar";
 import TItem from "@/features/common/TItem";
 import { convertToCategory } from "@/libs/utils/categoryMapper";
-import { ArtistRanking, TrackRanking } from "@prisma/client";
+import {
+  isArtistWithRanking,
+  isTrackWithRanking,
+  RankingCategory,
+  TItemData,
+} from "@/types/ranking";
 import { dehydrate, QueryClient, useQuery } from "@tanstack/react-query";
 import axios from "axios";
 import { GetServerSideProps } from "next";
@@ -10,59 +14,9 @@ import { useTranslation } from "next-i18next";
 import { serverSideTranslations } from "next-i18next/serverSideTranslations";
 import { NextSeo } from "next-seo";
 
-type RankingCategory =
-  | "ALL_TIME_ARTIST"
-  | "ALL_TIME_TRACK"
-  | "CURRENT_ARTIST"
-  | "CURRENT_TRACK";
-
-interface ArtistWithRanking
-  extends Omit<ArtistRanking, "updatedAt" | "rankingType"> {
-  rankingType: RankingCategory;
-  count: number;
-  updatedAt: string;
-  artist: {
-    id: number;
-    artistId: string;
-    name: string;
-    imageUrl: string;
-    followers: number;
-  };
-}
-
-interface TrackWithRanking
-  extends Omit<TrackRanking, "updatedAt" | "rankingType"> {
-  rankingType: RankingCategory;
-  count: number;
-  updatedAt: string;
-  track: {
-    id: number;
-    trackId: string;
-    name: string;
-    albumImageUrl: string;
-    artists: string;
-    popularity: number;
-  };
-}
-
 interface RankingPageProps {
   category: RankingCategory;
 }
-
-type TItemData = ArtistWithRanking | TrackWithRanking;
-
-export interface TItemComponentProps {
-  index: number;
-  item: TItemData;
-  type: "artist" | "track";
-  isFeatured: boolean;
-}
-
-const isArtistWithRanking = (
-  item: ArtistWithRanking | TrackWithRanking,
-): item is ArtistWithRanking => {
-  return (item as ArtistWithRanking).artist !== undefined;
-};
 
 const fetchRankingData = async (category: string): Promise<TItemData[]> => {
   const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL;
@@ -75,11 +29,7 @@ const fetchRankingData = async (category: string): Promise<TItemData[]> => {
 const RankingPage = ({ category }: RankingPageProps) => {
   const { t } = useTranslation("common");
 
-  const {
-    data: rankingData,
-    error,
-    isLoading,
-  } = useQuery<TItemData[], Error>({
+  const { data: rankingData, error } = useQuery<TItemData[], Error>({
     queryKey: ["ranking", category],
     queryFn: () => fetchRankingData(category),
     staleTime: 5 * 60 * 1000,
@@ -100,10 +50,6 @@ const RankingPage = ({ category }: RankingPageProps) => {
     }
   })();
 
-  if (isLoading) {
-    return <LoadingBar />;
-  }
-
   if (error) {
     return <ErrorComponent message={`Error loading data: ${error.message}`} />;
   }
@@ -119,12 +65,12 @@ const RankingPage = ({ category }: RankingPageProps) => {
     case "ALL_TIME_ARTIST":
     case "CURRENT_ARTIST":
       sectionType = "artist";
-      sectionData = rankingData.filter((item) => "artist" in item);
+      sectionData = rankingData.filter(isArtistWithRanking);
       break;
     case "ALL_TIME_TRACK":
     case "CURRENT_TRACK":
       sectionType = "track";
-      sectionData = rankingData.filter((item) => "track" in item);
+      sectionData = rankingData.filter(isTrackWithRanking);
       break;
     default:
       sectionType = "artist";

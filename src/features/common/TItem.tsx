@@ -1,59 +1,7 @@
+import { TItemProps } from "@/types/ranking";
 import { useTranslation } from "next-i18next";
 import Link from "next/link";
 import TImage from "./TImage";
-
-export type RankingCategory =
-  | "ALL_TIME_ARTIST"
-  | "ALL_TIME_TRACK"
-  | "CURRENT_ARTIST"
-  | "CURRENT_TRACK";
-
-export interface BaseRanking {
-  rankingType?: RankingCategory;
-  count?: number;
-  updatedAt?: string;
-}
-
-export interface ArtistDetail {
-  id: number;
-  artistId: string;
-  name: string;
-  imageUrl: string;
-  followers: number;
-}
-
-export interface TrackDetail {
-  id: number;
-  trackId: string;
-  name: string;
-  albumImageUrl: string;
-  artists: string;
-  popularity: number;
-}
-
-export interface ArtistWithRanking extends BaseRanking {
-  artist: ArtistDetail;
-}
-
-export interface TrackWithRanking extends BaseRanking {
-  track: TrackDetail;
-}
-
-interface ArtistTItemProps {
-  index: number;
-  item: ArtistWithRanking;
-  type: "artist";
-  isFeatured?: boolean;
-}
-
-interface TrackTItemProps {
-  index: number;
-  item: TrackWithRanking;
-  type: "track";
-  isFeatured?: boolean;
-}
-
-type TItemProps = ArtistTItemProps | TrackTItemProps;
 
 const TItem = ({ index, item, type, isFeatured = false }: TItemProps) => {
   const { t } = useTranslation("common");

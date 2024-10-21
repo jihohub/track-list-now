@@ -1,28 +1,13 @@
 import TImage from "@/features/common/TImage";
+import {
+  FavoriteItemProps,
+  UserFavoriteArtist,
+  UserFavoriteTrack,
+  isUserFavoriteArtist,
+  isUserFavoriteTrack,
+} from "@/types/favorite";
 import { useTranslation } from "next-i18next";
 import Link from "next/link";
-
-export interface UserFavoriteArtist {
-  artistId: string;
-  name: string;
-  imageUrl: string;
-  followers: number;
-}
-
-export interface UserFavoriteTrack {
-  trackId: string;
-  name: string;
-  albumImageUrl: string;
-  artists: string;
-  popularity: number;
-}
-
-export interface FavoriteItemProps {
-  item: UserFavoriteArtist | UserFavoriteTrack;
-  type: "artist" | "track";
-  isEditing: boolean;
-  handleDelete: (id: string) => void;
-}
 
 const FavoriteItem = ({
   item,
@@ -70,12 +55,12 @@ const FavoriteItem = ({
       <p className="text-white text-sm text-center mt-1 w-24 truncate">
         {item.name}
       </p>
-      {type === "artist" && "followers" in item && (
+      {type === "artist" && isUserFavoriteArtist(item) && (
         <p className="text-gray-400 text-sm text-center mt-1 w-24">
           {item.followers.toLocaleString()} {t("followers")}
         </p>
       )}
-      {type === "track" && "artists" in item && (
+      {type === "track" && isUserFavoriteTrack(item) && (
         <p className="text-gray-400 text-sm text-center mt-1 w-24 truncate">
           {item.artists}
         </p>

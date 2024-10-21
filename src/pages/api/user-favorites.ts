@@ -1,98 +1,22 @@
 import prisma from "@/libs/prisma/prismaClient";
 import {
-  Artist,
-  ArtistRankingType,
+  computeDifference,
+  mapFavoriteTypeToArtistRankingType,
+  mapFavoriteTypeToTrackRankingType,
+} from "@/libs/utils/favorite";
+import {
+  ResponseData,
+  UpdateFavorites,
+  UserFavoriteArtistInput,
+  UserFavoritesResponse,
+  UserFavoriteTrackInput,
+} from "@/types/favorite";
+import {
   FavoriteType,
-  Track,
-  TrackRankingType,
   UserFavoriteArtists,
   UserFavoriteTracks,
 } from "@prisma/client";
 import { NextApiRequest, NextApiResponse } from "next";
-
-interface UserFavoritesResponse {
-  allTimeArtists: Artist[];
-  currentArtists: Artist[];
-  allTimeTracks: Track[];
-  currentTracks: Track[];
-}
-
-type ResponseData =
-  | UserFavoritesResponse
-  | { message: string }
-  | { error: string };
-
-interface UserFavoriteArtistInput {
-  artistId: string;
-  name: string;
-  imageUrl: string;
-  followers: number;
-}
-
-interface UserFavoriteTrackInput {
-  trackId: string;
-  name: string;
-  albumImageUrl: string;
-  artists: string;
-  popularity: number;
-}
-
-interface UpdateFavorites {
-  userId: number;
-  allTimeArtists: UserFavoriteArtistInput[];
-  allTimeTracks: UserFavoriteTrackInput[];
-  currentArtists: UserFavoriteArtistInput[];
-  currentTracks: UserFavoriteTrackInput[];
-}
-
-const mapFavoriteTypeToArtistRankingType = (
-  favoriteType: FavoriteType,
-): ArtistRankingType => {
-  switch (favoriteType) {
-    case FavoriteType.ALL_TIME_ARTIST:
-      return ArtistRankingType.ALL_TIME_ARTIST;
-    case FavoriteType.CURRENT_ARTIST:
-      return ArtistRankingType.CURRENT_ARTIST;
-    default:
-      throw new Error(
-        `Invalid favoriteType for ArtistRankingType: ${favoriteType}`,
-      );
-  }
-};
-
-const mapFavoriteTypeToTrackRankingType = (
-  favoriteType: FavoriteType,
-): TrackRankingType => {
-  switch (favoriteType) {
-    case FavoriteType.ALL_TIME_TRACK:
-      return TrackRankingType.ALL_TIME_TRACK;
-    case FavoriteType.CURRENT_TRACK:
-      return TrackRankingType.CURRENT_TRACK;
-    default:
-      throw new Error(
-        `Invalid favoriteType for TrackRankingType: ${favoriteType}`,
-      );
-  }
-};
-
-const computeDifference = <ExistingItem, NewItem>(
-  existing: ExistingItem[],
-  newItems: NewItem[],
-  keyExisting: keyof ExistingItem & string,
-  keyNew: keyof NewItem & string,
-): { toAdd: NewItem[]; toRemove: ExistingItem[] } => {
-  const existingIds = new Set<string>(
-    existing.map((item) => String(item[keyExisting])),
-  );
-  const newIds = new Set<string>(newItems.map((item) => String(item[keyNew])));
-  const toAdd = newItems.filter(
-    (item) => !existingIds.has(String(item[keyNew])),
-  );
-  const toRemove = existing.filter(
-    (item) => !newIds.has(String(item[keyExisting])),
-  );
-  return { toAdd, toRemove };
-};
 
 const handleGet = async (
   req: NextApiRequest,
