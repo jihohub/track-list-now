@@ -24,7 +24,7 @@ const VolumeControl = ({ volume, onVolumeChange }: VolumeControlProps) => {
   };
 
   return (
-    <div className="flex items-center mobile:space-x-0 space-x-2">
+    <div className="flex items-center mobile:space-x-0 space-x-2 mobile:hidden tablet:hidden">
       {/* 볼륨 아이콘 */}
       {getVolumeIcon()}
       <input
