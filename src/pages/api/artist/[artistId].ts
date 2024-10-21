@@ -1,6 +1,6 @@
 import getServerAxiosInstance from "@/libs/axios/axiosServerInstance";
 import {
-  ApiResponse,
+  ArtistResponseData,
   CombinedArtistData,
   SpotifyArtist,
   SpotifyRelatedArtists,
@@ -10,7 +10,7 @@ import type { NextApiRequest, NextApiResponse } from "next";
 
 const handler = async (
   req: NextApiRequest,
-  res: NextApiResponse<ApiResponse>,
+  res: NextApiResponse<ArtistResponseData>,
 ) => {
   const { artistId } = req.query;
 

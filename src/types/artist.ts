@@ -114,7 +114,7 @@ export interface ErrorResponse {
   error: string;
 }
 
-export type ApiResponse = CombinedArtistData | ErrorResponse;
+export type ArtistResponseData = CombinedArtistData | ErrorResponse;
 
 // **Frontend Page Interfaces**
 export interface ArtistPageData {
