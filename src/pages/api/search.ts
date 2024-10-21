@@ -1,165 +1,13 @@
 import getServerAxiosInstance from "@/libs/axios/axiosServerInstance";
+import { SpotifyArtist } from "@/types/artist";
+import {
+  ResponseData,
+  SimplifiedArtist,
+  SimplifiedTrack,
+  SpotifySearchResponse,
+} from "@/types/search";
+import { SpotifyArtistBrief, SpotifyTrack } from "@/types/track";
 import type { NextApiRequest, NextApiResponse } from "next";
-
-interface SpotifyArtist {
-  external_urls: {
-    spotify: string;
-  };
-  followers: {
-    href: string | null;
-    total: number;
-  };
-  genres: string[];
-  href: string;
-  id: string;
-  images: Array<{
-    url: string;
-    height: number;
-    width: number;
-  }>;
-  name: string;
-  popularity: number;
-  type: "artist";
-  uri: string;
-}
-
-interface SpotifyArtistBrief {
-  external_urls: {
-    spotify: string;
-  };
-  href: string;
-  id: string;
-  name: string;
-  type: "artist";
-  uri: string;
-}
-
-interface SpotifyTrack {
-  album: {
-    album_type: string;
-    total_tracks: number;
-    available_markets: string[];
-    external_urls: {
-      spotify: string;
-    };
-    href: string;
-    id: string;
-    images: Array<{
-      url: string;
-      height: number;
-      width: number;
-    }>;
-    name: string;
-    release_date: string;
-    release_date_precision: string;
-    restrictions?: {
-      reason: string;
-    };
-    type: "album";
-    uri: string;
-    artists: SpotifyArtistBrief[];
-  };
-  artists: SpotifyArtistBrief[];
-  available_markets: string[];
-  disc_number: number;
-  duration_ms: number;
-  explicit: boolean;
-  external_ids: {
-    isrc: string;
-    ean?: string;
-    upc?: string;
-  };
-  external_urls: {
-    spotify: string;
-  };
-  href: string;
-  id: string;
-  is_playable: boolean;
-  linked_from?: unknown;
-  restrictions?: {
-    reason: string;
-  };
-  name: string;
-  popularity: number;
-  preview_url: string | null;
-  track_number: number;
-  type: "track";
-  uri: string;
-  is_local: boolean;
-}
-
-interface SpotifyArtistSearchResponse {
-  artists: {
-    items: SpotifyArtist[];
-    href: string;
-    limit: number;
-    next: string | null;
-    offset: number;
-    previous: string | null;
-    total: number;
-  };
-}
-
-interface SpotifyTrackSearchResponse {
-  tracks: {
-    items: SpotifyTrack[];
-    href: string;
-    limit: number;
-    next: string | null;
-    offset: number;
-    previous: string | null;
-    total: number;
-  };
-}
-
-type SpotifySearchResponse =
-  | SpotifyArtistSearchResponse
-  | SpotifyTrackSearchResponse;
-
-interface SimplifiedArtist {
-  imageUrl: string;
-  name: string;
-  id: string;
-  followers: number;
-}
-
-interface SimplifiedTrack {
-  albumImageUrl: string;
-  name: string;
-  artists: string;
-  id: string;
-  popularity: number;
-}
-
-type SimplifiedSearchResponse =
-  | {
-      artists: {
-        items: SimplifiedArtist[];
-        href: string;
-        limit: number;
-        next: string | null;
-        offset: number;
-        previous: string | null;
-        total: number;
-      };
-    }
-  | {
-      tracks: {
-        items: SimplifiedTrack[];
-        href: string;
-        limit: number;
-        next: string | null;
-        offset: number;
-        previous: string | null;
-        total: number;
-      };
-    };
-
-interface ErrorResponse {
-  error: string;
-}
-
-type ResponseData = SimplifiedSearchResponse | ErrorResponse;
 
 const handler = async (
   req: NextApiRequest,
@@ -189,7 +37,7 @@ const handler = async (
 
     if (type === "artist" && "artists" in data) {
       const simplifiedArtists: SimplifiedArtist[] = data.artists.items.map(
-        (artist) => ({
+        (artist: SpotifyArtist) => ({
           imageUrl: artist.images[0]?.url || "/default-artist.png",
           name: artist.name,
           id: artist.id,
@@ -211,10 +59,12 @@ const handler = async (
     }
     if (type === "track" && "tracks" in data) {
       const simplifiedTracks: SimplifiedTrack[] = data.tracks.items.map(
-        (track) => ({
+        (track: SpotifyTrack) => ({
           albumImageUrl: track.album.images[0]?.url || "/default-album.png",
           name: track.name,
-          artists: track.artists.map((artist) => artist.name).join(", "),
+          artists: track.artists
+            .map((artist: SpotifyArtistBrief) => artist.name)
+            .join(", "),
           id: track.id,
           popularity: track.popularity,
         }),

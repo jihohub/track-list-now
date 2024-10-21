@@ -1,47 +1,6 @@
 import prisma from "@/libs/prisma/prismaClient";
-import { ArtistRanking, TrackRanking } from "@prisma/client";
+import { FullRankingData } from "@/types/ranking";
 import { NextApiRequest, NextApiResponse } from "next";
-
-interface FullRankingData {
-  allTimeArtistsRanking: (ArtistRanking & {
-    artist: {
-      id: number;
-      artistId: string;
-      name: string;
-      imageUrl: string;
-      followers: number;
-    };
-  })[];
-  allTimeTracksRanking: (TrackRanking & {
-    track: {
-      id: number;
-      trackId: string;
-      name: string;
-      albumImageUrl: string;
-      artists: string;
-      popularity: number;
-    };
-  })[];
-  currentArtistsRanking: (ArtistRanking & {
-    artist: {
-      id: number;
-      artistId: string;
-      name: string;
-      imageUrl: string;
-      followers: number;
-    };
-  })[];
-  currentTracksRanking: (TrackRanking & {
-    track: {
-      id: number;
-      trackId: string;
-      name: string;
-      albumImageUrl: string;
-      artists: string;
-      popularity: number;
-    };
-  })[];
-}
 
 interface ErrorResponse {
   error: string;

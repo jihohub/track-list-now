@@ -25,8 +25,8 @@ const config: Config = {
       },
       screens: {
         mobile: { max: "479px" },
-        tablet: { min: "480px", max: "1023px" },
-        desktop: { min: "1024px" },
+        tablet: { min: "480px", max: "1199px" },
+        desktop: { min: "1200px" },
       },
       colors: {
         navyBlue: "#12086f",

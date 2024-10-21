@@ -1,33 +1,19 @@
 import prisma from "@/libs/prisma/prismaClient";
-import { Artist, ArtistRanking, Track, TrackRanking } from "@prisma/client";
+import {
+  ArtistWithRanking,
+  RankingCategory,
+  TrackWithRanking,
+} from "@/types/ranking";
 import { NextApiRequest, NextApiResponse } from "next";
 
-type RankingCategory =
-  | "ALL_TIME_ARTIST"
-  | "ALL_TIME_TRACK"
-  | "CURRENT_ARTIST"
-  | "CURRENT_TRACK";
-
-type AllTimeArtistsResponse = (ArtistRanking & { artist: Artist })[];
-type AllTimeTracksResponse = (TrackRanking & { track: Track })[];
-type CurrentArtistsResponse = (ArtistRanking & { artist: Artist })[];
-type CurrentTracksResponse = (TrackRanking & { track: Track })[];
-
 type ResponseData =
-  | AllTimeArtistsResponse
-  | AllTimeTracksResponse
-  | CurrentArtistsResponse
-  | CurrentTracksResponse
+  | ArtistWithRanking[]
+  | TrackWithRanking[]
   | { error: string };
 
 const getRankingData = async (
   category: RankingCategory,
-): Promise<
-  | AllTimeArtistsResponse
-  | AllTimeTracksResponse
-  | CurrentArtistsResponse
-  | CurrentTracksResponse
-> => {
+): Promise<ArtistWithRanking[] | TrackWithRanking[]> => {
   const TAKE_COUNT = 100;
 
   switch (category) {
