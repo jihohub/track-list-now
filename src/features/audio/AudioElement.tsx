@@ -52,7 +52,7 @@ const AudioElement = forwardRef<AudioElementHandle, AudioElementProps>(
           audio.play();
         }
       }
-    }, [track, volume]);
+    }, [track]);
 
     // 재생 상태 변경 시 play/pause
     useEffect(() => {
