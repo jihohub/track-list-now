@@ -25,7 +25,7 @@ const SeekBar = ({ currentTime, duration, onSeek }: SeekBarProps) => {
         max={duration}
         value={currentTime}
         onChange={(e) => onSeek(Number(e.target.value))}
-        className="mobile:w-32 w-64"
+        className="xs:w-48 w-80"
       />
     </div>
   );
