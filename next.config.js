@@ -13,6 +13,7 @@ const nextConfig = {
     return config;
   },
   images: {
+    unoptimized: true,
     remotePatterns: [
       { protocol: "https", hostname: "*.scdn.co" },
       { protocol: "https", hostname: "*.googleusercontent.com" },
