@@ -47,6 +47,7 @@ const RankingCategoryTabs = ({
                 : " text-gray-300  hover:text-neonBlue"
             }
           `}
+          type="button"
         >
           {tab.label}
         </button>
