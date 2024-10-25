@@ -1,0 +1,10 @@
+{
+  "search": "검색",
+  "search_for": "아티스트, 노래, 앨범 찾기",
+  "all": "모두",
+  "artist": "아티스트",
+  "track": "트랙",
+  "album": "앨범",
+  "placeholder": "검색어를 입력하세요.",
+  "no_result": "검색 결과가 없습니다."
+}
