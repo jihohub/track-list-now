@@ -1,5 +1,6 @@
 import ErrorComponent from "@/features/common/ErrorComponent";
 import TItem from "@/features/common/TItem";
+import RankingCategoryTabs from "@/features/ranking/RankingCategoryTabs";
 import { convertToCategory } from "@/libs/utils/categoryMapper";
 import {
   isArtistWithRanking,
@@ -13,6 +14,7 @@ import { GetServerSideProps } from "next";
 import { useTranslation } from "next-i18next";
 import { serverSideTranslations } from "next-i18next/serverSideTranslations";
 import { NextSeo } from "next-seo";
+import { useRouter } from "next/router";
 
 interface RankingPageProps {
   category: RankingCategory;
@@ -28,6 +30,7 @@ const fetchRankingData = async (category: string): Promise<TItemData[]> => {
 
 const RankingPage = ({ category }: RankingPageProps) => {
   const { t } = useTranslation("common");
+  const router = useRouter();
 
   const { data: rankingData, error } = useQuery<TItemData[], Error>({
     queryKey: ["ranking", category],
@@ -49,6 +52,10 @@ const RankingPage = ({ category }: RankingPageProps) => {
         return "Ranking";
     }
   })();
+
+  const handleCategoryChange = (newCategory: string) => {
+    router.push(`/ranking/${newCategory.toLowerCase()}`);
+  };
 
   if (error) {
     return <ErrorComponent message={`Error loading data: ${error.message}`} />;
@@ -82,7 +89,7 @@ const RankingPage = ({ category }: RankingPageProps) => {
   const pageDescription = `Top ${sectionType === "artist" ? "Artists" : "Tracks"} ranking for ${pageTitle.replace("_", " ")} on Track List Now`;
 
   return (
-    <div className="max-w-5xl mx-auto p-6 mt-8">
+    <div className="max-w-5xl mx-auto p-6">
       <NextSeo
         title={`Track List Now - ${pageTitle}`}
         description={pageDescription}
@@ -106,6 +113,12 @@ const RankingPage = ({ category }: RankingPageProps) => {
           cardType: "summary_large_image",
         }}
       />
+
+      <RankingCategoryTabs
+        category={category}
+        onCategoryChange={handleCategoryChange}
+      />
+
       <h1 className="text-3xl font-bold text-white mb-6">{t(title)}</h1>
       {sectionData.length === 0 ? (
         <p className="text-gray-400 text-center mt-4">{t("no_data")}</p>
