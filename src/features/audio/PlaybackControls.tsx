@@ -29,7 +29,7 @@ const PlaybackControls = ({
       {/* 재생/일시정지 버튼 */}
       <button
         onClick={onPlayPause}
-        className="text-green-500 hover:text-green-400 focus:outline-none"
+        className="text-neonBlue hover:text-chefchaouenBlue focus:outline-none"
         type="button"
         aria-label={isPlaying ? "Pause" : "Play"}
       >

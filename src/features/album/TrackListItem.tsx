@@ -42,7 +42,7 @@ const TrackListItem = ({
             {track.previewUrl && (
               <button
                 onClick={onPlay}
-                className="text-green-500 hover:text-green-400 focus:outline-none"
+                className="text-neonBlue hover:text-chefchaouenBlue focus:outline-none"
                 type="button"
               >
                 {isCurrent && isPlaying ? (
