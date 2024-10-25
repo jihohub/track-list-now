@@ -41,17 +41,6 @@ body {
   }
 }
 
-.loader {
-  border-top-color: #3498db;
-  animation: spinner 1.5s linear infinite;
-}
-
-@keyframes spinner {
-  to {
-    transform: rotate(360deg);
-  }
-}
-
 input[type="range"] {
-  accent-color: #22c55e;
+  accent-color: #4361ee;
 }

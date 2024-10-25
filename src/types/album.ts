@@ -1,3 +1,33 @@
+export interface SpotifyAlbum {
+  album_type: string;
+  total_tracks: number;
+  external_urls: {
+    spotify: string;
+  };
+  href: string;
+  id: string;
+  images: Array<{
+    url: string;
+    height: number;
+    width: number;
+  }>;
+  name: string;
+  release_date: string;
+  release_date_precision: string;
+  type: "album";
+  uri: string;
+  artists: Array<{
+    external_urls: {
+      spotify: string;
+    };
+    href: string;
+    id: string;
+    name: string;
+    type: "artist";
+    uri: string;
+  }>;
+}
+
 // **Simplified Artist Interface**
 export interface SimplifiedArtist {
   id: string;

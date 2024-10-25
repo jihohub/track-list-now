@@ -26,7 +26,7 @@ const TrackSection = ({ track }: TrackSectionProps) => {
           {track.artists.map((artist, index) => (
             <span key={artist.id} className="inline-flex items-center">
               <Link href={`/artist/${artist.id}`}>
-                <span className="text-green-500 hover:underline">
+                <span className="text-chefchaouenBlue hover:underline">
                   {artist.name}
                 </span>
               </Link>
@@ -39,7 +39,7 @@ const TrackSection = ({ track }: TrackSectionProps) => {
         <p className="text-gray-400 mt-1">
           {t("album", { ns: "track" })}:{" "}
           <Link href={`/album/${track.album.id}`}>
-            <span className="text-green-500 hover:underline">
+            <span className="text-chefchaouenBlue hover:underline">
               {track.album.name}
             </span>
           </Link>

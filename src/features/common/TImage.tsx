@@ -1,7 +1,7 @@
 import ArtistIcon from "@/assets/icons/artist.svg";
 import TrackIcon from "@/assets/icons/track.svg";
 import parseSizes from "@/libs/utils/parseSizes";
-import { ArtistOrTrackImageProps } from "@/types/types";
+import { TImageProps } from "@/types/types";
 import Image from "next/image";
 
 const TImage = ({
@@ -10,7 +10,7 @@ const TImage = ({
   alt,
   size = "w-16 h-16",
   className = "",
-}: ArtistOrTrackImageProps) => {
+}: TImageProps) => {
   const defaultStyle = `flex items-center justify-center bg-black relative ${size} ${
     type === "artist" ? "rounded-full" : "rounded-lg"
   }`;
