@@ -54,7 +54,7 @@ const handler = async (
         (artist: SpotifyArtist) => ({
           id: artist.id,
           name: artist.name,
-          imageUrl: artist.images[0]?.url || "/default-artist.png",
+          imageUrl: artist.images[0]?.url,
           followers: artist.followers.total,
         }),
       );
@@ -75,7 +75,7 @@ const handler = async (
         (track: SpotifyTrack) => ({
           id: track.id,
           name: track.name,
-          albumImageUrl: track.album.images[0]?.url || "/default-album.png",
+          albumImageUrl: track.album.images[0]?.url,
           artists: track.artists
             .map((artist: SpotifyArtistBrief) => artist.name)
             .join(", "),
@@ -99,7 +99,7 @@ const handler = async (
         (album: SpotifyAlbum) => ({
           id: album.id,
           name: album.name,
-          imageUrl: album.images[0]?.url || "/default-album.png",
+          imageUrl: album.images[0]?.url,
           artists: album.artists
             .map((artist: SpotifyArtistBrief) => artist.name)
             .join(", "),
