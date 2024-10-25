@@ -17,7 +17,7 @@ import {
   useQueryClient,
 } from "@tanstack/react-query";
 import axios from "axios";
-import download from "downloadjs";
+import { saveAs } from "file-saver";
 import * as htmlToImage from "html-to-image";
 import { GetServerSideProps } from "next";
 import { getSession, useSession } from "next-auth/react";
@@ -174,7 +174,7 @@ const ProfilePage = ({ userId }: ProfilePageProps) => {
           now.getHours(),
         ).padStart(2, "0")}${String(now.getMinutes()).padStart(2, "0")}`;
         const fileName = `${isOwnProfile && session?.user?.name}-${formattedDate}.jpeg`;
-        download(dataUrl, fileName);
+        saveAs(dataUrl, fileName);
       })
       .catch((error: unknown) => {
         // TODO: 에러 처리
