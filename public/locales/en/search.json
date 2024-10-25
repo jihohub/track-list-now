@@ -1,0 +1,10 @@
+{
+  "search": "search",
+  "search_for": "Search Artist, Track, Album",
+  "all": "All",
+  "artist": "Artist",
+  "track": "Track",
+  "album": "Album",
+  "placeholder": "Enter keywords.",
+  "no_result": "No Results."
+}

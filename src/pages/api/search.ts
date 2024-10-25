@@ -38,7 +38,7 @@ const handler = async (
     if (type === "artist" && "artists" in data) {
       const simplifiedArtists: SimplifiedArtist[] = data.artists.items.map(
         (artist: SpotifyArtist) => ({
-          imageUrl: artist.images[0]?.url || "/default-artist.png",
+          imageUrl: artist.images[0]?.url,
           name: artist.name,
           id: artist.id,
           followers: artist.followers.total,
@@ -60,7 +60,7 @@ const handler = async (
     if (type === "track" && "tracks" in data) {
       const simplifiedTracks: SimplifiedTrack[] = data.tracks.items.map(
         (track: SpotifyTrack) => ({
-          albumImageUrl: track.album.images[0]?.url || "/default-album.png",
+          albumImageUrl: track.album.images[0]?.url,
           name: track.name,
           artists: track.artists
             .map((artist: SpotifyArtistBrief) => artist.name)

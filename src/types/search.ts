@@ -17,6 +17,14 @@ export interface SimplifiedTrack {
   popularity: number;
 }
 
+export interface SimplifiedAlbum {
+  id: string;
+  name: string;
+  imageUrl: string;
+  artists: string;
+  releaseDate: string;
+}
+
 // **Search Response Interfaces**
 export interface ArtistsSearchResponse {
   artists: {
@@ -53,6 +61,38 @@ export interface ErrorResponse {
 
 // **Union Type for API Response**
 export type ResponseData = SimplifiedSearchResponse | ErrorResponse;
+
+export type SearchResult = SimplifiedArtist | SimplifiedTrack | SimplifiedAlbum;
+
+export interface SearchResponseData {
+  artists?: {
+    items: SimplifiedArtist[];
+    href: string;
+    limit: number;
+    next: string | null;
+    offset: number;
+    previous: string | null;
+    total: number;
+  };
+  tracks?: {
+    items: SimplifiedTrack[];
+    href: string;
+    limit: number;
+    next: string | null;
+    offset: number;
+    previous: string | null;
+    total: number;
+  };
+  albums?: {
+    items: SimplifiedAlbum[];
+    href: string;
+    limit: number;
+    next: string | null;
+    offset: number;
+    previous: string | null;
+    total: number;
+  };
+}
 
 // **Added Item Interfaces**
 export interface AddedArtist {
@@ -106,6 +146,19 @@ export interface SpotifyTrackSearchResponse {
   };
 }
 
+export interface SpotifyAlbumSearchResponse {
+  albums: {
+    items: SpotifyTrack[];
+    href: string;
+    limit: number;
+    next: string | null;
+    offset: number;
+    previous: string | null;
+    total: number;
+  };
+}
+
 export type SpotifySearchResponse =
   | SpotifyArtistSearchResponse
-  | SpotifyTrackSearchResponse;
+  | SpotifyTrackSearchResponse
+  | SpotifyAlbumSearchResponse;

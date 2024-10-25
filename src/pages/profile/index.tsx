@@ -20,7 +20,7 @@ import axios from "axios";
 import download from "downloadjs";
 import * as htmlToImage from "html-to-image";
 import { GetServerSideProps } from "next";
-import { useSession } from "next-auth/react";
+import { getSession, useSession } from "next-auth/react";
 import { useTranslation } from "next-i18next";
 import { serverSideTranslations } from "next-i18next/serverSideTranslations";
 import { NextSeo } from "next-seo";
@@ -291,7 +291,7 @@ const ProfilePage = ({ userId }: ProfilePageProps) => {
           <div className="flex justify-end mb-6">
             <button
               onClick={isEditing ? handleSaveChanges : toggleEditing}
-              className="not-contain bg-sky-800 text-white px-4 py-2 rounded-lg"
+              className="not-contain bg-persianBlue text-white px-4 py-2 rounded-lg"
               type="button"
             >
               {isEditing
@@ -340,7 +340,7 @@ const ProfilePage = ({ userId }: ProfilePageProps) => {
           <div className="flex justify-center mt-6">
             <button
               onClick={handleSaveAsImage}
-              className="not-contain bg-sky-800 text-white px-4 py-2 rounded-lg"
+              className="not-contain bg-persianBlue text-white px-4 py-2 rounded-lg"
               type="button"
             >
               {t("to_image", { ns: "profile" })}
@@ -366,22 +366,32 @@ const ProfilePage = ({ userId }: ProfilePageProps) => {
 export default ProfilePage;
 
 export const getServerSideProps: GetServerSideProps = async (context) => {
+  const session = await getSession(context);
+
+  if (!session) {
+    return {
+      redirect: {
+        destination: "/api/auth/login",
+        permanent: false,
+      },
+    };
+  }
+
   const locale = context.locale ?? "ko";
-  const { userId } = context.params!;
-  const parsedUserId = Number(userId);
+  const userId = Number(session.user.id);
 
   const queryClient = new QueryClient();
 
   try {
     await Promise.all([
       queryClient.prefetchQuery({
-        queryKey: ["userFavorites", parsedUserId],
-        queryFn: () => fetchUserFavorites(parsedUserId),
+        queryKey: ["userFavorites", userId],
+        queryFn: () => fetchUserFavorites(userId),
         staleTime: 5 * 60 * 1000,
       }),
       queryClient.prefetchQuery({
-        queryKey: ["userData", parsedUserId],
-        queryFn: () => fetchUserData(parsedUserId),
+        queryKey: ["userData", userId],
+        queryFn: () => fetchUserData(userId),
         staleTime: 5 * 60 * 1000,
       }),
     ]);
@@ -390,7 +400,7 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
       props: {
         ...(await serverSideTranslations(locale, ["common", "profile"])),
         dehydratedState: dehydrate(queryClient),
-        userId: parsedUserId,
+        userId,
       },
     };
   } catch (error) {

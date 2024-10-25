@@ -124,13 +124,13 @@ export interface SearchModalProps {
 export interface TItemProps {
   index: number;
   item: Artist | Track;
-  type: "artist" | "track";
+  type: "artist" | "track" | "album";
   isFeatured?: boolean;
 }
 
-export interface ArtistOrTrackImageProps {
+export interface TImageProps {
   imageUrl?: string;
-  type: "artist" | "track";
+  type: "artist" | "track" | "album";
   alt: string;
   size?: string;
   className?: string;
