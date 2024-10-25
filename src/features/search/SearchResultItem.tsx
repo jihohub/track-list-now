@@ -44,7 +44,11 @@ const SearchResultItem = ({ result, listType }: SearchResultItemProps) => {
 
   return (
     <li className="flex items-center justify-between text-sm text-white cursor-pointer bg-zinc-900 hover:bg-gray-700 p-2 rounded-lg">
-      <Link href={getDetailPageUrl()} passHref>
+      <Link
+        href={getDetailPageUrl()}
+        passHref
+        className="flex justify-between items-center w-full"
+      >
         <div className="flex items-center">
           <TImage
             imageUrl={
