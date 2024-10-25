@@ -1,3 +1,4 @@
+import ErrorComponent from "@/features/common/ErrorComponent";
 import NoResultsMessage from "@/features/search/NoResultsMessage";
 import SearchInput from "@/features/search/SearchInput";
 import SearchResultList from "@/features/search/SearchResultList";
@@ -120,6 +121,10 @@ const SearchSection = () => {
       albums.push(...page.albums.items);
     }
   });
+
+  if (isError) {
+    return <ErrorComponent message={`Error loading data: ${error.message}`} />;
+  }
 
   return (
     <div className="bg-zinc-800 p-6 rounded-lg shadow-lg max-w-4xl w-full mx-auto">
