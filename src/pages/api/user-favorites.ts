@@ -13,8 +13,8 @@ import {
 } from "@/types/favorite";
 import {
   FavoriteType,
-  UserFavoriteArtists,
-  UserFavoriteTracks,
+  UserFavoriteArtist,
+  UserFavoriteTrack,
 } from "@prisma/client";
 import { NextApiRequest, NextApiResponse } from "next";
 
@@ -36,7 +36,7 @@ const handleGet = async (
 
   try {
     // 사용자별 즐겨찾기 아티스트 조회
-    const userFavoriteArtists = await prisma.userFavoriteArtists.findMany({
+    const userFavoriteArtists = await prisma.userFavoriteArtist.findMany({
       where: { userId: parsedUserId },
       include: {
         artist: true,
@@ -44,7 +44,7 @@ const handleGet = async (
     });
 
     // 사용자별 즐겨찾기 트랙 조회
-    const userFavoriteTracks = await prisma.userFavoriteTracks.findMany({
+    const userFavoriteTracks = await prisma.userFavoriteTrack.findMany({
       where: { userId: parsedUserId },
       include: {
         track: true,
@@ -103,11 +103,11 @@ const handlePatch = async (
   try {
     await prisma.$transaction(async (prismaTransaction) => {
       const existingFavoritesArtists =
-        await prismaTransaction.userFavoriteArtists.findMany({
+        await prismaTransaction.userFavoriteArtist.findMany({
           where: { userId },
         });
       const existingFavoritesTracks =
-        await prismaTransaction.userFavoriteTracks.findMany({
+        await prismaTransaction.userFavoriteTrack.findMany({
           where: { userId },
         });
 
@@ -204,7 +204,7 @@ const handlePatch = async (
           if (isArtist) {
             // 아티스트 즐겨찾기 추가
             const artist = item as UserFavoriteArtistInput;
-            await prismaTransaction.userFavoriteArtists.upsert({
+            await prismaTransaction.userFavoriteArtist.upsert({
               where: {
                 userId_artistId_favoriteType: {
                   userId,
@@ -242,7 +242,7 @@ const handlePatch = async (
           } else {
             // 트랙 즐겨찾기 추가
             const track = item as UserFavoriteTrackInput;
-            await prismaTransaction.userFavoriteTracks.upsert({
+            await prismaTransaction.userFavoriteTrack.upsert({
               where: {
                 userId_trackId_favoriteType: {
                   userId,
@@ -284,15 +284,15 @@ const handlePatch = async (
       };
 
       const removeUserFavorites = async (
-        favorites: UserFavoriteArtists[] | UserFavoriteTracks[],
+        favorites: UserFavoriteArtist[] | UserFavoriteTrack[],
         isArtist: boolean,
         favoriteType: FavoriteType,
       ) => {
         const deletePromises = favorites.map(async (item) => {
           if (isArtist) {
             // 아티스트 즐겨찾기 제거
-            const artist = item as UserFavoriteArtists;
-            await prismaTransaction.userFavoriteArtists.deleteMany({
+            const artist = item as UserFavoriteArtist;
+            await prismaTransaction.userFavoriteArtist.deleteMany({
               where: {
                 userId,
                 artistId: artist.artistId,
@@ -327,8 +327,8 @@ const handlePatch = async (
             }
           } else {
             // 트랙 즐겨찾기 제거
-            const track = item as UserFavoriteTracks;
-            await prismaTransaction.userFavoriteTracks.deleteMany({
+            const track = item as UserFavoriteTrack;
+            await prismaTransaction.userFavoriteTrack.deleteMany({
               where: {
                 userId,
                 trackId: track.trackId,
