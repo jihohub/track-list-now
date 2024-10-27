@@ -25,6 +25,7 @@ const FavoriteSections: React.FC<FavoriteSectionsProps> = ({
     return (
       <div className="space-y-8">
         {Array.from({ length: 4 }).map((_, index) => (
+          // eslint-disable-next-line react/no-array-index-key
           <FavoriteSectionSkeleton key={index} />
         ))}
       </div>

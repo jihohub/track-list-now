@@ -2,7 +2,9 @@ import {
   isArtistSection,
   isTrackSection,
   SectionToItemType,
+  UserFavoriteArtist,
   UserFavorites,
+  UserFavoriteTrack,
 } from "@/types/favorite";
 
 export const deleteFavorite = <S extends keyof UserFavorites>(
@@ -13,12 +15,12 @@ export const deleteFavorite = <S extends keyof UserFavorites>(
   const updatedFavorites: UserFavorites = { ...favorites };
 
   if (isArtistSection(section)) {
-    updatedFavorites[section] = (updatedFavorites[section] as any[]).filter(
-      (item: any) => item.artistId !== id,
+    updatedFavorites[section] = updatedFavorites[section].filter(
+      (item) => item.artistId !== id,
     );
   } else if (isTrackSection(section)) {
-    updatedFavorites[section] = (updatedFavorites[section] as any[]).filter(
-      (item: any) => item.trackId !== id,
+    updatedFavorites[section] = updatedFavorites[section].filter(
+      (item) => item.trackId !== id,
     );
   }
 
@@ -33,9 +35,15 @@ export const addFavorite = <S extends keyof UserFavorites>(
   const updatedFavorites: UserFavorites = { ...favorites };
 
   if (isArtistSection(section)) {
-    updatedFavorites[section] = [...(updatedFavorites[section] as any[]), item];
+    updatedFavorites[section] = [
+      ...(updatedFavorites[section] as UserFavoriteArtist[]),
+      item as UserFavoriteArtist,
+    ];
   } else if (isTrackSection(section)) {
-    updatedFavorites[section] = [...(updatedFavorites[section] as any[]), item];
+    updatedFavorites[section] = [
+      ...(updatedFavorites[section] as UserFavoriteTrack[]),
+      item as UserFavoriteTrack,
+    ];
   }
 
   return updatedFavorites;

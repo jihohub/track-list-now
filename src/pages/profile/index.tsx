@@ -81,7 +81,7 @@ const ProfilePage = ({ userId }: ProfilePageProps) => {
       setIsEditing(false);
       setEditedFavorites(null);
     } catch (error: unknown) {
-      alert("저장에 실패했습니다. 다시 시도해주세요.");
+      JSON.stringify(error);
     }
   };
 

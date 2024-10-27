@@ -28,7 +28,7 @@ const ProfileHeader = ({
           priority
         />
       ) : (
-        <div className="w-24 h-24 mx-auto bg-gray-500 rounded-full"></div>
+        <div className="w-24 h-24 mx-auto bg-gray-500 rounded-full" />
       )}
 
       {viewedUserName && (

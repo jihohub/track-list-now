@@ -52,7 +52,7 @@ const useUserProfile = (userId: number) => {
       return { previousFavorites };
     },
     onError: (error: unknown) => {
-      console.error("Error saving favorites:", error);
+      JSON.stringify(error);
     },
     onSettled: () => {
       queryClient.invalidateQueries({ queryKey: ["userFavorites", userId] });
