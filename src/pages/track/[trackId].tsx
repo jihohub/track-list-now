@@ -1,5 +1,4 @@
 import ErrorComponent from "@/features/common/ErrorComponent";
-import LoadingBar from "@/features/common/LoadingBar";
 import TrackSection from "@/features/track/TrackSection";
 import { TrackDetail } from "@/types/track";
 import { dehydrate, QueryClient, useQuery } from "@tanstack/react-query";
@@ -22,19 +21,11 @@ const fetchTrackDetail = async (trackId: string): Promise<TrackDetail> => {
 const TrackPage = ({ trackId }: TrackPageProps) => {
   const { t } = useTranslation(["common", "track"]);
 
-  const {
-    data: track,
-    error,
-    isLoading,
-  } = useQuery<TrackDetail, Error>({
+  const { data: track, error } = useQuery<TrackDetail, Error>({
     queryKey: ["track", trackId],
     queryFn: () => fetchTrackDetail(trackId),
     staleTime: 5 * 60 * 1000,
   });
-
-  if (isLoading) {
-    return <LoadingBar />;
-  }
 
   if (error) {
     return <ErrorComponent message={`Error loading data: ${error.message}`} />;
@@ -50,12 +41,12 @@ const TrackPage = ({ trackId }: TrackPageProps) => {
   return (
     <div className="max-w-4xl mx-auto p-6 mt-8 bg-zinc-800 rounded-lg shadow-md">
       <NextSeo
-        title={`Track List Now - ${trackTitle}`}
+        title={`${trackTitle} - Track List Now`}
         description={`Listen to ${trackTitle} by ${artistNames}. Find information about the album, release date, and duration.`}
         openGraph={{
           type: "music.song",
           url: `https://www.tracklistnow.com/track/${trackId}`,
-          title: `Track List Now - ${trackTitle}`,
+          title: `${trackTitle} - Track List Now`,
           description: `Listen to ${trackTitle} by ${artistNames}. Find information about the album, release date, and duration.`,
           images: [
             {

@@ -34,11 +34,11 @@ model User {
   createdAt        DateTime             @default(now())
   updatedAt        DateTime             @updatedAt
 
-  favoriteArtists  UserFavoriteArtists[]
-  favoriteTracks   UserFavoriteTracks[]
+  favoriteArtist   UserFavoriteArtist[]
+  favoriteTrack    UserFavoriteTrack[]
 }
 
-model UserFavoriteArtists {
+model UserFavoriteArtist {
   id           Int          @id @default(autoincrement())
   user         User         @relation(fields: [userId], references: [id])
   userId       Int
@@ -54,7 +54,7 @@ model UserFavoriteArtists {
   @@index([userId, artistId], name: "user_artist_idx")
 }
 
-model UserFavoriteTracks {
+model UserFavoriteTrack {
   id           Int          @id @default(autoincrement())
   user         User         @relation(fields: [userId], references: [id])
   userId       Int
@@ -79,7 +79,7 @@ model Artist {
   createdAt           DateTime             @default(now())
   updatedAt           DateTime             @updatedAt
 
-  userFavoriteArtists UserFavoriteArtists[]
+  userFavoriteArtist  UserFavoriteArtist[]
   artistRanking       ArtistRanking[]
 }
 
@@ -93,7 +93,7 @@ model Track {
   createdAt         DateTime             @default(now())
   updatedAt         DateTime             @updatedAt
 
-  userFavoriteTracks UserFavoriteTracks[]
+  userFavoriteTrack UserFavoriteTrack[]
   trackRanking      TrackRanking[]
 }
 
