@@ -3,6 +3,7 @@ import { convertToURL } from "@/libs/utils/categoryMapper";
 import { useTranslation } from "next-i18next";
 import Link from "next/link";
 
+import useGlobalLoading from "@/hooks/useGlobalLoading";
 import {
   RankingSectionProps,
   isArtistWithRanking,
@@ -16,6 +17,7 @@ const RankingSection = ({
   category,
 }: RankingSectionProps) => {
   const { t } = useTranslation(["common", "main"]);
+  const isLoading = useGlobalLoading();
   const categoryURL = convertToURL(category);
 
   return (
@@ -23,7 +25,7 @@ const RankingSection = ({
       <div className="flex-grow">
         <h2 className="text-2xl text-white font-bold mb-4">{title}</h2>
         <ul>
-          {data.length === 0 ? (
+          {!isLoading && data.length === 0 ? (
             <li className="flex justify-center items-center h-[280px]">
               <p className="text-gray-400 text-center">{t("no_data")}</p>
             </li>

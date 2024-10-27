@@ -1,19 +1,8 @@
 import LoadingBar from "@/features/common/LoadingBar";
-import { useIsFetching, useIsMutating } from "@tanstack/react-query";
-import { useEffect, useState } from "react";
+import useGlobalLoading from "@/hooks/useGlobalLoading";
 
 const GlobalLoadingBar = () => {
-  const isFetching = useIsFetching();
-  const isMutating = useIsMutating();
-  const [isLoading, setIsLoading] = useState(false);
-
-  useEffect(() => {
-    if (isFetching > 0 || isMutating > 0) {
-      setIsLoading(true);
-    } else {
-      setIsLoading(false);
-    }
-  }, [isFetching, isMutating]);
+  const isLoading = useGlobalLoading();
 
   return isLoading ? <LoadingBar /> : null;
 };

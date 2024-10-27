@@ -1,6 +1,7 @@
 import ErrorComponent from "@/features/common/ErrorComponent";
 import TItem from "@/features/common/TItem";
 import RankingCategoryTabs from "@/features/ranking/RankingCategoryTabs";
+import useGlobalLoading from "@/hooks/useGlobalLoading";
 import { convertToCategory } from "@/libs/utils/categoryMapper";
 import {
   isArtistWithRanking,
@@ -31,8 +32,9 @@ const fetchRankingData = async (category: string): Promise<TItemData[]> => {
 const RankingPage = ({ category }: RankingPageProps) => {
   const { t } = useTranslation("common");
   const router = useRouter();
+  const isLoading = useGlobalLoading();
 
-  const { data: rankingData, error } = useQuery<TItemData[], Error>({
+  const { data: rankingData = [], error } = useQuery<TItemData[], Error>({
     queryKey: ["ranking", category],
     queryFn: () => fetchRankingData(category),
     staleTime: 5 * 60 * 1000,
@@ -61,10 +63,6 @@ const RankingPage = ({ category }: RankingPageProps) => {
     return <ErrorComponent message={`Error loading data: ${error.message}`} />;
   }
 
-  if (!rankingData || rankingData.length === 0) {
-    return <div className="text-center text-gray-400">{t("no_data")}</div>;
-  }
-
   let sectionType: "artist" | "track" = "artist";
   let sectionData: TItemData[] = [];
 
@@ -91,12 +89,12 @@ const RankingPage = ({ category }: RankingPageProps) => {
   return (
     <div className="max-w-5xl mx-auto p-6">
       <NextSeo
-        title={`Track List Now - ${pageTitle}`}
+        title={`${pageTitle} - Track List Now`}
         description={pageDescription}
         openGraph={{
           type: "website",
           url: `https://www.tracklistnow.com/ranking/${category.toLowerCase()}`,
-          title: `Track List Now - ${pageTitle}`,
+          title: `${pageTitle} - Track List Now`,
           description: pageDescription,
           images: [
             {
@@ -120,7 +118,7 @@ const RankingPage = ({ category }: RankingPageProps) => {
       />
 
       <h1 className="text-3xl font-bold text-white mb-6">{t(title)}</h1>
-      {sectionData.length === 0 ? (
+      {!isLoading && sectionData.length === 0 ? (
         <p className="text-gray-400 text-center mt-4">{t("no_data")}</p>
       ) : (
         <ul className="space-y-4">
