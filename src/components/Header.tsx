@@ -19,7 +19,7 @@ const Header = () => {
 
   return (
     <header className="sticky bg-zinc-950 text-vividSkyBlue p-4 top-0 z-50">
-      <div className="container mx-auto flex justify-between items-center">
+      <div className="flex justify-between items-center">
         <Link href="/" className="text-xl font-bold">
           Track List Now
         </Link>
@@ -37,8 +37,8 @@ const Header = () => {
                 {isMenuOpen ? <CloseIcon /> : <HamburgerIcon />}
               </button>
             </li>
+            <MobileMenu isMenuOpen={isMenuOpen} closeMenu={closeMenu} />
           </ul>
-          <MobileMenu isMenuOpen={isMenuOpen} closeMenu={closeMenu} />
         </nav>
       </div>
     </header>
