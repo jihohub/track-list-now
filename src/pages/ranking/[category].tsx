@@ -119,7 +119,9 @@ const RankingPage = ({ category }: RankingPageProps) => {
 
       <h1 className="text-3xl font-bold text-white mb-6">{t(title)}</h1>
       {!isLoading && sectionData.length === 0 ? (
-        <p className="text-gray-400 text-center mt-4">{t("no_data")}</p>
+        <div className="flex justify-center items-center h-[500px]">
+          <p className="text-gray-400 text-center mt-4">{t("no_data")}</p>
+        </div>
       ) : (
         <ul className="space-y-4">
           {sectionData.map((item, index) => {
