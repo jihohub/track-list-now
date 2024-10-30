@@ -1,20 +1,20 @@
-import LanguageToggle from "@/features/common/LanguageToggle";
-import { signIn, signOut, useSession } from "next-auth/react";
+import CloseIcon from "@/assets/icons/close.svg";
+import HamburgerIcon from "@/assets/icons/hamburger.svg";
 import Link from "next/link";
-import { useRouter } from "next/router";
+import { useState } from "react";
+import DesktopNav from "./DesktopNav";
+import MobileMenu from "./MobileMenu";
 
 const Header = () => {
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const { data: session, status } = useSession();
-  const router = useRouter();
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
 
-  const handleProfileClick = async (e: React.MouseEvent<HTMLButtonElement>) => {
-    e.preventDefault();
-    if (status === "authenticated") {
-      router.push("/profile");
-    } else {
-      await signIn();
-    }
+  const toggleMenu = (e: React.MouseEvent<HTMLButtonElement>) => {
+    e.stopPropagation();
+    setIsMenuOpen((prev) => !prev);
+  };
+
+  const closeMenu = () => {
+    setIsMenuOpen(false);
   };
 
   return (
@@ -25,38 +25,20 @@ const Header = () => {
         </Link>
         <nav>
           <ul className="flex items-center space-x-4">
-            <li>
-              <LanguageToggle />
-            </li>
-            <li className="md:block hidden">
+            <DesktopNav />
+            <li className="md:hidden">
               <button
-                onClick={handleProfileClick}
+                onClick={toggleMenu}
                 type="button"
-                aria-label="Go to your profile"
+                aria-label="Toggle menu"
+                aria-expanded={isMenuOpen}
+                className="flex items-center focus:outline-none"
               >
-                Profile
+                {isMenuOpen ? <CloseIcon /> : <HamburgerIcon />}
               </button>
             </li>
-            <li className="md:block hidden">
-              {status === "authenticated" ? (
-                <button
-                  onClick={() => signOut()}
-                  type="button"
-                  aria-label="Logout"
-                >
-                  Logout
-                </button>
-              ) : (
-                <button
-                  onClick={() => signIn()}
-                  type="button"
-                  aria-label="Login"
-                >
-                  Login
-                </button>
-              )}
-            </li>
           </ul>
+          <MobileMenu isMenuOpen={isMenuOpen} closeMenu={closeMenu} />
         </nav>
       </div>
     </header>
