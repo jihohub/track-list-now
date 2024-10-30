@@ -1,4 +1,5 @@
 import LoadingBar from "@/features/common/LoadingBar";
+import { UserFavorites } from "@/types/favorite";
 import {
   AddedArtist,
   AddedItem,
@@ -21,6 +22,7 @@ interface SearchModalProps {
   modalType: "artist" | "track";
   activeSection: string;
   handleAddItem: (section: string, item: AddedItem) => void;
+  userFavorites: UserFavorites;
 }
 
 const SearchModal = ({
@@ -28,6 +30,7 @@ const SearchModal = ({
   modalType,
   activeSection,
   handleAddItem,
+  userFavorites,
 }: SearchModalProps) => {
   const { t } = useTranslation(["common", "profile"]);
   const router = useRouter();
@@ -155,6 +158,7 @@ const SearchModal = ({
             modalType={modalType}
             handleSelectItem={handleSelectItem}
             addButtonLabel={addButtonLabel}
+            userFavorites={userFavorites}
           />
         )}
 

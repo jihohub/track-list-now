@@ -1,3 +1,4 @@
+import { UserFavorites } from "@/types/favorite";
 import { SimplifiedArtist, SimplifiedTrack } from "@/types/search";
 import SearchResultItem from "./SearchResultItem";
 
@@ -6,6 +7,7 @@ interface SearchResultListProps {
   modalType: "artist" | "track";
   handleSelectItem: (item: SimplifiedArtist | SimplifiedTrack) => void;
   addButtonLabel: string;
+  userFavorites: UserFavorites;
 }
 
 const SearchResultList = ({
@@ -13,6 +15,7 @@ const SearchResultList = ({
   modalType,
   handleSelectItem,
   addButtonLabel,
+  userFavorites,
 }: SearchResultListProps) => {
   return (
     <ul className="mt-4 max-h-48 overflow-y-auto">
@@ -23,6 +26,7 @@ const SearchResultList = ({
           modalType={modalType}
           handleSelectItem={handleSelectItem}
           addButtonLabel={addButtonLabel}
+          userFavorites={userFavorites}
         />
       ))}
     </ul>

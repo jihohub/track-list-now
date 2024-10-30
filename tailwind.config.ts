@@ -1,6 +1,7 @@
 import type { Config } from "tailwindcss";
 
 const config: Config = {
+  mode: "jit",
   content: [
     "./src/pages/**/*.{js,ts,jsx,tsx,mdx}",
     "./src/components/**/*.{js,ts,jsx,tsx,mdx}",
@@ -14,9 +15,14 @@ const config: Config = {
           "0%, 60%, 100%": { transform: "translateY(0)" },
           "30%": { transform: "translateY(-15px)" },
         },
+        scalePulse: {
+          "0%, 100%": { transform: "scale(1)" },
+          "50%": { transform: "scale(0.95)" },
+        },
       },
       animation: {
         wave: "wave 1.2s ease-in-out infinite",
+        scalePulse: "scalePulse 0.5s ease-in-out",
       },
       backgroundImage: {
         "gradient-radial": "radial-gradient(var(--tw-gradient-stops))",
