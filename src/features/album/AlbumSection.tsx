@@ -128,7 +128,7 @@ const AlbumSection = ({ album }: AlbumSectionProps) => {
         onClose={handleClosePlayer}
         volume={volume}
         setVolume={setVolume}
-        isAlbumPage={true}
+        isAlbumPage
       />
     </div>
   );

@@ -43,6 +43,7 @@ const TrackSection = ({ track }: TrackSectionProps) => {
     localStorage.setItem("volume", volume.toString());
   }, [volume]);
 
+  // eslint-disable-next-line consistent-return
   useEffect(() => {
     if (animate) {
       const timer = setTimeout(() => setAnimate(false), 500); // 애니메이션 지속 시간과 일치

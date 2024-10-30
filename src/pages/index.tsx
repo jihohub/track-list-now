@@ -3,7 +3,12 @@ import rankingSectionsConstants, {
 } from "@/constants/rankingSections";
 import ErrorComponent from "@/features/common/ErrorComponent";
 import RankingSection from "@/features/main/RankingSection";
-import { FullRankingData, RankingSectionProps } from "@/types/ranking";
+import {
+  ArtistWithRanking,
+  FullRankingData,
+  RankingSectionProps,
+  TrackWithRanking,
+} from "@/types/ranking";
 import { dehydrate, QueryClient, useQuery } from "@tanstack/react-query";
 import axios from "axios";
 import { GetServerSideProps } from "next";
@@ -34,18 +39,13 @@ const MainPage = () => {
     staleTime: 5 * 60 * 1000,
   });
 
-  const allTimeArtists = rankingData?.allTimeArtistsRanking || [];
-  const allTimeTracks = rankingData?.allTimeTracksRanking || [];
-  const currentArtists = rankingData?.currentArtistsRanking || [];
-  const currentTracks = rankingData?.currentTracksRanking || [];
-
   if (error) {
     return <ErrorComponent message={`Error loading data: ${error.message}`} />;
   }
 
   const sections: RankingSectionProps[] = rankingSectionsConstants.map(
     (section: RankingSectionConstant) => {
-      let data: any[] = [];
+      let data: ArtistWithRanking[] | TrackWithRanking[] = [];
       switch (section.category) {
         case "ALL_TIME_ARTIST":
           data = rankingData?.allTimeArtistsRanking || [];
