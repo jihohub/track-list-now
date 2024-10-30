@@ -46,7 +46,7 @@ const MobileMenu = ({ isMenuOpen, closeMenu }: MobileMenuProps) => {
           <CloseIcon />
         </button>
       </div>
-      <ul className="flex flex-col items-end space-y-4 p-4">
+      <ul className="flex flex-col space-y-4 p-4">
         <NavigationLinks isMobile closeMenu={closeMenu} />
       </ul>
     </div>
