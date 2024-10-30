@@ -55,7 +55,6 @@ const SearchSection = () => {
   } = useInfiniteQuery({
     queryKey: ["search", searchQuery, currentType],
     queryFn: fetchSearchResults,
-    enabled: hasSearched && currentType !== "artist,track,album", // "All" 탭에서는 비활성화
     initialPageParam: 0,
     getNextPageParam: (lastPage) => {
       if (currentType === "artist" && lastPage.artists?.next) {

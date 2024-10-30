@@ -26,7 +26,7 @@ const SearchResultItem = ({ result, listType }: SearchResultItemProps) => {
   };
 
   const isAlbum = (res: SearchResult): res is SimplifiedAlbum => {
-    return (res as SimplifiedAlbum).releaseDate !== undefined;
+    return (res as SimplifiedAlbum).release_date !== undefined;
   };
 
   const getDetailPageUrl = () => {
@@ -54,14 +54,14 @@ const SearchResultItem = ({ result, listType }: SearchResultItemProps) => {
             imageUrl={
               listType === "artist"
                 ? isArtist(result)
-                  ? result.imageUrl
+                  ? result.image_url
                   : "/default-artist.png"
                 : listType === "track"
                   ? isTrack(result)
-                    ? result.albumImageUrl
+                    ? result.album_image_url
                     : "/default-album.png"
                   : isAlbum(result)
-                    ? result.imageUrl
+                    ? result.album_image_url
                     : "/default-album.png"
             }
             type={listType}
