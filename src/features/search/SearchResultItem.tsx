@@ -54,14 +54,14 @@ const SearchResultItem = ({ result, listType }: SearchResultItemProps) => {
             imageUrl={
               listType === "artist"
                 ? isArtist(result)
-                  ? result.image_url
+                  ? result.imageUrl
                   : "/default-artist.png"
                 : listType === "track"
                   ? isTrack(result)
-                    ? result.album_image_url
+                    ? result.albumImageUrl
                     : "/default-album.png"
                   : isAlbum(result)
-                    ? result.album_image_url
+                    ? result.albumImageUrl
                     : "/default-album.png"
             }
             type={listType}

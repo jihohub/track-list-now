@@ -5,14 +5,14 @@ import { SpotifyTrack } from "./track";
 export interface SimplifiedArtist {
   id: string;
   name: string;
-  image_url: string;
+  imageUrl: string;
   followers: number;
 }
 
 export interface SimplifiedTrack {
   id: string;
   name: string;
-  album_image_url: string;
+  albumImageUrl: string;
   artists: string;
   popularity: number;
 }
@@ -20,7 +20,7 @@ export interface SimplifiedTrack {
 export interface SimplifiedAlbum {
   id: string;
   name: string;
-  album_image_url: string;
+  albumImageUrl: string;
   artists: string;
   release_date: string;
 }
