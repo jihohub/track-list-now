@@ -3,26 +3,26 @@ import { SpotifyTrack } from "./track";
 
 // **Simplified Artist and Track Interfaces**
 export interface SimplifiedArtist {
-  imageUrl: string;
-  name: string;
   id: string;
+  name: string;
+  imageUrl: string;
   followers: number;
 }
 
 export interface SimplifiedTrack {
-  albumImageUrl: string;
-  name: string;
-  artists: string;
   id: string;
+  name: string;
+  albumImageUrl: string;
+  artists: string;
   popularity: number;
 }
 
 export interface SimplifiedAlbum {
   id: string;
   name: string;
-  imageUrl: string;
+  albumImageUrl: string;
   artists: string;
-  releaseDate: string;
+  release_date: string;
 }
 
 // **Search Response Interfaces**

@@ -99,11 +99,11 @@ const handler = async (
         (album: SpotifyAlbum) => ({
           id: album.id,
           name: album.name,
-          imageUrl: album.images[0]?.url,
+          albumImageUrl: album.images[0]?.url,
           artists: album.artists
             .map((artist: SpotifyArtistBrief) => artist.name)
             .join(", "),
-          releaseDate: album.release_date,
+          release_date: album.release_date,
         }),
       );
 
