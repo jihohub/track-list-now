@@ -66,7 +66,7 @@ const AlbumSection = ({ album }: AlbumSectionProps) => {
 
   return (
     <div
-      className={`flex flex-col items-center ${currentTrackIndex && "pb-48 desktop:pb-24"}`}
+      className={`flex flex-col items-center ${currentTrackIndex && "mobile:pb-40 tablet:pb-32 desktop:pb-20"}`}
     >
       <Image
         src={album.images[0]?.url || "/default-image.jpg"}
