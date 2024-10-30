@@ -1,13 +1,20 @@
+import rankingSectionsConstants, {
+  RankingSectionConstant,
+} from "@/constants/rankingSections";
 import ErrorComponent from "@/features/common/ErrorComponent";
 import RankingSection from "@/features/main/RankingSection";
+import {
+  ArtistWithRanking,
+  FullRankingData,
+  RankingSectionProps,
+  TrackWithRanking,
+} from "@/types/ranking";
 import { dehydrate, QueryClient, useQuery } from "@tanstack/react-query";
 import axios from "axios";
 import { GetServerSideProps } from "next";
 import { useTranslation } from "next-i18next";
 import { serverSideTranslations } from "next-i18next/serverSideTranslations";
 import { NextSeo } from "next-seo";
-
-import { FullRankingData, RankingSectionProps } from "@/types/ranking";
 
 const fetchFeaturedRanking = async (): Promise<FullRankingData> => {
   try {
@@ -32,41 +39,38 @@ const MainPage = () => {
     staleTime: 5 * 60 * 1000,
   });
 
-  const allTimeArtists = rankingData?.allTimeArtistsRanking || [];
-  const allTimeTracks = rankingData?.allTimeTracksRanking || [];
-  const currentArtists = rankingData?.currentArtistsRanking || [];
-  const currentTracks = rankingData?.currentTracksRanking || [];
-
   if (error) {
     return <ErrorComponent message={`Error loading data: ${error.message}`} />;
   }
 
-  const sections: RankingSectionProps[] = [
-    {
-      title: t("all_time_favorite_artists"),
-      data: allTimeArtists,
-      type: "artist",
-      category: "ALL_TIME_ARTIST",
+  const sections: RankingSectionProps[] = rankingSectionsConstants.map(
+    (section: RankingSectionConstant) => {
+      let data: ArtistWithRanking[] | TrackWithRanking[] = [];
+      switch (section.category) {
+        case "ALL_TIME_ARTIST":
+          data = rankingData?.allTimeArtistsRanking || [];
+          break;
+        case "ALL_TIME_TRACK":
+          data = rankingData?.allTimeTracksRanking || [];
+          break;
+        case "CURRENT_ARTIST":
+          data = rankingData?.currentArtistsRanking || [];
+          break;
+        case "CURRENT_TRACK":
+          data = rankingData?.currentTracksRanking || [];
+          break;
+        default:
+          data = [];
+      }
+
+      return {
+        title: t(section.titleKey),
+        data,
+        type: section.type,
+        category: section.category,
+      };
     },
-    {
-      title: t("all_time_favorite_tracks"),
-      data: allTimeTracks,
-      type: "track",
-      category: "ALL_TIME_TRACK",
-    },
-    {
-      title: t("current_favorite_artists"),
-      data: currentArtists,
-      type: "artist",
-      category: "CURRENT_ARTIST",
-    },
-    {
-      title: t("current_favorite_tracks"),
-      data: currentTracks,
-      type: "track",
-      category: "CURRENT_TRACK",
-    },
-  ];
+  );
 
   return (
     <div className="max-w-5xl mx-auto p-6 grid grid-cols-1 md:grid-cols-2 gap-8">

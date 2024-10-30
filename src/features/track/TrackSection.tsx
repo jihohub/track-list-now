@@ -1,7 +1,10 @@
+import AudioPlayer from "@/features/audio/AudioPlayer";
+import { SimplifiedTrack } from "@/types/album";
 import { TrackDetail } from "@/types/track";
 import { useTranslation } from "next-i18next";
 import Image from "next/image";
 import Link from "next/link";
+import { useEffect, useState } from "react";
 
 interface TrackSectionProps {
   track: TrackDetail;
@@ -10,16 +13,67 @@ interface TrackSectionProps {
 const TrackSection = ({ track }: TrackSectionProps) => {
   const { t } = useTranslation(["common", "track"]);
 
+  const [isPlaying, setIsPlaying] = useState<boolean>(false);
+  const [volume, setVolume] = useState<number>(1);
+  const [simplifiedTrack, setSimplifiedTrack] =
+    useState<SimplifiedTrack | null>({
+      id: track.id,
+      name: track.name,
+      artists: track.artists,
+      previewUrl: track.preview_url,
+      durationMs: track.duration_ms,
+      albumImageUrl: track.album.images[0]?.url || "/default-album.png",
+    });
+  const [animate, setAnimate] = useState<boolean>(false);
+
+  useEffect(() => {
+    if (isPlaying) {
+      setAnimate(true);
+    }
+  }, [isPlaying]);
+
+  useEffect(() => {
+    const savedVolume = localStorage.getItem("volume");
+    if (savedVolume !== null) {
+      setVolume(Number(savedVolume));
+    }
+  }, []);
+
+  useEffect(() => {
+    localStorage.setItem("volume", volume.toString());
+  }, [volume]);
+
+  // eslint-disable-next-line consistent-return
+  useEffect(() => {
+    if (animate) {
+      const timer = setTimeout(() => setAnimate(false), 500); // 애니메이션 지속 시간과 일치
+      return () => clearTimeout(timer);
+    }
+  }, [animate]);
+
+  const handleClosePlayer = () => {
+    setIsPlaying(false);
+    setSimplifiedTrack(null);
+  };
+
   return (
-    <div className="flex flex-col items-center">
-      <Image
-        src={track.album.images[0]?.url || "/default-image.jpg"}
-        alt={track.name}
-        width={300}
-        height={300}
-        className="rounded-md"
-      />
-      <h1 className="text-4xl font-bold text-white mt-4">{track.name}</h1>
+    <div
+      className={`flex flex-col items-center ${simplifiedTrack && "pb-60 md:pb-40 desktop:pb-20"}`}
+    >
+      <div className="relative group">
+        <Image
+          src={track.album.images[0]?.url || "/default-image.jpg"}
+          alt={track.name}
+          width={300}
+          height={300}
+          className={`rounded-md transition-transform duration-500 ${
+            animate ? "animate-scalePulse" : ""
+          }`}
+        />
+      </div>
+      <div className="w-80">
+        <h1 className="text-2xl font-bold text-white mt-4">{track.name}</h1>
+      </div>
       <div className="w-80">
         <p className="text-gray-400 mt-2">
           {t("artists", { ns: "track" })}:{" "}
@@ -54,11 +108,17 @@ const TrackSection = ({ track }: TrackSectionProps) => {
         </p>
       </div>
       {track.preview_url && (
-        /* eslint-disable jsx-a11y/media-has-caption */
-        <audio controls className="mt-4 w-80">
-          <source src={track.preview_url} type="audio/mpeg" />
-          Your browser does not support the audio element.
-        </audio>
+        <AudioPlayer
+          track={simplifiedTrack}
+          isPlaying={isPlaying}
+          setIsPlaying={setIsPlaying}
+          onPrevious={() => {}} // 단일 트랙이므로 빈 함수 전달
+          onNext={() => {}} // 단일 트랙이므로 빈 함수 전달
+          onClose={handleClosePlayer}
+          volume={volume}
+          setVolume={setVolume}
+          isAlbumPage={false}
+        />
       )}
     </div>
   );

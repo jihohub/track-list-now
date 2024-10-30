@@ -1,3 +1,5 @@
+import PauseIcon from "@/assets/icons/pause.svg";
+import PlayIcon from "@/assets/icons/play.svg";
 import { TrackListItemProps } from "@/types/album";
 import Image from "next/image";
 import Link from "next/link";
@@ -45,39 +47,7 @@ const TrackListItem = ({
                 className="text-neonBlue hover:text-chefchaouenBlue focus:outline-none"
                 type="button"
               >
-                {isCurrent && isPlaying ? (
-                  // 일시정지 아이콘
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    className="h-8 w-8"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M10 9v6m4-6v6"
-                    />
-                  </svg>
-                ) : (
-                  // 재생 아이콘
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    className="h-8 w-8"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M14.752 11.168l-5.197-2.132A1 1 0 008 9.87v4.26a1 1 0 001.555.832l5.197-2.132a1 1 0 000-1.664z"
-                    />
-                  </svg>
-                )}
+                {isCurrent && isPlaying ? <PauseIcon /> : <PlayIcon />}
               </button>
             )}
           </div>

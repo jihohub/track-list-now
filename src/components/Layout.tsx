@@ -12,7 +12,7 @@ const Layout = ({ children }: LayoutProps) => (
   <div className="flex flex-col min-h-screen bg-gradient-radial from-zinc-900 to-zinc-950">
     <GlobalLoadingBar />
     <Header />
-    <main className="flex-grow container mx-auto">{children}</main>
+    <main className="flex-grow container mx-auto mb-16">{children}</main>
     <Footer />
     <MobileNav />
   </div>

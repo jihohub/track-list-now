@@ -1,5 +1,5 @@
 import { AudioPlayerProps } from "@/types/album";
-import { useRef, useState } from "react";
+import React, { useRef, useState } from "react";
 import AudioElement, { AudioElementHandle } from "./AudioElement";
 import CloseButton from "./CloseButton";
 import PlaybackControls from "./PlaybackControls";
@@ -7,7 +7,7 @@ import SeekBar from "./SeekBar";
 import TrackInfo from "./TrackInfo";
 import VolumeControl from "./VolumeControl";
 
-const AudioPlayer = ({
+const AudioPlayerComponent = ({
   track,
   isPlaying,
   setIsPlaying,
@@ -16,6 +16,7 @@ const AudioPlayer = ({
   onClose,
   volume,
   setVolume,
+  isAlbumPage,
 }: AudioPlayerProps) => {
   const audioElementRef = useRef<AudioElementHandle | null>(null);
 
@@ -50,9 +51,9 @@ const AudioPlayer = ({
   if (!track) return null;
 
   return (
-    <div className="fixed bottom-0 left-0 right-0 bg-zinc-700 p-4 flex flex-col desktop:flex-row items-center justify-between z-50">
+    <div className="fixed bottom-16 md:bottom-0 left-0 right-0 bg-zinc-700 p-4 flex flex-col desktop:flex-row items-center justify-between z-50">
       {/* 닫기 버튼 */}
-      <CloseButton onClose={onClose} />
+      {isAlbumPage && <CloseButton onClose={onClose} />}
 
       {/* 트랙 정보 */}
       <TrackInfo track={track} />
@@ -93,5 +94,8 @@ const AudioPlayer = ({
     </div>
   );
 };
+
+const AudioPlayer = React.memo(AudioPlayerComponent);
+AudioPlayer.displayName = "AudioPlayer";
 
 export default AudioPlayer;

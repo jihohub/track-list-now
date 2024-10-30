@@ -32,7 +32,7 @@ const AlbumSection = ({ album }: AlbumSectionProps) => {
 
   const handlePlay = (index: number) => {
     if (currentTrackIndex === index) {
-      setIsPlaying(!isPlaying);
+      setIsPlaying((prev) => !prev);
     } else {
       setCurrentTrackIndex(index);
       setIsPlaying(true);
@@ -66,7 +66,7 @@ const AlbumSection = ({ album }: AlbumSectionProps) => {
 
   return (
     <div
-      className={`flex flex-col items-center ${currentTrackIndex && "pb-48 desktop:pb-24"}`}
+      className={`flex flex-col items-center ${currentTrackIndex && "pb-60 md:pb-40 desktop:pb-20"}`}
     >
       <Image
         src={album.images[0]?.url || "/default-image.jpg"}
@@ -128,6 +128,7 @@ const AlbumSection = ({ album }: AlbumSectionProps) => {
         onClose={handleClosePlayer}
         volume={volume}
         setVolume={setVolume}
+        isAlbumPage
       />
     </div>
   );
