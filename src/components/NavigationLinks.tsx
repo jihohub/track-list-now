@@ -34,7 +34,7 @@ const NavigationLinks = ({
             onClick={() => handleNavigation(item.href)}
             type="button"
             aria-label={`Go to ${item.label} page`}
-            className={`text-right w-full hover:text-white ${isMobile ? "py-2" : ""}`}
+            className={`text-left w-full hover:text-white ${isMobile ? "py-2" : ""}`}
           >
             {item.label}
           </button>
@@ -49,7 +49,7 @@ const NavigationLinks = ({
             }}
             type="button"
             aria-label="Logout"
-            className={`text-right w-full hover:text-white ${isMobile ? "py-2" : ""}`}
+            className={`text-left w-full hover:text-white ${isMobile ? "py-2" : ""}`}
           >
             Logout
           </button>
@@ -61,7 +61,7 @@ const NavigationLinks = ({
             }}
             type="button"
             aria-label="Login"
-            className={`text-right w-full hover:text-white ${isMobile ? "py-2" : ""}`}
+            className={`text-left w-full hover:text-white ${isMobile ? "py-2" : ""}`}
           >
             Login
           </button>
