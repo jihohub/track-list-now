@@ -35,15 +35,25 @@ export const addFavorite = <S extends keyof UserFavorites>(
   const updatedFavorites: UserFavorites = { ...favorites };
 
   if (isArtistSection(section)) {
-    updatedFavorites[section] = [
-      ...(updatedFavorites[section] as UserFavoriteArtist[]),
-      item as UserFavoriteArtist,
-    ];
+    const exists = (updatedFavorites[section] as UserFavoriteArtist[]).some(
+      (artist) => artist.artistId === (item as UserFavoriteArtist).artistId,
+    );
+    if (!exists) {
+      updatedFavorites[section] = [
+        ...(updatedFavorites[section] as UserFavoriteArtist[]),
+        item as UserFavoriteArtist,
+      ];
+    }
   } else if (isTrackSection(section)) {
-    updatedFavorites[section] = [
-      ...(updatedFavorites[section] as UserFavoriteTrack[]),
-      item as UserFavoriteTrack,
-    ];
+    const exists = (updatedFavorites[section] as UserFavoriteTrack[]).some(
+      (track) => track.trackId === (item as UserFavoriteTrack).trackId,
+    );
+    if (!exists) {
+      updatedFavorites[section] = [
+        ...(updatedFavorites[section] as UserFavoriteTrack[]),
+        item as UserFavoriteTrack,
+      ];
+    }
   }
 
   return updatedFavorites;

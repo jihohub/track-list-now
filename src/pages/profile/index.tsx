@@ -192,6 +192,7 @@ const ProfilePage = ({ userId }: ProfilePageProps) => {
             handleAddItem={(section, item) => {
               handleAddItem(section as keyof UserFavorites, item);
             }}
+            userFavorites={editedFavorites as UserFavorites}
           />
         )}
       </div>
