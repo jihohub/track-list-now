@@ -55,6 +55,7 @@ const SearchSection = () => {
   } = useInfiniteQuery({
     queryKey: ["search", searchQuery, currentType],
     queryFn: fetchSearchResults,
+    enabled: hasSearched,
     initialPageParam: 0,
     getNextPageParam: (lastPage) => {
       if (currentType === "artist" && lastPage.artists?.next) {
