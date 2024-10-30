@@ -138,13 +138,13 @@ const ProfilePage = ({ userId }: ProfilePageProps) => {
   return (
     <div className="max-w-3xl mx-auto text-white">
       <NextSeo
-        title={`${profileImageUrl} - Track List Now`}
-        description={`${profileImageUrl}'s favorite artists and tracks on Track List Now`}
+        title={`${viewedUserName} - Track List Now`}
+        description={`${viewedUserName}'s favorite artists and tracks on Track List Now`}
         openGraph={{
           type: "profile",
           url: `https://www.tracklistnow.com/profile/${userId}`,
-          title: `${profileImageUrl} - Track List Now`,
-          description: `${profileImageUrl}'s favorite artists and tracks`,
+          title: `${viewedUserName} - Track List Now`,
+          description: `${viewedUserName}'s favorite artists and tracks`,
           images: [
             {
               url: profileImageUrl || "/default-profile-image.jpg",
