@@ -10,7 +10,7 @@ export interface UserFavoriteArtist {
 export interface UserFavoriteTrack {
   trackId: string;
   name: string;
-  albumImageUrl: string;
+  imageUrl: string;
   artists: string;
   popularity: number;
 }
@@ -94,7 +94,7 @@ export interface UserFavoriteArtistInput {
 export interface UserFavoriteTrackInput {
   trackId: string;
   name: string;
-  albumImageUrl: string;
+  imageUrl: string;
   artists: string;
   popularity: number;
 }

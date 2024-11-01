@@ -41,7 +41,7 @@ export interface SimplifiedTrack {
   artists: SimplifiedArtist[];
   previewUrl: string | null;
   durationMs: number;
-  albumImageUrl: string;
+  imageUrl: string;
 }
 
 // **Simplified Tracks Interface within Album**

@@ -1,5 +1,6 @@
 import TrackListItem from "@/features/album/TrackListItem";
 import AudioPlayer from "@/features/audio/AudioPlayer";
+import LikeButton from "@/features/liked/LikeButton";
 import { SimplifiedAlbum, SimplifiedTrack } from "@/types/album";
 import { useTranslation } from "next-i18next";
 import Image from "next/image";
@@ -75,7 +76,17 @@ const AlbumSection = ({ album }: AlbumSectionProps) => {
         height={300}
         className="rounded-md"
       />
-      <h1 className="text-4xl font-bold text-white mt-4">{album.name}</h1>
+      <h1 className="text-2xl font-bold text-white mt-4">{album.name}</h1>
+      <div className="flex justify-center items-center h-20">
+        <LikeButton
+          itemType="album"
+          itemId={album.id}
+          name={album.name}
+          imageUrl={album.images[0].url}
+          artists={album.artists.map((artist) => artist.name).join(", ")}
+          releaseDate={album.releaseDate}
+        />
+      </div>
       <div className="w-full max-w-4xl px-4">
         <p className="text-gray-400 mt-2">
           {t("artists", { ns: "album" })}:{" "}

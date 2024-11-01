@@ -74,11 +74,11 @@ const SearchModal = ({
       };
 
       handleAddItem(activeSection, addedArtist);
-    } else if (modalType === "track" && "albumImageUrl" in item) {
+    } else if (modalType === "track" && "popularity" in item) {
       const addedTrack: AddedTrack = {
         trackId: item.id,
         name: item.name,
-        albumImageUrl: item.albumImageUrl,
+        imageUrl: item.imageUrl,
         artists: item.artists,
         popularity: item.popularity,
       };

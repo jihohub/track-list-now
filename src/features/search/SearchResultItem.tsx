@@ -26,7 +26,7 @@ const SearchResultItem = ({ result, listType }: SearchResultItemProps) => {
   };
 
   const isAlbum = (res: SearchResult): res is SimplifiedAlbum => {
-    return (res as SimplifiedAlbum).release_date !== undefined;
+    return (res as SimplifiedAlbum).releaseDate !== undefined;
   };
 
   const getDetailPageUrl = () => {
@@ -51,19 +51,7 @@ const SearchResultItem = ({ result, listType }: SearchResultItemProps) => {
       >
         <div className="flex items-center">
           <TImage
-            imageUrl={
-              listType === "artist"
-                ? isArtist(result)
-                  ? result.imageUrl
-                  : "/default-artist.png"
-                : listType === "track"
-                  ? isTrack(result)
-                    ? result.albumImageUrl
-                    : "/default-album.png"
-                  : isAlbum(result)
-                    ? result.albumImageUrl
-                    : "/default-album.png"
-            }
+            imageUrl={result.imageUrl}
             type={listType}
             alt={result.name}
             size="w-10 h-10"

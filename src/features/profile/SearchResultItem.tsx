@@ -41,7 +41,7 @@ const SearchResultItem = ({
           imageUrl={
             modalType === "artist"
               ? (result as SimplifiedArtist).imageUrl
-              : (result as SimplifiedTrack).albumImageUrl
+              : (result as SimplifiedTrack).imageUrl
           }
           type={modalType}
           alt={result.name}

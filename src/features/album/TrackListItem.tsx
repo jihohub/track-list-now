@@ -25,7 +25,7 @@ const TrackListItem = ({
             >
               <div className="flex items-center gap-4">
                 <Image
-                  src={track.albumImageUrl || "/default-album.png"}
+                  src={track.imageUrl || "/default-album.png"}
                   alt={track.name}
                   width={36}
                   height={36}

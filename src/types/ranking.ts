@@ -26,7 +26,7 @@ export interface TrackDetail {
   id: number;
   trackId: string;
   name: string;
-  albumImageUrl: string;
+  imageUrl: string;
   artists: string;
   popularity: number;
 }
