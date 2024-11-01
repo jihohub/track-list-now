@@ -25,7 +25,7 @@ const handler = async (
     const { data } = response;
 
     // 앨범의 첫 번째 이미지 URL 가져오기 (없을 경우 기본 이미지 사용)
-    const albumImageUrl = data.images[0]?.url;
+    const imageUrl = data.images[0]?.url;
 
     // Simplify album data
     const simplifiedAlbum: SimplifiedAlbum = {
@@ -56,7 +56,7 @@ const handler = async (
           })),
           previewUrl: track.preview_url,
           durationMs: track.duration_ms,
-          albumImageUrl,
+          imageUrl,
         })),
       },
     };

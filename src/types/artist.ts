@@ -119,9 +119,14 @@ export type ArtistResponseData = CombinedArtistData | ErrorResponse;
 // **Frontend Page Interfaces**
 export interface ArtistPageData {
   artist: {
+    id: string;
     name: string;
     images: { url: string }[];
     genres: string[];
+    followers: {
+      href: string | null;
+      total: number;
+    };
   };
   topTracks: {
     tracks: {

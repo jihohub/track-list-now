@@ -1,4 +1,5 @@
 import AudioPlayer from "@/features/audio/AudioPlayer";
+import LikeButton from "@/features/liked/LikeButton";
 import { SimplifiedTrack } from "@/types/album";
 import { TrackDetail } from "@/types/track";
 import { useTranslation } from "next-i18next";
@@ -22,7 +23,7 @@ const TrackSection = ({ track }: TrackSectionProps) => {
       artists: track.artists,
       previewUrl: track.preview_url,
       durationMs: track.duration_ms,
-      albumImageUrl: track.album.images[0]?.url || "/default-album.png",
+      imageUrl: track.album.images[0]?.url || "/default-album.png",
     });
   const [animate, setAnimate] = useState<boolean>(false);
 
@@ -60,21 +61,27 @@ const TrackSection = ({ track }: TrackSectionProps) => {
     <div
       className={`flex flex-col items-center ${simplifiedTrack && "pb-60 md:pb-40 desktop:pb-20"}`}
     >
-      <div className="relative group">
-        <Image
-          src={track.album.images[0]?.url || "/default-image.jpg"}
-          alt={track.name}
-          width={300}
-          height={300}
-          className={`rounded-md transition-transform duration-500 ${
-            animate ? "animate-scalePulse" : ""
-          }`}
+      <Image
+        src={track.album.images[0]?.url || "/default-image.jpg"}
+        alt={track.name}
+        width={300}
+        height={300}
+        className={`rounded-md transition-transform duration-500 ${
+          animate ? "animate-scalePulse" : ""
+        }`}
+      />
+      <h1 className="text-2xl font-bold text-white mt-4">{track.name}</h1>
+      <div className="flex justify-center items-center h-20">
+        <LikeButton
+          itemType="track"
+          itemId={track.id}
+          name={track.name}
+          imageUrl={track.album.images[0].url}
+          artists={track.artists.map((artist) => artist.name).join(", ")}
+          popularity={track.popularity}
         />
       </div>
-      <div className="w-80">
-        <h1 className="text-2xl font-bold text-white mt-4">{track.name}</h1>
-      </div>
-      <div className="w-80">
+      <div className="w-full max-w-4xl px-4">
         <p className="text-gray-400 mt-2">
           {t("artists", { ns: "track" })}:{" "}
           {track.artists.map((artist, index) => (

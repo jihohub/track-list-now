@@ -24,7 +24,7 @@ const SearchSection = () => {
     typeof q === "string" ? q : "",
   );
   const [currentType, setCurrentType] = useState<string>(
-    typeof type === "string" ? type : "artist,track,album",
+    typeof type === "string" ? type : "all",
   );
   const [hasSearched, setHasSearched] = useState<boolean>(false);
   const resultsRef = useRef<HTMLUListElement>(null);
@@ -143,7 +143,7 @@ const SearchSection = () => {
 
       <SearchTabs currentType={currentType} setCurrentType={setCurrentType} />
 
-      {hasSearched && currentType === "artist,track,album" && (
+      {hasSearched && currentType === "all" && (
         <>
           {artists.length > 0 && (
             <SearchResultList
@@ -172,7 +172,7 @@ const SearchSection = () => {
         </>
       )}
 
-      {hasSearched && currentType !== "artist,track,album" && (
+      {hasSearched && currentType !== "all" && (
         <SearchResultList
           searchResults={
             currentType.includes("artist")
