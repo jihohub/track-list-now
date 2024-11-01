@@ -1,11 +1,21 @@
+import LikedSection from "@/features/liked/LikedSection";
+import { GetServerSideProps } from "next";
+import { serverSideTranslations } from "next-i18next/serverSideTranslations";
+
 const LikedPage = () => {
   return (
-    <div className="max-w-3xl mx-auto text-white">
-      <div className="flex justify-center items-center h-[700px]">
-        <p className="text-xl text-neonBlue">This page will be updated soon.</p>
-      </div>
+    <div className="min-h-screen p-4">
+      <LikedSection />
     </div>
   );
+};
+
+export const getServerSideProps: GetServerSideProps = async ({ locale }) => {
+  return {
+    props: {
+      ...(await serverSideTranslations(locale ?? "ko", ["common", "search"])),
+    },
+  };
 };
 
 export default LikedPage;

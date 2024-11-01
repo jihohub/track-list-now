@@ -8,7 +8,7 @@ export interface Artist {
 export interface Track {
   trackId: string;
   name: string;
-  albumImageUrl: string;
+  imageUrl: string;
   artists: string;
   popularity: number;
 }

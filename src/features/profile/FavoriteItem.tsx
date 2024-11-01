@@ -24,7 +24,7 @@ const FavoriteItem = ({
           imageUrl={
             type === "artist"
               ? (item as UserFavoriteArtist).imageUrl
-              : (item as UserFavoriteTrack).albumImageUrl
+              : (item as UserFavoriteTrack).imageUrl
           }
           type={type}
           alt={item.name}

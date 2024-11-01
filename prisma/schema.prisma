@@ -36,6 +36,10 @@ model User {
 
   favoriteArtist   UserFavoriteArtist[]
   favoriteTrack    UserFavoriteTrack[]
+
+  likedArtist      UserLikedArtist[]
+  likedTrack       UserLikedTrack[]
+  likedAlbum       UserLikedAlbum[]
 }
 
 model UserFavoriteArtist {
@@ -70,6 +74,51 @@ model UserFavoriteTrack {
   @@index([userId, trackId], name: "user_track_idx")
 }
 
+model UserLikedArtist {
+  id        Int     @id @default(autoincrement())
+  user      User    @relation(fields: [userId], references: [id])
+  userId    Int
+  artistId  String
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  artist    Artist  @relation(fields: [artistId], references: [artistId])
+
+  @@unique([userId, artistId], name: "userId_artistId_liked")
+  @@index([userId, artistId], name: "user_artist_liked_idx")
+}
+
+model UserLikedTrack {
+  id       Int    @id @default(autoincrement())
+  user     User   @relation(fields: [userId], references: [id])
+  userId   Int
+  trackId  String
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  track    Track  @relation(fields: [trackId], references: [trackId])
+
+  @@unique([userId, trackId], name: "userId_trackId_liked")
+  @@index([userId, trackId], name: "user_track_liked_idx")
+}
+
+model UserLikedAlbum {
+  id       Int    @id @default(autoincrement())
+  user     User   @relation(fields: [userId], references: [id])
+  userId   Int
+  albumId  String
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  album    Album  @relation(fields: [albumId], references: [albumId])
+
+  @@unique([userId, albumId], name: "userId_albumId_liked")
+  @@index([userId, albumId], name: "user_album_liked_idx")
+}
+
 model Artist {
   id                  Int                  @id @default(autoincrement())
   artistId            String               @unique
@@ -80,6 +129,7 @@ model Artist {
   updatedAt           DateTime             @updatedAt
 
   userFavoriteArtist  UserFavoriteArtist[]
+  userLikedArtist     UserLikedArtist[]
   artistRanking       ArtistRanking[]
 }
 
@@ -87,14 +137,28 @@ model Track {
   id                Int                  @id @default(autoincrement())
   trackId           String               @unique
   name              String
-  albumImageUrl     String
+  imageUrl          String
   artists           String
   popularity        Int
   createdAt         DateTime             @default(now())
   updatedAt         DateTime             @updatedAt
 
   userFavoriteTrack UserFavoriteTrack[]
+  userLikedTrack    UserLikedTrack[]
   trackRanking      TrackRanking[]
+}
+
+model Album {
+  id           Int                @id @default(autoincrement())
+  albumId      String             @unique
+  name         String
+  imageUrl     String
+  artists      String
+  releaseDate  String
+  createdAt    DateTime           @default(now())
+  updatedAt    DateTime           @updatedAt
+
+  userLikedAlbum UserLikedAlbum[]
 }
 
 model ArtistRanking {

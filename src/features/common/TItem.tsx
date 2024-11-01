@@ -14,10 +14,10 @@ const TItem = ({ index, item, type, isFeatured = false }: TItemProps) => {
   const imageUrl = isFeatured
     ? type === "artist"
       ? item.artist.imageUrl
-      : item.track.albumImageUrl
+      : item.track.imageUrl
     : type === "artist"
       ? item.artist.imageUrl
-      : item.track.albumImageUrl;
+      : item.track.imageUrl;
   const alt = type === "artist" ? item.artist.name : item.track.name;
   const followers = type === "artist" ? item.artist.followers : 0;
   const artists = type === "track" ? item.track.artists : null;

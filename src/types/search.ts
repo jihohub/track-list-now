@@ -12,7 +12,7 @@ export interface SimplifiedArtist {
 export interface SimplifiedTrack {
   id: string;
   name: string;
-  albumImageUrl: string;
+  imageUrl: string;
   artists: string;
   popularity: number;
 }
@@ -20,9 +20,9 @@ export interface SimplifiedTrack {
 export interface SimplifiedAlbum {
   id: string;
   name: string;
-  albumImageUrl: string;
+  imageUrl: string;
   artists: string;
-  release_date: string;
+  releaseDate: string;
 }
 
 // **Search Response Interfaces**
@@ -105,7 +105,7 @@ export interface AddedArtist {
 export interface AddedTrack {
   trackId: string;
   name: string;
-  albumImageUrl: string;
+  imageUrl: string;
   artists: string;
   popularity: number;
 }

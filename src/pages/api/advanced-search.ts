@@ -75,7 +75,7 @@ const handler = async (
         (track: SpotifyTrack) => ({
           id: track.id,
           name: track.name,
-          albumImageUrl: track.album.images[0]?.url,
+          imageUrl: track.album.images[0]?.url,
           artists: track.artists
             .map((artist: SpotifyArtistBrief) => artist.name)
             .join(", "),
@@ -99,7 +99,7 @@ const handler = async (
         (album: SpotifyAlbum) => ({
           id: album.id,
           name: album.name,
-          albumImageUrl: album.images[0]?.url,
+          imageUrl: album.images[0]?.url,
           artists: album.artists
             .map((artist: SpotifyArtistBrief) => artist.name)
             .join(", "),

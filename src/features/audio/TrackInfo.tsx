@@ -9,7 +9,7 @@ const TrackInfo = ({ track }: TrackInfoProps) => {
   return (
     <div className="flex items-center bg-zinc-800 space-x-4 w-full max-w-[480px] p-2 rounded-md">
       <Image
-        src={track.albumImageUrl || "/default-album.png"}
+        src={track.imageUrl || "/default-album.png"}
         alt={track.name}
         width={64}
         height={64}
