@@ -16,7 +16,7 @@ import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
 
 const LikedSection = () => {
-  const { t } = useTranslation(["common", "search"]);
+  const { t } = useTranslation(["common", "liked"]);
   const router = useRouter();
   const { type } = router.query;
 
@@ -74,7 +74,7 @@ const LikedSection = () => {
     }
   }, [type, refetch]);
 
-  const noResultMessage = t("no_result", { ns: "search" });
+  const noResultMessage = t("no_result", { ns: "liked" });
 
   const artists: SimplifiedArtist[] = [];
   const tracks: SimplifiedTrack[] = [];
@@ -99,7 +99,7 @@ const LikedSection = () => {
   return (
     <div className="bg-zinc-800 p-6 rounded-lg shadow-lg max-w-4xl w-full mx-auto">
       <h2 className="text-xl font-semibold mb-4 text-white">
-        {t("liked_items", { ns: "search" })}
+        {t("liked_items", { ns: "liked" })}
       </h2>
 
       <SearchTabs currentType={currentType} setCurrentType={setCurrentType} />
