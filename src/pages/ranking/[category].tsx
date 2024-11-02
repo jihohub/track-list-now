@@ -30,7 +30,7 @@ const fetchRankingData = async (category: string): Promise<TItemData[]> => {
 };
 
 const RankingPage = ({ category }: RankingPageProps) => {
-  const { t } = useTranslation("common");
+  const { t } = useTranslation(["common", "ranking"]);
   const router = useRouter();
   const isLoading = useGlobalLoading();
 
@@ -179,7 +179,10 @@ export const getServerSideProps: GetServerSideProps = async ({
 
     return {
       props: {
-        ...(await serverSideTranslations(locale ?? "ko", ["common"])),
+        ...(await serverSideTranslations(locale ?? "ko", [
+          "common",
+          "ranking",
+        ])),
         dehydratedState: dehydrate(queryClient),
         category: categoryURL,
       },
@@ -190,7 +193,10 @@ export const getServerSideProps: GetServerSideProps = async ({
 
     return {
       props: {
-        ...(await serverSideTranslations(locale ?? "ko", ["common"])),
+        ...(await serverSideTranslations(locale ?? "ko", [
+          "common",
+          "ranking",
+        ])),
         dehydratedState: dehydrate(queryClient),
         category: categoryURL,
       },
