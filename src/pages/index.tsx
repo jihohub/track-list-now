@@ -1,43 +1,26 @@
 import rankingSectionsConstants, {
   RankingSectionConstant,
 } from "@/constants/rankingSections";
-import ErrorComponent from "@/features/common/ErrorComponent";
-import RankingSection from "@/features/main/RankingSection";
+import ErrorComponent from "@/features/common/components/ErrorComponent";
+import RankingSection from "@/features/main/components/RankingSection";
+import useFetchFeaturedRanking, {
+  fetchFeaturedRanking,
+} from "@/features/main/queries/useFetchFeaturedRanking";
 import {
   ArtistWithRanking,
-  FullRankingData,
   RankingSectionProps,
   TrackWithRanking,
 } from "@/types/ranking";
-import { dehydrate, QueryClient, useQuery } from "@tanstack/react-query";
-import axios from "axios";
+import { dehydrate, QueryClient } from "@tanstack/react-query";
 import { GetServerSideProps } from "next";
 import { useTranslation } from "next-i18next";
 import { serverSideTranslations } from "next-i18next/serverSideTranslations";
 import { NextSeo } from "next-seo";
 
-const fetchFeaturedRanking = async (): Promise<FullRankingData> => {
-  try {
-    const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL;
-    const response = await axios.get(`${baseUrl}/api/featured-ranking`);
-    return response.data;
-  } catch (error: unknown) {
-    const errorMessage =
-      error instanceof Error
-        ? error.message
-        : "알 수 없는 오류가 발생했습니다.";
-    throw errorMessage;
-  }
-};
-
 const MainPage = () => {
   const { t } = useTranslation("common");
 
-  const { data: rankingData, error } = useQuery<FullRankingData, Error>({
-    queryKey: ["featuredRanking"],
-    queryFn: fetchFeaturedRanking,
-    staleTime: 5 * 60 * 1000,
-  });
+  const { data: rankingData, error } = useFetchFeaturedRanking();
 
   if (error) {
     return <ErrorComponent message={`Error loading data: ${error.message}`} />;

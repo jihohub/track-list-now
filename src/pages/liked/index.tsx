@@ -1,4 +1,4 @@
-import LikedSection from "@/features/liked/LikedSection";
+import LikedSection from "@/features/liked/components/LikedSection";
 import { GetServerSideProps } from "next";
 import { serverSideTranslations } from "next-i18next/serverSideTranslations";
 

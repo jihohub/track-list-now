@@ -1,4 +1,4 @@
-import GlobalLoadingBar from "@/features/common/GlobalLoadingBar";
+import GlobalLoadingBar from "@/features/common/components/GlobalLoadingBar";
 import React from "react";
 import Footer from "./Footer";
 import Header from "./Header";

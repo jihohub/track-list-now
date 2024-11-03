@@ -1,6 +1,9 @@
-import ErrorComponent from "@/features/common/ErrorComponent";
-import TItem from "@/features/common/TItem";
-import RankingCategoryTabs from "@/features/ranking/RankingCategoryTabs";
+import ErrorComponent from "@/features/common/components/ErrorComponent";
+import TItem from "@/features/common/components/TItem";
+import RankingCategoryTabs from "@/features/ranking/components/RankingCategoryTabs";
+import useFetchRanking, {
+  fetchRankingData,
+} from "@/features/ranking/queries/useFetchRanking";
 import useGlobalLoading from "@/hooks/useGlobalLoading";
 import { convertToCategory } from "@/libs/utils/categoryMapper";
 import {
@@ -9,8 +12,7 @@ import {
   RankingCategory,
   TItemData,
 } from "@/types/ranking";
-import { dehydrate, QueryClient, useQuery } from "@tanstack/react-query";
-import axios from "axios";
+import { dehydrate, QueryClient } from "@tanstack/react-query";
 import { GetServerSideProps } from "next";
 import { useTranslation } from "next-i18next";
 import { serverSideTranslations } from "next-i18next/serverSideTranslations";
@@ -21,24 +23,12 @@ interface RankingPageProps {
   category: RankingCategory;
 }
 
-const fetchRankingData = async (category: string): Promise<TItemData[]> => {
-  const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL;
-  const response = await axios.get(
-    `${baseUrl}/api/ranking?category=${category}`,
-  );
-  return response.data;
-};
-
 const RankingPage = ({ category }: RankingPageProps) => {
   const { t } = useTranslation(["common", "ranking"]);
   const router = useRouter();
   const isLoading = useGlobalLoading();
 
-  const { data: rankingData = [], error } = useQuery<TItemData[], Error>({
-    queryKey: ["ranking", category],
-    queryFn: () => fetchRankingData(category),
-    staleTime: 5 * 60 * 1000,
-  });
+  const { data: rankingData = [], error } = useFetchRanking(category);
 
   const title = (() => {
     switch (category) {
@@ -87,7 +77,7 @@ const RankingPage = ({ category }: RankingPageProps) => {
   const pageDescription = `Top ${sectionType === "artist" ? "Artists" : "Tracks"} ranking for ${pageTitle.replace("_", " ")} on Track List Now`;
 
   return (
-    <div className="max-w-5xl mx-auto p-6">
+    <div className="bg-zinc-800 p-6 rounded-lg shadow-lg max-w-4xl w-full mx-auto">
       <NextSeo
         title={`${pageTitle} - Track List Now`}
         description={pageDescription}
