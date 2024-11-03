@@ -1,4 +1,4 @@
-import LanguageToggle from "@/features/common/LanguageToggle";
+import LanguageToggle from "@/features/common/components/LanguageToggle";
 import NavigationLinks from "./NavigationLinks";
 
 const DesktopNav = () => {

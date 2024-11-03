@@ -1,5 +1,5 @@
 import navItems from "@/constants/navItems";
-import LanguageToggle from "@/features/common/LanguageToggle";
+import LanguageToggle from "@/features/common/components/LanguageToggle";
 import { signIn, signOut, useSession } from "next-auth/react";
 import { useRouter } from "next/router";
 

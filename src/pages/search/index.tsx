@@ -1,4 +1,4 @@
-import SearchSection from "@/features/search/SearchSection";
+import SearchSection from "@/features/search/components/SearchSection";
 import { GetServerSideProps } from "next";
 import { serverSideTranslations } from "next-i18next/serverSideTranslations";
 
