@@ -8,6 +8,7 @@ import { useRouter } from "next/router";
 
 const MobileNav = () => {
   const router = useRouter();
+  const { locale } = router;
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const { data: session, status } = useSession();
   const isLoading = status === "loading";
@@ -18,6 +19,9 @@ const MobileNav = () => {
       if (requiresAuth && !isAuthenticated) {
         e.preventDefault();
         await signIn();
+      }
+      if (locale === "en") {
+        router.push(`/${locale}${href}`);
       }
       router.push(href);
     };

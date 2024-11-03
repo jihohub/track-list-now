@@ -1,9 +1,6 @@
-import AlbumSection from "@/features/album/AlbumSection";
-import ErrorComponent from "@/features/common/ErrorComponent";
-import LoadingBar from "@/features/common/LoadingBar";
-import { AlbumResponseData, SimplifiedAlbum } from "@/types/album";
-import { useQuery } from "@tanstack/react-query";
-import axios from "axios";
+import AlbumSection from "@/features/album/components/AlbumSection";
+import useFetchAlbum from "@/features/album/queries/useFetchAlbum";
+import ErrorComponent from "@/features/common/components/ErrorComponent";
 import { GetServerSideProps } from "next";
 import { useTranslation } from "next-i18next";
 import { serverSideTranslations } from "next-i18next/serverSideTranslations";
@@ -12,22 +9,10 @@ interface AlbumPageProps {
   albumId: string;
 }
 
-const fetchAlbum = async (albumId: string): Promise<SimplifiedAlbum> => {
-  const response = await axios.get<AlbumResponseData>(`/api/album/${albumId}`);
-  return response.data as SimplifiedAlbum;
-};
-
 const AlbumPage = ({ albumId }: AlbumPageProps) => {
   const { t } = useTranslation(["common", "album"]);
 
-  const { data, isLoading, error } = useQuery<SimplifiedAlbum, Error>({
-    queryKey: ["album", albumId],
-    queryFn: () => fetchAlbum(albumId),
-  });
-
-  if (isLoading) {
-    return <LoadingBar />;
-  }
+  const { data, error } = useFetchAlbum(albumId);
 
   if (error) {
     return <ErrorComponent message={error.message} />;

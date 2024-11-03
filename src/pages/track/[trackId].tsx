@@ -1,8 +1,9 @@
-import ErrorComponent from "@/features/common/ErrorComponent";
-import TrackSection from "@/features/track/TrackSection";
-import { TrackDetail } from "@/types/track";
-import { dehydrate, QueryClient, useQuery } from "@tanstack/react-query";
-import axios from "axios";
+import ErrorComponent from "@/features/common/components/ErrorComponent";
+import TrackSection from "@/features/track/components/TrackSection";
+import useFetchTrackDetail, {
+  fetchTrackDetail,
+} from "@/features/track/queries/useFetchTrackDetail";
+import { dehydrate, QueryClient } from "@tanstack/react-query";
 import { GetServerSideProps } from "next";
 import { useTranslation } from "next-i18next";
 import { serverSideTranslations } from "next-i18next/serverSideTranslations";
@@ -12,20 +13,10 @@ interface TrackPageProps {
   trackId: string;
 }
 
-const fetchTrackDetail = async (trackId: string): Promise<TrackDetail> => {
-  const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL;
-  const response = await axios.get(`${baseUrl}/api/track/${trackId}`);
-  return response.data;
-};
-
 const TrackPage = ({ trackId }: TrackPageProps) => {
   const { t } = useTranslation(["common", "track"]);
 
-  const { data: track, error } = useQuery<TrackDetail, Error>({
-    queryKey: ["track", trackId],
-    queryFn: () => fetchTrackDetail(trackId),
-    staleTime: 5 * 60 * 1000,
-  });
+  const { data: track, error } = useFetchTrackDetail(trackId);
 
   if (error) {
     return <ErrorComponent message={`Error loading data: ${error.message}`} />;

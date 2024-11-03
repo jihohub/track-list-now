@@ -1,11 +1,13 @@
-import ErrorComponent from "@/features/common/ErrorComponent";
-import EditControls from "@/features/profile/EditControls";
-import FavoriteSections from "@/features/profile/FavoriteSections";
-import ProfileHeader from "@/features/profile/ProfileHeader";
-import SearchModal from "@/features/profile/SearchModal";
-import useProfileActions from "@/hooks/useProfileActions";
-import useUserProfile from "@/hooks/useUserProfile";
-import { fetchUserData, fetchUserFavorites } from "@/libs/utils/api";
+import ErrorComponent from "@/features/common/components/ErrorComponent";
+import EditControls from "@/features/profile/components/EditControls";
+import FavoriteSections from "@/features/profile/components/FavoriteSections";
+import ProfileHeader from "@/features/profile/components/ProfileHeader";
+import SearchModal from "@/features/profile/components/SearchModal";
+import useProfileActions from "@/features/profile/hooks/useProfileActions";
+import useUserProfile, {
+  fetchUserData,
+  fetchUserFavorites,
+} from "@/features/profile/queries/useUserProfile";
 import {
   UserFavoriteArtist,
   UserFavorites,

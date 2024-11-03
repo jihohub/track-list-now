@@ -1,9 +1,10 @@
-import ArtistSection from "@/features/artist/ArtistSection";
-import ErrorComponent from "@/features/common/ErrorComponent";
-import LoadingBar from "@/features/common/LoadingBar";
-import { ArtistPageData } from "@/types/artist";
-import { dehydrate, QueryClient, useQuery } from "@tanstack/react-query";
-import axios from "axios";
+import ArtistSection from "@/features/artist/components/ArtistSection";
+import useFetchArtist, {
+  fetchArtistData,
+} from "@/features/artist/queries/useFetchArtist";
+import ErrorComponent from "@/features/common/components/ErrorComponent";
+import LoadingBar from "@/features/common/components/LoadingBar";
+import { dehydrate, QueryClient } from "@tanstack/react-query";
 import { GetServerSideProps } from "next";
 import { useTranslation } from "next-i18next";
 import { serverSideTranslations } from "next-i18next/serverSideTranslations";
@@ -13,20 +14,10 @@ interface ArtistPageProps {
   artistId: string;
 }
 
-const fetchArtistData = async (artistId: string): Promise<ArtistPageData> => {
-  const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL;
-  const response = await axios.get(`${baseUrl}/api/artist/${artistId}`);
-  return response.data;
-};
-
 const ArtistPage = ({ artistId }: ArtistPageProps) => {
   const { t } = useTranslation(["common", "artist"]);
 
-  const { data, error, isLoading } = useQuery({
-    queryKey: ["artist", artistId],
-    queryFn: () => fetchArtistData(artistId),
-    staleTime: 5 * 60 * 1000,
-  });
+  const { data, error, isLoading } = useFetchArtist(artistId);
 
   if (isLoading) {
     return <LoadingBar />;
