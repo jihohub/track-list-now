@@ -121,6 +121,7 @@ const SearchSection = () => {
               listType="artist"
               fetchMore={() => {}}
               hasMore={false}
+              page="search"
             />
           )}
           {tracks.length > 0 && (
@@ -129,6 +130,7 @@ const SearchSection = () => {
               listType="track"
               fetchMore={() => {}}
               hasMore={false}
+              page="search"
             />
           )}
           {albums.length > 0 && (
@@ -137,6 +139,7 @@ const SearchSection = () => {
               listType="album"
               fetchMore={() => {}}
               hasMore={false}
+              page="search"
             />
           )}
         </>
@@ -160,6 +163,7 @@ const SearchSection = () => {
           }
           fetchMore={fetchNextPage}
           hasMore={hasNextPage || false}
+          page="search"
         />
       )}
 
