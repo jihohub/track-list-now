@@ -1,7 +1,9 @@
 import CloseIcon from "@/assets/icons/close.svg";
+import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useRef } from "react";
 import NavigationLinks from "./NavigationLinks";
+import LogoImage from "/public/logo.png";
 
 interface MobileMenuProps {
   isMenuOpen: boolean;
@@ -35,7 +37,7 @@ const MobileMenu = ({ isMenuOpen, closeMenu }: MobileMenuProps) => {
     >
       <div className="flex justify-between p-4">
         <Link href="/" className="text-xl font-bold">
-          Track List Now
+          <Image src={LogoImage} alt="logo image" />
         </Link>
         <button
           onClick={closeMenu}
