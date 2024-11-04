@@ -9,6 +9,7 @@ interface SearchResultListProps {
   listType: "artist" | "track" | "album";
   fetchMore: () => void;
   hasMore: boolean;
+  page: "search" | "liked";
 }
 
 const SearchResultList = ({
@@ -16,13 +17,14 @@ const SearchResultList = ({
   listType,
   fetchMore,
   hasMore,
+  page,
 }: SearchResultListProps) => {
-  const { t } = useTranslation(["common", "search"]);
+  const { t } = useTranslation(["common", page]);
 
   return (
     <div className="mt-6">
       <h3 className="text-lg font-semibold text-white mb-2">
-        {t(listType, { ns: "search" })}
+        {t(listType, { ns: page })}
       </h3>
       <InfiniteScroll
         dataLength={searchResults.length}

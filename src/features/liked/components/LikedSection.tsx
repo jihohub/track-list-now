@@ -84,6 +84,7 @@ const LikedSection = () => {
               listType="artist"
               fetchMore={() => {}}
               hasMore={false}
+              page="liked"
             />
           )}
           {tracks.length > 0 && (
@@ -92,6 +93,7 @@ const LikedSection = () => {
               listType="track"
               fetchMore={() => {}}
               hasMore={false}
+              page="liked"
             />
           )}
           {albums.length > 0 && (
@@ -100,6 +102,7 @@ const LikedSection = () => {
               listType="album"
               fetchMore={() => {}}
               hasMore={false}
+              page="liked"
             />
           )}
         </>
@@ -123,6 +126,7 @@ const LikedSection = () => {
           }
           fetchMore={fetchNextPage}
           hasMore={hasNextPage || false}
+          page="liked"
         />
       )}
 
