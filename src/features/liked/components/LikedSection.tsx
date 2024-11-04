@@ -70,7 +70,11 @@ const LikedSection = () => {
         {t("liked_items", { ns: "liked" })}
       </h2>
 
-      <SearchTabs currentType={currentType} setCurrentType={setCurrentType} />
+      <SearchTabs
+        currentType={currentType}
+        setCurrentType={setCurrentType}
+        page="liked"
+      />
 
       {currentType === "all" && (
         <>
