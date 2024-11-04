@@ -107,7 +107,11 @@ const SearchSection = () => {
         searchButtonLabel={searchButtonLabel}
       />
 
-      <SearchTabs currentType={currentType} setCurrentType={setCurrentType} />
+      <SearchTabs
+        currentType={currentType}
+        setCurrentType={setCurrentType}
+        page="search"
+      />
 
       {hasSearched && currentType === "all" && (
         <>

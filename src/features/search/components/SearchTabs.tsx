@@ -4,10 +4,11 @@ import { useTranslation } from "react-i18next";
 interface TabsProps {
   currentType: string;
   setCurrentType: (type: string) => void;
+  page: "search" | "liked";
 }
 
-const SearchTabs = ({ currentType, setCurrentType }: TabsProps) => {
-  const { t } = useTranslation(["common", "search"]);
+const SearchTabs = ({ currentType, setCurrentType, page }: TabsProps) => {
+  const { t } = useTranslation(["common", page]);
   const router = useRouter();
 
   const tabs = [
@@ -44,7 +45,7 @@ const SearchTabs = ({ currentType, setCurrentType }: TabsProps) => {
           }`}
           type="button"
         >
-          {t(tab.label, { ns: "search" })}
+          {t(tab.label, { ns: page })}
         </button>
       ))}
     </div>
