@@ -1,5 +1,5 @@
 import GlobalLoadingBar from "@/features/common/components/GlobalLoadingBar";
-import { Noto_Sans_KR } from "next/font/google";
+import { Noto_Sans_KR as NotoSansKr } from "next/font/google";
 import React from "react";
 import Footer from "./Footer";
 import Header from "./Header";
@@ -9,7 +9,7 @@ interface LayoutProps {
   children: React.ReactNode;
 }
 
-const notoSansKr = Noto_Sans_KR({
+const notoSansKr = NotoSansKr({
   subsets: ["latin"],
 });
 
