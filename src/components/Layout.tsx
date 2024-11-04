@@ -1,4 +1,5 @@
 import GlobalLoadingBar from "@/features/common/components/GlobalLoadingBar";
+import { Noto_Sans_KR as NotoSansKr } from "next/font/google";
 import React from "react";
 import Footer from "./Footer";
 import Header from "./Header";
@@ -8,8 +9,14 @@ interface LayoutProps {
   children: React.ReactNode;
 }
 
+const notoSansKr = NotoSansKr({
+  subsets: ["latin"],
+});
+
 const Layout = ({ children }: LayoutProps) => (
-  <div className="flex flex-col min-h-screen bg-gradient-radial from-zinc-900 to-zinc-950">
+  <div
+    className={`${notoSansKr.className} flex flex-col min-h-screen bg-gradient-radial from-zinc-900 to-zinc-950`}
+  >
     <GlobalLoadingBar />
     <Header />
     <main className="flex-grow container mx-auto mb-16">{children}</main>
