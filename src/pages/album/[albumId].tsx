@@ -1,6 +1,7 @@
 import AlbumSection from "@/features/album/components/AlbumSection";
 import useFetchAlbum from "@/features/album/queries/useFetchAlbum";
 import ErrorComponent from "@/features/common/components/ErrorComponent";
+import LoadingBar from "@/features/common/components/LoadingBar";
 import { GetServerSideProps } from "next";
 import { useTranslation } from "next-i18next";
 import { serverSideTranslations } from "next-i18next/serverSideTranslations";
@@ -12,7 +13,11 @@ interface AlbumPageProps {
 const AlbumPage = ({ albumId }: AlbumPageProps) => {
   const { t } = useTranslation(["common", "album"]);
 
-  const { data, error } = useFetchAlbum(albumId);
+  const { data, error, isLoading } = useFetchAlbum(albumId);
+
+  if (isLoading) {
+    return <LoadingBar />;
+  }
 
   if (error) {
     return <ErrorComponent message={error.message} />;

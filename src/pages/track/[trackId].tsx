@@ -1,4 +1,5 @@
 import ErrorComponent from "@/features/common/components/ErrorComponent";
+import LoadingBar from "@/features/common/components/LoadingBar";
 import TrackSection from "@/features/track/components/TrackSection";
 import useFetchTrackDetail, {
   fetchTrackDetail,
@@ -16,7 +17,11 @@ interface TrackPageProps {
 const TrackPage = ({ trackId }: TrackPageProps) => {
   const { t } = useTranslation(["common", "track"]);
 
-  const { data: track, error } = useFetchTrackDetail(trackId);
+  const { data: track, error, isLoading } = useFetchTrackDetail(trackId);
+
+  if (isLoading) {
+    return <LoadingBar />;
+  }
 
   if (error) {
     return <ErrorComponent message={`Error loading data: ${error.message}`} />;
