@@ -22,7 +22,7 @@ const Header = () => {
     <header className="sticky bg-zinc-950 text-vividSkyBlue p-4 top-0 z-50">
       <div className="flex justify-between items-center">
         <Link href="/" className="text-xl font-bold">
-          <Image src="/logo.png" alt="logo image" width={120} height={28} />
+          <Image src="/logo.png" alt="logo image" width={180} height={28} />
         </Link>
         <nav>
           <ul className="flex items-center space-x-4">
