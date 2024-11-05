@@ -27,6 +27,13 @@ const SearchSection = () => {
   const [hasSearched, setHasSearched] = useState<boolean>(false);
   const resultsRef = useRef<HTMLUListElement>(null);
 
+  const [searchTerm, setSearchTerm] = useState<string>(
+    typeof q === "string" ? q : "",
+  );
+  const [searchType, setSearchType] = useState<string>(
+    typeof type === "string" ? type : "all",
+  );
+
   const {
     data,
     isLoading,
@@ -35,20 +42,35 @@ const SearchSection = () => {
     fetchNextPage,
     hasNextPage,
     refetch,
-  } = useFetchSearchResults(searchQuery, currentType);
+  } = useFetchSearchResults(searchTerm, searchType, hasSearched);
 
-  const handleSearch = () => {
+  const handleSearch = (newType?: string) => {
     if (!searchQuery.trim()) return;
-    refetch();
+
+    const typeToUse = newType || currentType;
+
+    // 검색 실행 시 searchTerm과 searchType 업데이트
+    setSearchTerm(searchQuery.trim());
+    setSearchType(typeToUse);
+    setHasSearched(true);
+
     router.push({
       pathname: "/search",
-      query: { q: searchQuery.trim(), type: currentType },
+      query: { q: searchQuery.trim(), type: typeToUse },
     });
   };
 
   const handleKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "Enter") {
       handleSearch();
+    }
+  };
+
+  // 탭 변경 핸들러 수정
+  const handleTypeChange = (newType: string) => {
+    setCurrentType(newType);
+    if (hasSearched && searchQuery.trim()) {
+      handleSearch(newType);
     }
   };
 
@@ -60,13 +82,20 @@ const SearchSection = () => {
 
   useEffect(() => {
     // 페이지 로드 시 URL의 쿼리 스트링을 기반으로 검색 수행
-    if (q && type && typeof q === "string" && typeof type === "string") {
-      setHasSearched(true);
+    if (
+      q &&
+      type &&
+      typeof q === "string" &&
+      typeof type === "string" &&
+      !hasSearched
+    ) {
       setSearchQuery(q.trim());
+      setSearchTerm(q.trim());
       setCurrentType(type);
-      refetch();
+      setSearchType(type);
+      setHasSearched(true);
     }
-  }, [q, type, refetch]);
+  }, [q, type]);
 
   const placeholder = t("placeholder", { ns: "search" });
   const searchButtonLabel = t("search", { ns: "search" });
@@ -109,7 +138,7 @@ const SearchSection = () => {
 
       <SearchTabs
         currentType={currentType}
-        setCurrentType={setCurrentType}
+        setCurrentType={handleTypeChange}
         page="search"
       />
 
