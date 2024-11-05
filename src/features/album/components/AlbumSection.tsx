@@ -87,7 +87,7 @@ const AlbumSection = ({ album }: AlbumSectionProps) => {
           releaseDate={album.releaseDate}
         />
       </div>
-      <div className="w-full max-w-4xl px-4">
+      <div className="w-full max-w-4xl">
         <p className="text-gray-400 mt-2">
           {t("artists", { ns: "album" })}:{" "}
           {album.artists.map((artist, index) => (
@@ -113,7 +113,7 @@ const AlbumSection = ({ album }: AlbumSectionProps) => {
           {t("label", { ns: "album" })}: {album.label}
         </p>
       </div>
-      <div className="w-full mt-4 px-4">
+      <div className="w-full mt-4">
         <h2 className="text-2xl font-semibold text-white mb-2">
           {t("tracks", { ns: "album" })}
         </h2>

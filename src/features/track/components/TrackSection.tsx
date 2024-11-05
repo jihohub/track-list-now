@@ -81,7 +81,7 @@ const TrackSection = ({ track }: TrackSectionProps) => {
           popularity={track.popularity}
         />
       </div>
-      <div className="w-full max-w-4xl px-4">
+      <div className="w-full max-w-4xl">
         <p className="text-gray-400 mt-2">
           {t("artists", { ns: "track" })}:{" "}
           {track.artists.map((artist, index) => (

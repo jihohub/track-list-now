@@ -4,7 +4,7 @@ import { serverSideTranslations } from "next-i18next/serverSideTranslations";
 
 const LikedPage = () => {
   return (
-    <div className="min-h-screen p-4">
+    <div className="min-h-screen p-6">
       <LikedSection />
     </div>
   );

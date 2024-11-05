@@ -13,7 +13,7 @@ interface TopTrackItemProps {
 
 const TopTrackItem = ({ index, track }: TopTrackItemProps) => {
   return (
-    <li className="flex justify-between items-center min-w-[400px] xs:min-w-[320px] bg-zinc-900 p-4 rounded-lg shadow-md">
+    <li className="flex justify-between items-center bg-zinc-900 p-4 rounded-lg shadow-md">
       <Link
         href={`/track/${track.id}`}
         className="flex justify-between items-center w-full"

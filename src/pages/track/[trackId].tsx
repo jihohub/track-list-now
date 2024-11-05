@@ -30,7 +30,7 @@ const TrackPage = ({ trackId }: TrackPageProps) => {
   const artistNames = track.artists.map((artist) => artist.name).join(", ");
 
   return (
-    <div className="max-w-4xl mx-auto p-6 mt-8 bg-zinc-800 rounded-lg shadow-md">
+    <div className="max-w-4xl mobile:mx-6 tablet:mx-6 mx-auto p-6 mt-6 bg-zinc-800 rounded-lg shadow-md">
       <NextSeo
         title={`${trackTitle} - Track List Now`}
         description={`Listen to ${trackTitle} by ${artistNames}. Find information about the album, release date, and duration.`}

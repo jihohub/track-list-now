@@ -1,6 +1,6 @@
 import ErrorComponent from "@/features/common/components/ErrorComponent";
-import TItem from "@/features/common/components/TItem";
 import RankingCategoryTabs from "@/features/ranking/components/RankingCategoryTabs";
+import RankingSection from "@/features/ranking/components/RankingSection";
 import useFetchRanking, {
   fetchRankingData,
 } from "@/features/ranking/queries/useFetchRanking";
@@ -77,7 +77,7 @@ const RankingPage = ({ category }: RankingPageProps) => {
   const pageDescription = `Top ${sectionType === "artist" ? "Artists" : "Tracks"} ranking for ${pageTitle.replace("_", " ")} on Track List Now`;
 
   return (
-    <div className="bg-zinc-800 p-6 rounded-lg shadow-lg max-w-4xl w-full mx-auto">
+    <div className="bg-zinc-800 p-6 rounded-lg shadow-lg max-w-4xl m-6">
       <NextSeo
         title={`${pageTitle} - Track List Now`}
         description={pageDescription}
@@ -107,38 +107,14 @@ const RankingPage = ({ category }: RankingPageProps) => {
         onCategoryChange={handleCategoryChange}
       />
 
-      <h1 className="text-3xl font-bold text-white mb-6">{t(title)}</h1>
-      {!isLoading && sectionData.length === 0 ? (
-        <div className="flex justify-center items-center h-[500px]">
-          <p className="text-gray-400 text-center mt-4">{t("no_data")}</p>
-        </div>
-      ) : (
-        <ul className="space-y-4">
-          {sectionData.map((item, index) => {
-            if (sectionType === "artist" && isArtistWithRanking(item)) {
-              return (
-                <TItem
-                  key={item.artist.artistId}
-                  index={index}
-                  item={item}
-                  type="artist"
-                />
-              );
-            }
-            if (sectionType === "track" && !isArtistWithRanking(item)) {
-              return (
-                <TItem
-                  key={item.track.trackId}
-                  index={index}
-                  item={item}
-                  type="track"
-                />
-              );
-            }
-            return null;
-          })}
-        </ul>
-      )}
+      <h1 className="text-xl font-bold text-white mb-6">{t(title)}</h1>
+
+      <RankingSection
+        sectionType={sectionType}
+        sectionData={sectionData}
+        isLoading={isLoading}
+        error={error || null}
+      />
     </div>
   );
 };

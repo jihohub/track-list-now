@@ -12,9 +12,9 @@ const TrackListItem = ({
   isPlaying,
 }: TrackListItemProps) => {
   return (
-    <li className="bg-zinc-900 p-4 rounded-lg shadow-md w-full">
+    <li className="bg-zinc-900 p-4 rounded-lg shadow-md">
       <div className="flex items-center space-x-4">
-        <span className="font-bold text-gray-400 text-sm sm:text-lg w-8 text-center">
+        <span className="font-bold text-gray-400 text-sm sm:text-lg w-4 sm:w-8 text-center">
           {index + 1}
         </span>
         <div className="flex flex-col w-full">
