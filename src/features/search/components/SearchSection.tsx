@@ -34,15 +34,8 @@ const SearchSection = () => {
     typeof type === "string" ? type : "all",
   );
 
-  const {
-    data,
-    isLoading,
-    isError,
-    error,
-    fetchNextPage,
-    hasNextPage,
-    refetch,
-  } = useFetchSearchResults(searchTerm, searchType, hasSearched);
+  const { data, isLoading, isError, error, fetchNextPage, hasNextPage } =
+    useFetchSearchResults(searchTerm, searchType, hasSearched);
 
   const handleSearch = (newType?: string) => {
     if (!searchQuery.trim()) return;
@@ -95,7 +88,7 @@ const SearchSection = () => {
       setSearchType(type);
       setHasSearched(true);
     }
-  }, [q, type]);
+  }, [q, type, hasSearched]);
 
   const placeholder = t("placeholder", { ns: "search" });
   const searchButtonLabel = t("search", { ns: "search" });
