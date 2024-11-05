@@ -103,7 +103,7 @@ const handler = async (
           artists: album.artists
             .map((artist: SpotifyArtistBrief) => artist.name)
             .join(", "),
-          release_date: album.release_date,
+          releaseDate: album.release_date,
         }),
       );
 
