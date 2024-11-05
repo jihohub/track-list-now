@@ -43,8 +43,8 @@ const NavigationLinks = ({
       <li className={isMobile ? "w-full" : undefined}>
         {status === "authenticated" ? (
           <button
-            onClick={() => {
-              signOut();
+            onClick={async () => {
+              await signOut({ callbackUrl: "/" });
               if (isMobile && closeMenu) closeMenu();
             }}
             type="button"
@@ -55,8 +55,8 @@ const NavigationLinks = ({
           </button>
         ) : (
           <button
-            onClick={() => {
-              signIn();
+            onClick={async () => {
+              await signIn();
               if (isMobile && closeMenu) closeMenu();
             }}
             type="button"
