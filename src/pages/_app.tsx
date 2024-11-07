@@ -1,4 +1,5 @@
 import Layout from "@/components/Layout";
+import SentryContextProvider from "@/components/SentryContextProvider";
 import ErrorBoundaryWrapper from "@/features/common/components/ErrorBoundaryWrapper";
 import CustomQueryClientProvider from "@/libs/react-query/CustomQueryClientProvider";
 import "@/styles/globals.css";
@@ -11,9 +12,11 @@ function App({ Component, pageProps: { session, ...pageProps } }: AppProps) {
     <ErrorBoundaryWrapper>
       <CustomQueryClientProvider>
         <SessionProvider session={session}>
-          <Layout>
-            <Component {...pageProps} />
-          </Layout>
+          <SentryContextProvider>
+            <Layout>
+              <Component {...pageProps} />
+            </Layout>
+          </SentryContextProvider>
         </SessionProvider>
       </CustomQueryClientProvider>
     </ErrorBoundaryWrapper>

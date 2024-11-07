@@ -1,6 +1,8 @@
 import getServerAxiosInstance from "@/libs/axios/axiosServerInstance";
+import withErrorHandling from "@/libs/utils/errorHandler";
 import { SpotifyAlbum } from "@/types/album";
 import { SpotifyArtist } from "@/types/artist";
+import { SpotifyAPIError, ValidationError } from "@/types/error";
 import {
   SearchResponseData,
   SimplifiedAlbum,
@@ -8,37 +10,89 @@ import {
   SimplifiedTrack,
 } from "@/types/search";
 import { SpotifyArtistBrief, SpotifyTrack } from "@/types/track";
+import { AxiosError } from "axios";
 import type { NextApiRequest, NextApiResponse } from "next";
+
+const VALID_TYPES = ["artist", "track", "album"] as const;
+type SearchType = (typeof VALID_TYPES)[number];
+
+const simplifyArtists = (artists: SpotifyArtist[]): SimplifiedArtist[] => {
+  return artists.map((artist) => ({
+    id: artist.id,
+    name: artist.name,
+    imageUrl: artist.images[0]?.url,
+    followers: artist.followers.total,
+  }));
+};
+
+const simplifyTracks = (tracks: SpotifyTrack[]): SimplifiedTrack[] => {
+  return tracks.map((track) => ({
+    id: track.id,
+    name: track.name,
+    imageUrl: track.album.images[0]?.url,
+    artists: track.artists
+      .map((artist: SpotifyArtistBrief) => artist.name)
+      .join(", "),
+    popularity: track.popularity,
+  }));
+};
+
+const simplifyAlbums = (albums: SpotifyAlbum[]): SimplifiedAlbum[] => {
+  return albums.map((album) => ({
+    id: album.id,
+    name: album.name,
+    imageUrl: album.images[0]?.url,
+    artists: album.artists
+      .map((artist: SpotifyArtistBrief) => artist.name)
+      .join(", "),
+    releaseDate: album.release_date,
+  }));
+};
 
 const handler = async (
   req: NextApiRequest,
-  res: NextApiResponse<SearchResponseData | { error: string }>,
+  res: NextApiResponse<SearchResponseData>,
 ) => {
+  if (req.method !== "GET") {
+    throw new ValidationError("Method not allowed");
+  }
+
   const { q, type, limit, offset } = req.query;
 
-  if (typeof q !== "string" || typeof type !== "string") {
-    return res.status(400).json({ error: "Invalid query or type parameter" });
+  if (typeof q !== "string" || q.trim().length === 0) {
+    throw new ValidationError("Search query is required");
+  }
+  if (typeof type !== "string") {
+    throw new ValidationError("Type parameter is required");
   }
 
   let requestedTypes = type.split(",").map((t) => t.trim());
   if (requestedTypes.includes("all")) {
-    requestedTypes = ["artist", "track", "album"];
+    requestedTypes = [...VALID_TYPES];
   }
 
-  const validTypes = ["artist", "track", "album"];
-  const isValid = requestedTypes.every((t) => validTypes.includes(t));
+  const isValid = requestedTypes.every((t) =>
+    VALID_TYPES.includes(t as SearchType),
+  );
   if (!isValid) {
-    return res.status(400).json({ error: "One or more types are invalid" });
+    throw new ValidationError("One or more search types are invalid");
   }
 
   const parsedLimit = typeof limit === "string" ? parseInt(limit, 10) : 10;
   const parsedOffset = typeof offset === "string" ? parseInt(offset, 10) : 0;
 
+  if (Number.isNaN(parsedLimit) || parsedLimit < 1 || parsedLimit > 50) {
+    throw new ValidationError("Invalid limit value (must be between 1 and 50)");
+  }
+
+  if (Number.isNaN(parsedOffset) || parsedOffset < 0) {
+    throw new ValidationError("Invalid offset value");
+  }
   try {
     const serverAxios = getServerAxiosInstance(req, res);
     const response = await serverAxios.get("/search", {
       params: {
-        q,
+        q: q.trim(),
         type: requestedTypes.join(","),
         limit: parsedLimit,
         offset: parsedOffset,
@@ -47,20 +101,15 @@ const handler = async (
 
     const { data } = response;
 
+    if (!data) {
+      throw new SpotifyAPIError("Empty response from Spotify API", 502);
+    }
+
     const responseData: SearchResponseData = {};
 
-    if (data.artists) {
-      const simplifiedArtists: SimplifiedArtist[] = data.artists.items.map(
-        (artist: SpotifyArtist) => ({
-          id: artist.id,
-          name: artist.name,
-          imageUrl: artist.images[0]?.url,
-          followers: artist.followers.total,
-        }),
-      );
-
+    if (data.artists && data.artists.items.length > 0) {
       responseData.artists = {
-        items: simplifiedArtists,
+        items: simplifyArtists(data.artists.items),
         href: data.artists.href,
         limit: data.artists.limit,
         next: data.artists.next,
@@ -70,21 +119,9 @@ const handler = async (
       };
     }
 
-    if (data.tracks) {
-      const simplifiedTracks: SimplifiedTrack[] = data.tracks.items.map(
-        (track: SpotifyTrack) => ({
-          id: track.id,
-          name: track.name,
-          imageUrl: track.album.images[0]?.url,
-          artists: track.artists
-            .map((artist: SpotifyArtistBrief) => artist.name)
-            .join(", "),
-          popularity: track.popularity,
-        }),
-      );
-
+    if (data.tracks && data.tracks.items.length > 0) {
       responseData.tracks = {
-        items: simplifiedTracks,
+        items: simplifyTracks(data.tracks.items),
         href: data.tracks.href,
         limit: data.tracks.limit,
         next: data.tracks.next,
@@ -94,21 +131,9 @@ const handler = async (
       };
     }
 
-    if (data.albums) {
-      const simplifiedAlbums: SimplifiedAlbum[] = data.albums.items.map(
-        (album: SpotifyAlbum) => ({
-          id: album.id,
-          name: album.name,
-          imageUrl: album.images[0]?.url,
-          artists: album.artists
-            .map((artist: SpotifyArtistBrief) => artist.name)
-            .join(", "),
-          releaseDate: album.release_date,
-        }),
-      );
-
+    if (data.albums && data.albums.items.length > 0) {
       responseData.albums = {
-        items: simplifiedAlbums,
+        items: simplifyAlbums(data.albums.items),
         href: data.albums.href,
         limit: data.albums.limit,
         next: data.albums.next,
@@ -118,14 +143,31 @@ const handler = async (
       };
     }
 
+    if (Object.keys(responseData).length === 0) {
+      return res.status(200).json({
+        message: "No results found for the given query",
+      } as SearchResponseData);
+    }
+
     return res.status(200).json(responseData);
-  } catch (error: unknown) {
-    const errorMessage =
-      error instanceof Error
-        ? error.message
-        : "알 수 없는 오류가 발생했습니다.";
-    return res.status(500).json({ error: errorMessage });
+  } catch (error) {
+    if (error instanceof AxiosError) {
+      const statusCode = error.response?.status || 500;
+      throw new SpotifyAPIError(
+        `Spotify API request failed: ${error.message}`,
+        statusCode,
+      );
+    }
+
+    if (error instanceof ValidationError || error instanceof SpotifyAPIError) {
+      throw error;
+    }
+
+    throw new SpotifyAPIError(
+      "An unexpected error occurred during search",
+      500,
+    );
   }
 };
 
-export default handler;
+export default withErrorHandling(handler);

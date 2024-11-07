@@ -24,7 +24,7 @@ interface RankingPageProps {
 }
 
 const RankingPage = ({ category }: RankingPageProps) => {
-  const { t } = useTranslation(["common", "ranking"]);
+  const { t } = useTranslation(["common", "ranking", "error"]);
   const router = useRouter();
   const isLoading = useGlobalLoading();
 
@@ -77,7 +77,7 @@ const RankingPage = ({ category }: RankingPageProps) => {
   const pageDescription = `Top ${sectionType === "artist" ? "Artists" : "Tracks"} ranking for ${pageTitle.replace("_", " ")} on Track List Now`;
 
   return (
-    <div className="bg-zinc-800 p-6 rounded-lg shadow-lg max-w-4xl m-6">
+    <div className="max-w-4xl mobile:mx-6 tablet:mx-6 mx-auto p-6 mt-6 bg-zinc-800 rounded-lg shadow-lg">
       <NextSeo
         title={`${pageTitle} - Track List Now`}
         description={pageDescription}
@@ -148,6 +148,7 @@ export const getServerSideProps: GetServerSideProps = async ({
         ...(await serverSideTranslations(locale ?? "ko", [
           "common",
           "ranking",
+          "error",
         ])),
         dehydratedState: dehydrate(queryClient),
         category: categoryURL,
@@ -162,6 +163,7 @@ export const getServerSideProps: GetServerSideProps = async ({
         ...(await serverSideTranslations(locale ?? "ko", [
           "common",
           "ranking",
+          "error",
         ])),
         dehydratedState: dehydrate(queryClient),
         category: categoryURL,

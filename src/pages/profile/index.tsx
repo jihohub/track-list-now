@@ -8,6 +8,8 @@ import useUserProfile, {
   fetchUserData,
   fetchUserFavorites,
 } from "@/features/profile/queries/useUserProfile";
+import errorLogger from "@/libs/utils/errorLogger";
+import { AppError } from "@/types/error";
 import {
   UserFavoriteArtist,
   UserFavorites,
@@ -21,12 +23,27 @@ import { serverSideTranslations } from "next-i18next/serverSideTranslations";
 import { NextSeo } from "next-seo";
 import { useRef, useState } from "react";
 
+class ProfileError extends AppError {
+  constructor(message: string, metadata: Record<string, unknown> = {}) {
+    super(message, {
+      severity: "error",
+      errorCode: "PROFILE_ERROR",
+      ...metadata,
+    });
+    this.name = "ProfileError";
+  }
+}
+
+interface ProfileErrorInfo {
+  componentStack: string;
+}
+
 interface ProfilePageProps {
   userId: number;
 }
 
 const ProfilePage = ({ userId }: ProfilePageProps) => {
-  const { t } = useTranslation(["common", "profile"]);
+  const { t } = useTranslation(["common", "profile", "error"]);
   const { data: session } = useSession();
 
   const {
@@ -60,14 +77,30 @@ const ProfilePage = ({ userId }: ProfilePageProps) => {
   const pageRef = useRef<HTMLDivElement>(null);
 
   const handleToggleEditing = () => {
-    if (!isEditing) {
-      // 편집 모드로 전환될 때, 현재 favorites를 로컬 상태로 복사
-      setEditedFavorites(userFavorites ? { ...userFavorites } : null);
-    } else {
-      // 편집 모드에서 나올 때, 로컬 상태 초기화
-      setEditedFavorites(null);
+    try {
+      if (!session?.user?.id || session.user.id !== userId) {
+        throw new ProfileError("Unauthorized editing attempt", {
+          userId,
+          sessionUserId: session?.user?.id,
+          action: "toggleEditing",
+        });
+      }
+
+      if (!isEditing) {
+        // 편집 모드로 전환될 때, 현재 favorites를 로컬 상태로 복사
+        setEditedFavorites(userFavorites ? { ...userFavorites } : null);
+      } else {
+        // 편집 모드에서 나올 때, 로컬 상태 초기화
+        setEditedFavorites(null);
+      }
+      setIsEditing((prev) => !prev);
+    } catch (error) {
+      if (error instanceof Error) {
+        errorLogger(error, {
+          componentStack: "ProfilePage.handleToggleEditing",
+        } as ProfileErrorInfo);
+      }
     }
-    setIsEditing((prev) => !prev);
   };
 
   // 편집 모드일 때는 editedFavorites를, 아닐 때는 userFavorites를 사용
@@ -75,15 +108,25 @@ const ProfilePage = ({ userId }: ProfilePageProps) => {
     isEditing && editedFavorites ? editedFavorites : userFavorites;
 
   const handleSaveChanges = async () => {
-    if (!session?.user?.id || !editedFavorites) {
-      return;
-    }
     try {
+      if (!session?.user?.id || !editedFavorites) {
+        throw new ProfileError("Invalid save attempt", {
+          userId,
+          hasSession: !!session?.user?.id,
+          hasEditedFavorites: !!editedFavorites,
+          action: "saveChanges",
+        });
+      }
+
       await saveFavorites(editedFavorites);
       setIsEditing(false);
       setEditedFavorites(null);
-    } catch (error: unknown) {
-      JSON.stringify(error);
+    } catch (error) {
+      if (error instanceof Error) {
+        errorLogger(error, {
+          componentStack: "ProfilePage.handleSaveChanges",
+        } as ProfileErrorInfo);
+      }
     }
   };
 
@@ -205,23 +248,49 @@ const ProfilePage = ({ userId }: ProfilePageProps) => {
 export default ProfilePage;
 
 export const getServerSideProps: GetServerSideProps = async (context) => {
-  const session = await getSession(context);
-
-  if (!session) {
-    return {
-      redirect: {
-        destination: "/api/auth/signin",
-        permanent: false,
-      },
-    };
-  }
-
-  const locale = context.locale ?? "ko";
-  const userId = Number(session.user.id);
-
-  const queryClient = new QueryClient();
-
   try {
+    const session = await getSession(context);
+    const locale = context.locale ?? "ko";
+
+    // 세션이 없는 경우 로그인 페이지로 리다이렉트
+    if (!session) {
+      errorLogger(
+        new ProfileError("Unauthenticated access attempt", {
+          action: "getServerSideProps",
+          path: context.resolvedUrl,
+        }),
+        { componentStack: "getServerSideProps" } as ProfileErrorInfo,
+      );
+
+      return {
+        redirect: {
+          destination: "/api/auth/signin",
+          permanent: false,
+        },
+      };
+    }
+
+    // 세션은 있지만 userId가 없는 경우 (비정상적인 상황)
+    if (!session.user?.id) {
+      errorLogger(
+        new ProfileError("Session exists but no user ID found", {
+          action: "getServerSideProps",
+          sessionData: session,
+        }),
+        { componentStack: "getServerSideProps" } as ProfileErrorInfo,
+      );
+
+      return {
+        redirect: {
+          destination: "/error",
+          permanent: false,
+        },
+      };
+    }
+
+    const userId = Number(session.user.id);
+    const queryClient = new QueryClient();
+
     await Promise.all([
       queryClient.prefetchQuery({
         queryKey: ["userFavorites", userId],
@@ -237,20 +306,28 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
 
     return {
       props: {
-        ...(await serverSideTranslations(locale, ["common", "profile"])),
+        ...(await serverSideTranslations(locale, [
+          "common",
+          "profile",
+          "error",
+        ])),
         dehydratedState: dehydrate(queryClient),
         userId,
       },
     };
   } catch (error) {
-    // eslint-disable-next-line no-console
-    console.error("서버 사이드 데이터 페칭 실패:", error);
+    errorLogger(
+      new ProfileError("Server-side rendering failed", {
+        originalError: error instanceof Error ? error.message : "Unknown error",
+        action: "getServerSideProps",
+      }),
+      { componentStack: "getServerSideProps" } as ProfileErrorInfo,
+    );
 
     return {
-      props: {
-        ...(await serverSideTranslations(locale, ["common", "profile"])),
-        dehydratedState: dehydrate(queryClient),
-        userId: 0,
+      redirect: {
+        destination: "/error",
+        permanent: false,
       },
     };
   }

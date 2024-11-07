@@ -15,7 +15,7 @@ interface TrackPageProps {
 }
 
 const TrackPage = ({ trackId }: TrackPageProps) => {
-  const { t } = useTranslation(["common", "track"]);
+  const { t } = useTranslation(["common", "track", "error"]);
 
   const { data: track, error, isLoading } = useFetchTrackDetail(trackId);
 
@@ -82,7 +82,11 @@ export const getServerSideProps: GetServerSideProps = async ({
 
     return {
       props: {
-        ...(await serverSideTranslations(locale ?? "ko", ["common", "track"])),
+        ...(await serverSideTranslations(locale ?? "ko", [
+          "common",
+          "track",
+          "error",
+        ])),
         dehydratedState: dehydrate(queryClient),
         trackId,
       },
@@ -93,7 +97,11 @@ export const getServerSideProps: GetServerSideProps = async ({
 
     return {
       props: {
-        ...(await serverSideTranslations(locale ?? "ko", ["common", "track"])),
+        ...(await serverSideTranslations(locale ?? "ko", [
+          "common",
+          "track",
+          "error",
+        ])),
         dehydratedState: dehydrate(queryClient),
         trackId,
       },

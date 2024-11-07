@@ -18,7 +18,7 @@ import { serverSideTranslations } from "next-i18next/serverSideTranslations";
 import { NextSeo } from "next-seo";
 
 const MainPage = () => {
-  const { t } = useTranslation("common");
+  const { t } = useTranslation(["common", "main", "error"]);
 
   const { data: rankingData, error } = useFetchFeaturedRanking();
 
@@ -108,7 +108,11 @@ export const getServerSideProps: GetServerSideProps = async ({ locale }) => {
 
     return {
       props: {
-        ...(await serverSideTranslations(locale ?? "ko", ["common", "main"])),
+        ...(await serverSideTranslations(locale ?? "ko", [
+          "common",
+          "main",
+          "error",
+        ])),
         dehydratedState: dehydrate(queryClient),
       },
     };
@@ -118,7 +122,11 @@ export const getServerSideProps: GetServerSideProps = async ({ locale }) => {
 
     return {
       props: {
-        ...(await serverSideTranslations(locale ?? "ko", ["common", "main"])),
+        ...(await serverSideTranslations(locale ?? "ko", [
+          "common",
+          "main",
+          "error",
+        ])),
         dehydratedState: dehydrate(queryClient),
       },
     };

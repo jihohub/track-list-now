@@ -27,7 +27,7 @@ const SearchInput = ({
           className="border border-vividSkyBlue p-2 pr-16 w-full rounded-lg bg-gray-700 text-white focus:outline-none"
         />
         <button
-          onClick={handleSearch}
+          onClick={() => handleSearch()}
           className="absolute right-0 top-0 h-full bg-persianBlue text-white px-4 rounded-r-lg hover:bg-blue-700 transition"
           type="button"
         >

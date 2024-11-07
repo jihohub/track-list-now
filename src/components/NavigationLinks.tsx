@@ -1,25 +1,23 @@
-import navItems from "@/constants/navItems";
+import { DESKTOP_NAV_ITEMS } from "@/constants/navigation";
 import LanguageToggle from "@/features/common/components/LanguageToggle";
-import { signIn, signOut, useSession } from "next-auth/react";
-import { useRouter } from "next/router";
+import useNavigation from "@/hooks/useNavigation";
+import { NavigationProps } from "@/types/navigation";
+import { signIn, signOut } from "next-auth/react";
 
-interface NavigationLinksProps {
-  isMobile?: boolean;
-  closeMenu?: () => void;
-}
+const NavigationLinks = ({ isMobile = false, closeMenu }: NavigationProps) => {
+  const { handleNavigation, isAuthenticated, isLoading } = useNavigation();
 
-const NavigationLinks = ({
-  isMobile = false,
-  closeMenu,
-}: NavigationLinksProps) => {
-  const router = useRouter();
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const { data: session, status } = useSession();
-
-  const handleNavigation = (href: string) => {
-    router.push(href);
+  const handleAuth = async (e: React.MouseEvent) => {
+    e.preventDefault();
+    if (isAuthenticated) {
+      await signOut({ callbackUrl: "/" });
+    } else {
+      await signIn();
+    }
     if (isMobile && closeMenu) closeMenu();
   };
+
+  if (isLoading) return null;
 
   return (
     <>
@@ -28,44 +26,34 @@ const NavigationLinks = ({
           <LanguageToggle />
         </li>
       )}
-      {navItems.map((item) => (
+      {DESKTOP_NAV_ITEMS.map((item) => (
         <li key={item.label} className={isMobile ? "w-full" : undefined}>
           <button
-            onClick={() => handleNavigation(item.href)}
+            onClick={(e) => {
+              handleNavigation(item.href, item.requiresAuth, e);
+              if (isMobile && closeMenu) closeMenu();
+            }}
             type="button"
             aria-label={`Go to ${item.label} page`}
-            className={`text-left w-full hover:text-white ${isMobile ? "py-2" : ""}`}
+            className={`text-left w-full hover:text-white transition-colors ${
+              isMobile ? "py-2" : ""
+            }`}
           >
             {item.label}
           </button>
         </li>
       ))}
       <li className={isMobile ? "w-full" : undefined}>
-        {status === "authenticated" ? (
-          <button
-            onClick={async () => {
-              await signOut({ callbackUrl: "/" });
-              if (isMobile && closeMenu) closeMenu();
-            }}
-            type="button"
-            aria-label="Logout"
-            className={`text-left w-full hover:text-white ${isMobile ? "py-2" : ""}`}
-          >
-            Logout
-          </button>
-        ) : (
-          <button
-            onClick={async () => {
-              await signIn();
-              if (isMobile && closeMenu) closeMenu();
-            }}
-            type="button"
-            aria-label="Login"
-            className={`text-left w-full hover:text-white ${isMobile ? "py-2" : ""}`}
-          >
-            Login
-          </button>
-        )}
+        <button
+          onClick={handleAuth}
+          type="button"
+          aria-label={isAuthenticated ? "Logout" : "Login"}
+          className={`text-left w-full hover:text-white transition-colors ${
+            isMobile ? "py-2" : ""
+          }`}
+        >
+          {isAuthenticated ? "Logout" : "Login"}
+        </button>
       </li>
     </>
   );

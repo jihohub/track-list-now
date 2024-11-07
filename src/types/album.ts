@@ -28,13 +28,11 @@ export interface SpotifyAlbum {
   }>;
 }
 
-// **Simplified Artist Interface**
 export interface SimplifiedArtist {
   id: string;
   name: string;
 }
 
-// **Simplified Track Interface**
 export interface SimplifiedTrack {
   id: string;
   name: string;
@@ -44,7 +42,6 @@ export interface SimplifiedTrack {
   imageUrl: string;
 }
 
-// **Simplified Tracks Interface within Album**
 export interface SimplifiedTracks {
   href: string;
   limit: number;
@@ -55,7 +52,6 @@ export interface SimplifiedTracks {
   items: SimplifiedTrack[];
 }
 
-// **Simplified Album Interface**
 export interface SimplifiedAlbum {
   totalTracks: number;
   externalUrls: {
@@ -74,13 +70,7 @@ export interface SimplifiedAlbum {
   tracks: SimplifiedTracks;
 }
 
-// **Error Response Interface**
-export interface ErrorResponse {
-  error: string;
-}
-
-// **Union Type for API Response**
-export type AlbumResponseData = SimplifiedAlbum | ErrorResponse;
+export type AlbumResponseData = SimplifiedAlbum;
 
 export interface TrackListItemProps {
   index: number;

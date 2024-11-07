@@ -4,8 +4,8 @@ import {
   AddedArtist,
   AddedItem,
   AddedTrack,
-  ResponseData,
   SimplifiedArtist,
+  SimplifiedSearchResponse,
   SimplifiedTrack,
 } from "@/types/search";
 import { useQuery } from "@tanstack/react-query";
@@ -46,11 +46,11 @@ const SearchModal = ({
     ? ["search", searchParams.q, searchParams.type]
     : [];
 
-  const { data, isLoading } = useQuery<ResponseData, Error>({
+  const { data, isLoading } = useQuery<SimplifiedSearchResponse, Error>({
     queryKey,
     queryFn: () =>
       axios
-        .get<ResponseData>("/api/search", {
+        .get<SimplifiedSearchResponse>("/api/search", {
           params: searchParams,
         })
         .then((res) => res.data),

@@ -15,7 +15,7 @@ interface ArtistPageProps {
 }
 
 const ArtistPage = ({ artistId }: ArtistPageProps) => {
-  const { t } = useTranslation(["common", "artist"]);
+  const { t } = useTranslation(["common", "artist", "error"]);
 
   const { data, error, isLoading } = useFetchArtist(artistId);
 
@@ -79,7 +79,11 @@ export const getServerSideProps: GetServerSideProps = async ({
 
     return {
       props: {
-        ...(await serverSideTranslations(locale ?? "ko", ["common", "artist"])),
+        ...(await serverSideTranslations(locale ?? "ko", [
+          "common",
+          "artist",
+          "error",
+        ])),
         dehydratedState: dehydrate(queryClient),
         artistId,
       },
@@ -90,7 +94,11 @@ export const getServerSideProps: GetServerSideProps = async ({
 
     return {
       props: {
-        ...(await serverSideTranslations(locale ?? "ko", ["common", "artist"])),
+        ...(await serverSideTranslations(locale ?? "ko", [
+          "common",
+          "artist",
+          "error",
+        ])),
         dehydratedState: dehydrate(queryClient),
         artistId,
       },

@@ -1,119 +1,192 @@
+import { SpotifyToken } from "@/types/spotify";
+import * as Sentry from "@sentry/nextjs";
 import { NextRequest, NextResponse } from "next/server";
+import SPOTIFY_CONSTANTS from "./constants/spotify";
 
 // Spotify 액세스 토큰을 가져오는 함수
-const fetchSpotifyAccessToken = async (): Promise<{
-  access_token: string;
-  expires_in: number;
-} | null> => {
-  const clientId = process.env.SPOTIFY_CLIENT_ID;
-  const clientSecret = process.env.SPOTIFY_CLIENT_SECRET;
+const fetchSpotifyAccessToken = async (): Promise<SpotifyToken | null> => {
+  const { clientId, clientSecret } = {
+    clientId: process.env.SPOTIFY_CLIENT_ID,
+    clientSecret: process.env.SPOTIFY_CLIENT_SECRET,
+  };
 
   if (!clientId || !clientSecret) {
+    Sentry.captureMessage(
+      SPOTIFY_CONSTANTS.ERROR_MESSAGES.MISSING_CREDENTIALS,
+      {
+        level: "error",
+        tags: { service: "spotify" },
+      },
+    );
     return null;
   }
 
-  const response = await fetch("https://accounts.spotify.com/api/token", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/x-www-form-urlencoded",
-      Authorization: `Basic ${Buffer.from(`${clientId}:${clientSecret}`).toString("base64")}`,
-    },
-    body: new URLSearchParams({
-      grant_type: "client_credentials",
-    }),
-  });
+  try {
+    const response = await fetch(SPOTIFY_CONSTANTS.TOKEN_ENDPOINT, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/x-www-form-urlencoded",
+        Authorization: `Basic ${Buffer.from(`${clientId}:${clientSecret}`).toString("base64")}`,
+      },
+      body: new URLSearchParams({ grant_type: "client_credentials" }),
+    });
 
-  if (!response.ok) {
+    if (!response.ok) {
+      throw new Error(`Spotify token fetch failed: ${response.statusText}`);
+    }
+
+    return response.json();
+  } catch (error) {
+    Sentry.withScope((scope) => {
+      scope.setTag("service", "spotify");
+      scope.setTag("operation", "token_fetch");
+      scope.setExtra("spotifyClientIdExists", !!clientId);
+
+      if (error instanceof Error) {
+        Sentry.captureException(error);
+      }
+    });
     return null;
   }
-
-  const data = await response.json();
-  return { access_token: data.access_token, expires_in: data.expires_in };
 };
 
-// 미들웨어 함수
-export async function middleware(req: NextRequest) {
-  const { pathname } = req.nextUrl;
+// 에러 응답 생성 함수
+/* eslint-disable default-param-last */
+const createErrorResponse = (
+  message: string,
+  status = 500,
+  error?: Error,
+): NextResponse => {
+  const errorId = crypto.randomUUID();
 
-  const spotifyApiPaths = ["/api/search", "/api/artist", "/api/track"];
-  const isSpotifyApi = spotifyApiPaths.some((path) =>
-    pathname.startsWith(path),
+  Sentry.withScope((scope) => {
+    scope.setTag("type", "middleware_error");
+    scope.setTag("error_id", errorId);
+    scope.setLevel(status >= 500 ? "error" : "warning");
+
+    if (error) {
+      scope.setExtra("originalError", error);
+      Sentry.captureException(error);
+    } else {
+      Sentry.captureMessage(message);
+    }
+  });
+
+  return new NextResponse(
+    JSON.stringify({
+      error: message,
+      errorId,
+      timestamp: new Date().toISOString(),
+    }),
+    {
+      status,
+      headers: { "Content-Type": "application/json" },
+    },
+  );
+};
+
+// 토큰이 포함된 응답 생성
+function createResponseWithToken(
+  req: NextRequest,
+  token: string,
+): NextResponse {
+  const headers = new Headers(req.headers);
+  headers.set("Authorization", `Bearer ${token}`);
+
+  return NextResponse.next({
+    request: { headers },
+  });
+}
+
+export const config = {
+  matcher: ["/api/:path*"],
+};
+
+// 쿠키 설정 유틸리티
+const setCookies = (
+  response: NextResponse,
+  token: SpotifyToken,
+  now: number,
+): void => {
+  const cookieOptions = {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    path: "/",
+    sameSite: "lax" as const,
+    maxAge: token.expires_in,
+  };
+
+  response.cookies.set(
+    SPOTIFY_CONSTANTS.COOKIE_NAMES.ACCESS_TOKEN,
+    token.access_token,
+    cookieOptions,
   );
 
-  if (!isSpotifyApi) {
-    return NextResponse.next();
-  }
+  response.cookies.set(
+    SPOTIFY_CONSTANTS.COOKIE_NAMES.TOKEN_EXPIRY,
+    (now + token.expires_in * 1000).toString(),
+    cookieOptions,
+  );
+};
 
-  // 쿠키에서 액세스 토큰과 만료 시간 가져오기
-  const accessToken = req.cookies.get("spotify_access_token")?.value;
-  const tokenExpiry = req.cookies.get("spotify_token_expiry")?.value;
-
+// Spotify 요청 처리 함수
+async function handleSpotifyRequest(req: NextRequest): Promise<NextResponse> {
+  const accessToken = req.cookies.get(
+    SPOTIFY_CONSTANTS.COOKIE_NAMES.ACCESS_TOKEN,
+  )?.value;
+  const tokenExpiry = req.cookies.get(
+    SPOTIFY_CONSTANTS.COOKIE_NAMES.TOKEN_EXPIRY,
+  )?.value;
   const now = Date.now();
 
   if (accessToken && tokenExpiry && now < parseInt(tokenExpiry, 10)) {
-    // 토큰이 유효하면 헤더에 추가
-    const modifiedHeaders = new Headers(req.headers);
-    modifiedHeaders.set("Authorization", `Bearer ${accessToken}`);
+    return createResponseWithToken(req, accessToken);
+  }
 
-    const response = NextResponse.next({
-      request: {
-        headers: modifiedHeaders,
+  const newToken = await fetchSpotifyAccessToken();
+  if (!newToken) {
+    return createErrorResponse(
+      SPOTIFY_CONSTANTS.ERROR_MESSAGES.TOKEN_FETCH_FAILED,
+      500,
+    );
+  }
+
+  const response = createResponseWithToken(req, newToken.access_token);
+  setCookies(response, newToken, now);
+
+  return response;
+}
+
+export async function middleware(req: NextRequest) {
+  try {
+    const { pathname } = req.nextUrl;
+
+    if (!pathname.startsWith(SPOTIFY_CONSTANTS.PATHS.API)) {
+      return NextResponse.next();
+    }
+
+    // 요청 정보 로깅
+    Sentry.addBreadcrumb({
+      category: "request",
+      message: "API request",
+      level: "info",
+      data: {
+        url: req.url,
+        method: req.method,
+        pathname,
       },
     });
 
-    return response;
+    if (pathname.startsWith(SPOTIFY_CONSTANTS.PATHS.SPOTIFY_API)) {
+      return await handleSpotifyRequest(req);
+    }
+
+    return NextResponse.next();
+  } catch (error) {
+    return createErrorResponse(
+      SPOTIFY_CONSTANTS.ERROR_MESSAGES.UNEXPECTED_ERROR,
+      500,
+      error instanceof Error ? error : new Error(String(error)),
+    );
   }
-
-  // 토큰이 없거나 만료된 경우 새 토큰 발급
-  const newToken = await fetchSpotifyAccessToken();
-
-  if (!newToken) {
-    // 토큰 발급 실패 시 500 에러 반환
-    return new NextResponse("Failed to fetch Spotify access token", {
-      status: 500,
-    });
-  }
-
-  const newAccessToken = newToken.access_token;
-  const expiresIn = newToken.expires_in;
-
-  // 새 토큰과 만료 시간 쿠키에 설정
-  const response = NextResponse.next();
-
-  // 쿠키 설정
-  response.cookies.set("spotify_access_token", newAccessToken, {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
-    maxAge: expiresIn,
-    path: "/",
-    sameSite: "lax",
-  });
-
-  response.cookies.set(
-    "spotify_token_expiry",
-    (now + expiresIn * 1000).toString(),
-    {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      maxAge: expiresIn,
-      path: "/",
-      sameSite: "lax",
-    },
-  );
-
-  // 헤더에 새 토큰 추가
-  const modifiedHeaders = new Headers(req.headers);
-  modifiedHeaders.set("Authorization", `Bearer ${newAccessToken}`);
-
-  // 응답에 수정된 헤더 적용
-  const finalResponse = NextResponse.rewrite(req.nextUrl, {
-    headers: modifiedHeaders,
-  });
-
-  return finalResponse;
 }
-
-// 미들웨어가 동작할 경로 지정
-export const config = {
-  matcher: ["/api/spotify/:path*"],
-};

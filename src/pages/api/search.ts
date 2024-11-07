@@ -1,26 +1,33 @@
 import getServerAxiosInstance from "@/libs/axios/axiosServerInstance";
+import withErrorHandling from "@/libs/utils/errorHandler";
 import { SpotifyArtist } from "@/types/artist";
+import { SpotifyAPIError, ValidationError } from "@/types/error";
 import {
-  ResponseData,
   SimplifiedArtist,
+  SimplifiedSearchResponse,
   SimplifiedTrack,
   SpotifySearchResponse,
 } from "@/types/search";
 import { SpotifyArtistBrief, SpotifyTrack } from "@/types/track";
+import { AxiosError } from "axios";
 import type { NextApiRequest, NextApiResponse } from "next";
 
 const handler = async (
   req: NextApiRequest,
-  res: NextApiResponse<ResponseData>,
+  res: NextApiResponse<SimplifiedSearchResponse>,
 ) => {
   const { q, type } = req.query;
+
+  if (req.method !== "GET") {
+    throw new ValidationError("Method not allowed");
+  }
 
   if (
     typeof q !== "string" ||
     typeof type !== "string" ||
     !["artist", "track"].includes(type)
   ) {
-    return res.status(400).json({ error: "Invalid query or type" });
+    throw new ValidationError("Invalid query or type parameter");
   }
 
   try {
@@ -34,6 +41,10 @@ const handler = async (
     });
 
     const { data } = response;
+
+    if (!data) {
+      throw new SpotifyAPIError("Empty response from Spotify API", 502);
+    }
 
     if (type === "artist" && "artists" in data) {
       const simplifiedArtists: SimplifiedArtist[] = data.artists.items.map(
@@ -57,6 +68,7 @@ const handler = async (
         },
       });
     }
+
     if (type === "track" && "tracks" in data) {
       const simplifiedTracks: SimplifiedTrack[] = data.tracks.items.map(
         (track: SpotifyTrack) => ({
@@ -82,14 +94,25 @@ const handler = async (
         },
       });
     }
-    return res.status(400).json({ error: "Invalid response data" });
-  } catch (error: unknown) {
-    const errorMessage =
-      error instanceof Error
-        ? error.message
-        : "알 수 없는 오류가 발생했습니다.";
-    return res.status(500).json({ error: errorMessage });
+
+    throw new SpotifyAPIError(
+      "Invalid response structure from Spotify API",
+      502,
+    );
+  } catch (error) {
+    if (error instanceof ValidationError) {
+      throw error;
+    }
+
+    if (error instanceof AxiosError) {
+      throw new SpotifyAPIError(
+        `Spotify API request failed: ${error.message}`,
+        error.response?.status || 500,
+      );
+    }
+
+    throw error;
   }
 };
 
-export default handler;
+export default withErrorHandling(handler);

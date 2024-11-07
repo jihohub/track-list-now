@@ -11,7 +11,7 @@ interface AlbumPageProps {
 }
 
 const AlbumPage = ({ albumId }: AlbumPageProps) => {
-  const { t } = useTranslation(["common", "album"]);
+  const { t } = useTranslation(["common", "album", "error"]);
 
   const { data, error, isLoading } = useFetchAlbum(albumId);
 
@@ -42,6 +42,7 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
       ...(await serverSideTranslations(context.locale || "ko", [
         "common",
         "album",
+        "error",
       ])),
       albumId,
     },

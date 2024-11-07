@@ -18,10 +18,11 @@ const LikedSection = () => {
   const router = useRouter();
   const { type } = router.query;
 
+  const { data: session } = useSession();
+
   const [currentType, setCurrentType] = useState<string>(
     typeof type === "string" ? type : "all",
   );
-  const { data: session } = useSession();
 
   const userId = session?.user.id;
 

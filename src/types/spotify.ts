@@ -1,3 +1,21 @@
+export interface SpotifyToken {
+  access_token: string;
+  expires_in: number;
+  token_type: string;
+  scope?: string;
+}
+
+export interface SpotifyApiError {
+  error: string;
+  errorId: string;
+  timestamp: string;
+}
+
+export interface SpotifyCredentials {
+  clientId: string;
+  clientSecret: string;
+}
+
 export interface SpotifyExternalUrls {
   spotify: string;
 }
@@ -89,9 +107,7 @@ export interface SpotifyAlbum {
   tracks: SpotifyTracks;
 }
 
-export interface SpotifyError {
-  error: {
-    status: number;
-    message: string;
-  };
+export interface SpotifyApiResponse<T> {
+  data?: T;
+  error?: SpotifyApiError;
 }

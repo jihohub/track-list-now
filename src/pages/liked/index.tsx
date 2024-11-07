@@ -13,7 +13,11 @@ const LikedPage = () => {
 export const getServerSideProps: GetServerSideProps = async ({ locale }) => {
   return {
     props: {
-      ...(await serverSideTranslations(locale ?? "ko", ["common", "liked"])),
+      ...(await serverSideTranslations(locale ?? "ko", [
+        "common",
+        "liked",
+        "error",
+      ])),
     },
   };
 };

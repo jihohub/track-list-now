@@ -1,4 +1,6 @@
 {
-  "something_went_wrong": "오류가 발생하였습니다.",
-  "try_again": "다시 시도해주세요."
+  "something_went_wrong": "문제가 발생했습니다",
+  "try_again": "다시 시도",
+  "show_stack_trace": "상세 오류 정보 보기",
+  "error_persistence_message": "오류가 계속되면 관리자에게 문의해주세요."
 }

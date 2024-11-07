@@ -1,4 +1,3 @@
-// **Spotify API Response Interfaces**
 export interface SpotifyExternalUrls {
   spotify: string;
 }
@@ -68,15 +67,8 @@ export interface SpotifyTrack {
   is_local: boolean;
 }
 
-export type SuccessResponse = SpotifyTrack;
+export type TrackResponseData = SpotifyTrack;
 
-export interface ErrorResponse {
-  error: string;
-}
-
-export type TrackResponseData = SuccessResponse | ErrorResponse;
-
-// **Frontend Page Interfaces**
 export interface TrackDetail {
   album: {
     album_type: string;
@@ -149,9 +141,8 @@ export interface TrackDetail {
   is_local: boolean;
 }
 
-// **Extended Interfaces for React Query**
 export interface TrackWithRanking {
-  rankingType: string; // 예: "TOP_TRACKS"
+  rankingType: string;
   count: number;
   updatedAt: Date;
   track: TrackDetail;
@@ -159,7 +150,6 @@ export interface TrackWithRanking {
 
 export type TItemData = TrackWithRanking | TrackDetail;
 
-// **Type Guards**
 export const isTrackWithRanking = (
   item: TItemData,
 ): item is TrackWithRanking => {
