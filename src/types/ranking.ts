@@ -52,15 +52,15 @@ export interface RankingSectionProps {
 }
 
 export const isArtistWithRanking = (
-  item: ArtistWithRanking | TrackWithRanking,
+  item: ArtistWithRanking | TrackWithRanking | undefined,
 ): item is ArtistWithRanking => {
-  return (item as ArtistWithRanking).artist !== undefined;
+  return item !== undefined && "artist" in item;
 };
 
 export const isTrackWithRanking = (
-  item: ArtistWithRanking | TrackWithRanking,
+  item: ArtistWithRanking | TrackWithRanking | undefined,
 ): item is TrackWithRanking => {
-  return (item as TrackWithRanking).track !== undefined;
+  return item !== undefined && "track" in item;
 };
 
 export interface ArtistTItemProps {

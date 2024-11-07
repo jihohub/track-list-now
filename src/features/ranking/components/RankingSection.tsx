@@ -1,13 +1,18 @@
 import ErrorComponent from "@/features/common/components/ErrorComponent";
+import GlobalLoadingBar from "@/features/common/components/GlobalLoadingBar";
+import LoadingBar from "@/features/common/components/LoadingBar";
 import TItem from "@/features/common/components/TItem";
 import { isArtistWithRanking, TItemData } from "@/types/ranking";
 import { useTranslation } from "next-i18next";
+import InfiniteScroll from "react-infinite-scroll-component";
 
 interface RankingSectionProps {
   sectionType: "artist" | "track";
   sectionData: TItemData[];
   isLoading: boolean;
   error: Error | null;
+  fetchMore: () => void;
+  hasMore: boolean;
 }
 
 const RankingSection = ({
@@ -15,6 +20,8 @@ const RankingSection = ({
   sectionData,
   isLoading,
   error,
+  fetchMore,
+  hasMore,
 }: RankingSectionProps) => {
   const { t } = useTranslation(["common", "ranking"]);
 
@@ -23,11 +30,7 @@ const RankingSection = ({
   }
 
   if (isLoading) {
-    return (
-      <div className="flex justify-center items-center h-[500px]">
-        <p className="text-gray-400 text-center mt-4">{t("loading")}</p>
-      </div>
-    );
+    return <LoadingBar />;
   }
 
   if (sectionData.length === 0) {
@@ -39,31 +42,38 @@ const RankingSection = ({
   }
 
   return (
-    <ul className="space-y-4">
-      {sectionData.map((item, index) => {
-        if (sectionType === "artist" && isArtistWithRanking(item)) {
-          return (
-            <TItem
-              key={item.artist.artistId}
-              index={index}
-              item={item}
-              type="artist"
-            />
-          );
-        }
-        if (sectionType === "track" && !isArtistWithRanking(item)) {
-          return (
-            <TItem
-              key={item.track.trackId}
-              index={index}
-              item={item}
-              type="track"
-            />
-          );
-        }
-        return null;
-      })}
-    </ul>
+    <InfiniteScroll
+      dataLength={sectionData.length}
+      next={fetchMore}
+      hasMore={hasMore}
+      loader={<GlobalLoadingBar />}
+    >
+      <ul className="space-y-4">
+        {sectionData.map((item, index) => {
+          if (sectionType === "artist" && isArtistWithRanking(item)) {
+            return (
+              <TItem
+                key={item.artist.artistId}
+                index={index}
+                item={item}
+                type="artist"
+              />
+            );
+          }
+          if (sectionType === "track" && !isArtistWithRanking(item)) {
+            return (
+              <TItem
+                key={item.track.trackId}
+                index={index}
+                item={item}
+                type="track"
+              />
+            );
+          }
+          return null;
+        })}
+      </ul>
+    </InfiniteScroll>
   );
 };
 

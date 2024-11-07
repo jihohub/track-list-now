@@ -3,8 +3,8 @@ import RankingCategoryTabs from "@/features/ranking/components/RankingCategoryTa
 import RankingSection from "@/features/ranking/components/RankingSection";
 import useFetchRanking, {
   fetchRankingData,
+  RankingResponse,
 } from "@/features/ranking/queries/useFetchRanking";
-import useGlobalLoading from "@/hooks/useGlobalLoading";
 import { convertToCategory } from "@/libs/utils/categoryMapper";
 import {
   isArtistWithRanking,
@@ -26,9 +26,9 @@ interface RankingPageProps {
 const RankingPage = ({ category }: RankingPageProps) => {
   const { t } = useTranslation(["common", "ranking", "error"]);
   const router = useRouter();
-  const isLoading = useGlobalLoading();
 
-  const { data: rankingData = [], error } = useFetchRanking(category);
+  const { data, fetchNextPage, hasNextPage, isLoading, error } =
+    useFetchRanking(category);
 
   const title = (() => {
     switch (category) {
@@ -52,6 +52,8 @@ const RankingPage = ({ category }: RankingPageProps) => {
   if (error) {
     return <ErrorComponent message={`Error loading data: ${error.message}`} />;
   }
+
+  const rankingData = data?.pages.flatMap((page) => page.items) ?? [];
 
   let sectionType: "artist" | "track" = "artist";
   let sectionData: TItemData[] = [];
@@ -114,6 +116,8 @@ const RankingPage = ({ category }: RankingPageProps) => {
         sectionData={sectionData}
         isLoading={isLoading}
         error={error || null}
+        fetchMore={fetchNextPage}
+        hasMore={!!hasNextPage}
       />
     </div>
   );
@@ -137,9 +141,12 @@ export const getServerSideProps: GetServerSideProps = async ({
   }
 
   try {
-    await queryClient.prefetchQuery({
-      queryKey: ["ranking", category],
-      queryFn: () => fetchRankingData(categoryURL),
+    await queryClient.prefetchInfiniteQuery({
+      queryKey: ["ranking", categoryURL],
+      queryFn: ({ pageParam = 0 }) => fetchRankingData(pageParam, categoryURL),
+      initialPageParam: 0,
+      getNextPageParam: (lastPage: RankingResponse) =>
+        lastPage.next ? lastPage.offset + lastPage.limit : undefined,
       staleTime: 5 * 60 * 1000,
     });
 

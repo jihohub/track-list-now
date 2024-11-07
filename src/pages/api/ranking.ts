@@ -9,53 +9,87 @@ import {
 import { Prisma } from "@prisma/client";
 import { NextApiRequest, NextApiResponse } from "next";
 
-type ResponseData = ArtistWithRanking[] | TrackWithRanking[];
+interface PaginatedResponse<T> {
+  items: T[];
+  offset: number;
+  limit: number;
+  total: number;
+  next: string | null;
+}
+
+type RankingResponse =
+  | PaginatedResponse<ArtistWithRanking>
+  | PaginatedResponse<TrackWithRanking>;
+
+const DEFAULT_LIMIT = 10;
+const MAX_LIMIT = 50;
 
 const getRankingData = async (
   category: RankingCategory,
-): Promise<ArtistWithRanking[] | TrackWithRanking[]> => {
-  const TAKE_COUNT = 100;
-
+  offset: number,
+  limit: number,
+): Promise<RankingResponse> => {
   try {
     switch (category) {
       case "ALL_TIME_ARTIST":
-        return prisma.artistRanking.findMany({
-          where: { rankingType: "ALL_TIME_ARTIST" },
-          orderBy: [{ count: "desc" }, { followers: "desc" }],
-          take: TAKE_COUNT,
-          include: { artist: true },
-        });
+      case "CURRENT_ARTIST": {
+        const [data, count] = await Promise.all([
+          prisma.artistRanking.findMany({
+            where: { rankingType: category },
+            orderBy: [{ count: "desc" }, { followers: "desc" }],
+            take: limit,
+            skip: offset,
+            include: { artist: true },
+          }),
+          prisma.artistRanking.count({
+            where: { rankingType: category },
+          }),
+        ]);
+
+        const hasNextPage = offset + limit < count;
+        return {
+          items: data as ArtistWithRanking[],
+          offset,
+          limit,
+          total: count,
+          next: hasNextPage
+            ? `/api/ranking?category=${category}&offset=${offset + limit}&limit=${limit}`
+            : null,
+        };
+      }
 
       case "ALL_TIME_TRACK":
-        return prisma.trackRanking.findMany({
-          where: { rankingType: "ALL_TIME_TRACK" },
-          orderBy: [{ count: "desc" }, { popularity: "desc" }],
-          take: TAKE_COUNT,
-          include: { track: true },
-        });
+      case "CURRENT_TRACK": {
+        const [data, count] = await Promise.all([
+          prisma.trackRanking.findMany({
+            where: { rankingType: category },
+            orderBy: [{ count: "desc" }, { popularity: "desc" }],
+            take: limit,
+            skip: offset,
+            include: { track: true },
+          }),
+          prisma.trackRanking.count({
+            where: { rankingType: category },
+          }),
+        ]);
 
-      case "CURRENT_ARTIST":
-        return prisma.artistRanking.findMany({
-          where: { rankingType: "CURRENT_ARTIST" },
-          orderBy: [{ count: "desc" }, { followers: "desc" }],
-          take: TAKE_COUNT,
-          include: { artist: true },
-        });
-
-      case "CURRENT_TRACK":
-        return prisma.trackRanking.findMany({
-          where: { rankingType: "CURRENT_TRACK" },
-          orderBy: [{ count: "desc" }, { popularity: "desc" }],
-          take: TAKE_COUNT,
-          include: { track: true },
-        });
+        const hasNextPage = offset + limit < count;
+        return {
+          items: data as TrackWithRanking[],
+          offset,
+          limit,
+          total: count,
+          next: hasNextPage
+            ? `/api/ranking?category=${category}&offset=${offset + limit}&limit=${limit}`
+            : null,
+        };
+      }
 
       default:
         throw new ValidationError("Invalid category");
     }
   } catch (error) {
     if (error instanceof Prisma.PrismaClientKnownRequestError) {
-      // 특정 Prisma 에러 코드에 따른 처리
       switch (error.code) {
         case "P2002":
           throw new DatabaseError("Unique constraint violation");
@@ -72,13 +106,13 @@ const getRankingData = async (
       throw new DatabaseError("Invalid database query");
     }
 
-    throw error; // ValidationError 등 다른 에러는 그대로 전파
+    throw error;
   }
 };
 
 const handler = async (
   req: NextApiRequest,
-  res: NextApiResponse<ResponseData>,
+  res: NextApiResponse<RankingResponse>,
 ) => {
   const { method } = req;
 
@@ -89,7 +123,7 @@ const handler = async (
     });
   }
 
-  const { category } = req.query;
+  const { category, offset: offsetParam, limit: limitParam } = req.query;
 
   const validCategories: RankingCategory[] = [
     "ALL_TIME_ARTIST",
@@ -105,14 +139,19 @@ const handler = async (
     throw new ValidationError("Invalid category parameter");
   }
 
+  // Validate and parse pagination parameters
+  const offset = Math.max(0, parseInt(offsetParam as string, 10) || 0);
+  const limit = Math.min(
+    MAX_LIMIT,
+    Math.max(1, parseInt(limitParam as string, 10) || DEFAULT_LIMIT),
+  );
+
   try {
-    const rankingData = await getRankingData(category as RankingCategory);
-
-    // 결과 데이터 검증
-    if (!rankingData || rankingData.length === 0) {
-      return res.status(200).json([]); // 빈 배열 반환
-    }
-
+    const rankingData = await getRankingData(
+      category as RankingCategory,
+      offset,
+      limit,
+    );
     return res.status(200).json(rankingData);
   } catch (error) {
     if (
@@ -123,7 +162,6 @@ const handler = async (
       throw error;
     }
 
-    // 예상치 못한 에러
     throw new DatabaseError("Failed to fetch ranking data");
   }
 };
