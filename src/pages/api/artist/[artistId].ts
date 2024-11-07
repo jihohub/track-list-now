@@ -1,8 +1,7 @@
 import getServerAxiosInstance from "@/libs/axios/axiosServerInstance";
 import withErrorHandling from "@/libs/utils/errorHandler";
 import {
-  ArtistResponseData,
-  CombinedArtistData,
+  ArtistPageData,
   SpotifyArtist,
   SpotifyRelatedArtists,
   SpotifyTopTracks,
@@ -87,7 +86,7 @@ const validateArtistId = (artistId: unknown): string => {
   return artistId;
 };
 
-const validateResponse = (data: CombinedArtistData): void => {
+const validateResponse = (data: ArtistPageData): void => {
   if (!data.artist || !data.artist.id) {
     throw new SpotifyAPIError("Invalid artist data", 502);
   }
@@ -103,7 +102,7 @@ const validateResponse = (data: CombinedArtistData): void => {
 
 const handler = async (
   req: NextApiRequest,
-  res: NextApiResponse<ArtistResponseData>,
+  res: NextApiResponse<ArtistPageData>,
 ) => {
   if (req.method !== "GET") {
     throw new ValidationError("Method not allowed");
@@ -121,10 +120,34 @@ const handler = async (
       fetchRelatedArtists(serverAxios, validatedArtistId),
     ]);
 
-    const combinedData: CombinedArtistData = {
-      artist: artistData,
-      topTracks: topTracksData,
-      relatedArtists: relatedArtistsData,
+    const combinedData: ArtistPageData = {
+      artist: {
+        id: artistData.id,
+        name: artistData.name,
+        images: artistData.images,
+        genres: artistData.genres,
+        followers: artistData.followers,
+      },
+      topTracks: {
+        tracks: topTracksData.tracks.map((track) => ({
+          id: track.id,
+          name: track.name,
+          imageUrl: track.album.images[0]?.url || "",
+          artists: track.artists.map((artist) => ({
+            id: artist.id,
+            name: artist.name,
+          })),
+          previewUrl: track.preview_url,
+          durationMs: track.duration_ms,
+        })),
+      },
+      relatedArtists: {
+        artists: relatedArtistsData.artists.map((artist) => ({
+          id: artist.id,
+          name: artist.name,
+          images: artist.images,
+        })),
+      },
     };
 
     validateResponse(combinedData);

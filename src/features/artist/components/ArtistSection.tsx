@@ -1,7 +1,9 @@
+import AudioPlayer from "@/features/audio/components/AudioPlayer";
 import TImage from "@/features/common/components/TImage";
 import { ArtistPageData } from "@/types/artist";
 import { useTranslation } from "next-i18next";
 import Link from "next/link";
+import { useEffect, useState } from "react";
 import LikeButton from "../../liked/components/LikeButton";
 import TopTrackItem from "./TopTrackItem";
 
@@ -13,6 +15,59 @@ const ArtistSection = ({ data }: ArtistSectionProps) => {
   const { t } = useTranslation(["common", "artist"]);
 
   const { artist, topTracks, relatedArtists } = data;
+
+  const [currentTrackIndex, setCurrentTrackIndex] = useState<number | null>(
+    null,
+  );
+  const [isPlaying, setIsPlaying] = useState<boolean>(false);
+  const [volume, setVolume] = useState<number>(1);
+
+  useEffect(() => {
+    const savedVolume = localStorage.getItem("volume");
+    if (savedVolume !== null) {
+      setVolume(Number(savedVolume));
+    }
+  }, []);
+
+  useEffect(() => {
+    localStorage.setItem("volume", volume.toString());
+  }, [volume]);
+
+  const handlePlay = (index: number) => {
+    if (currentTrackIndex === index) {
+      setIsPlaying((prev) => !prev);
+    } else {
+      setCurrentTrackIndex(index);
+      setIsPlaying(true);
+    }
+  };
+
+  const handlePrevious = () => {
+    if (currentTrackIndex !== null && currentTrackIndex > 0) {
+      setCurrentTrackIndex(currentTrackIndex - 1);
+      setIsPlaying(true);
+    }
+  };
+
+  const handleNext = () => {
+    if (
+      currentTrackIndex !== null &&
+      currentTrackIndex < data.topTracks.tracks.length - 1
+    ) {
+      setCurrentTrackIndex(currentTrackIndex + 1);
+      setIsPlaying(true);
+    }
+  };
+
+  const handleClosePlayer = () => {
+    setCurrentTrackIndex(null);
+    setIsPlaying(false);
+  };
+
+  const currentTrack =
+    currentTrackIndex !== null
+      ? data.topTracks.tracks[currentTrackIndex]
+      : null;
 
   return (
     <div className="flex flex-col items-center">
@@ -64,7 +119,14 @@ const ArtistSection = ({ data }: ArtistSectionProps) => {
         </h2>
         <ul className="space-y-4">
           {topTracks.tracks.map((track, index) => (
-            <TopTrackItem key={track.id} index={index} track={track} />
+            <TopTrackItem
+              key={track.id}
+              index={index}
+              track={track}
+              onPlay={() => handlePlay(index)}
+              isCurrent={currentTrackIndex === index}
+              isPlaying={isPlaying}
+            />
           ))}
         </ul>
       </div>
@@ -100,6 +162,17 @@ const ArtistSection = ({ data }: ArtistSectionProps) => {
           ))}
         </ul>
       </div>
+      <AudioPlayer
+        track={currentTrack}
+        isPlaying={isPlaying}
+        setIsPlaying={setIsPlaying}
+        onPrevious={handlePrevious}
+        onNext={handleNext}
+        onClose={handleClosePlayer}
+        volume={volume}
+        setVolume={setVolume}
+        isAlbumPage={false}
+      />
     </div>
   );
 };

@@ -1,3 +1,4 @@
+import { SimplifiedTrack } from "@/types/album";
 import { Artist, ArtistRanking, Track, TrackRanking } from "@prisma/client";
 
 export type RankingCategory =
@@ -121,12 +122,7 @@ export interface ArtistPageData {
     };
   };
   topTracks: {
-    tracks: {
-      id: string;
-      name: string;
-      album: { images: { url: string }[] };
-      artists: { name: string }[];
-    }[];
+    tracks: SimplifiedTrack[];
   };
   relatedArtists: {
     artists: {

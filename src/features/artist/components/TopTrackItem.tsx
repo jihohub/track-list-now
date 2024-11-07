@@ -1,17 +1,24 @@
+import PauseIcon from "@/assets/icons/pause.svg";
+import PlayIcon from "@/assets/icons/play.svg";
 import TImage from "@/features/common/components/TImage";
+import { SimplifiedTrack } from "@/types/album";
 import Link from "next/link";
 
 interface TopTrackItemProps {
   index: number;
-  track: {
-    id: string;
-    name: string;
-    album: { images: { url: string }[] };
-    artists: { name: string }[];
-  };
+  track: SimplifiedTrack;
+  onPlay: () => void;
+  isCurrent: boolean;
+  isPlaying: boolean;
 }
 
-const TopTrackItem = ({ index, track }: TopTrackItemProps) => {
+const TopTrackItem = ({
+  index,
+  track,
+  onPlay,
+  isCurrent,
+  isPlaying,
+}: TopTrackItemProps) => {
   return (
     <li className="flex justify-between items-center bg-zinc-900 p-4 rounded-lg shadow-md">
       <Link
@@ -23,7 +30,7 @@ const TopTrackItem = ({ index, track }: TopTrackItemProps) => {
             {index + 1}
           </span>
           <TImage
-            imageUrl={track.album.images[0].url}
+            imageUrl={track.imageUrl}
             type="track"
             alt={track.name}
             size="w-12 h-12 sm:w-16 sm:h-16"
@@ -38,6 +45,18 @@ const TopTrackItem = ({ index, track }: TopTrackItemProps) => {
             </p>
           </div>
         </div>
+        {track.previewUrl && (
+          <button
+            onClick={(e) => {
+              e.preventDefault();
+              onPlay();
+            }}
+            className="text-neonBlue hover:text-chefchaouenBlue focus:outline-none"
+            type="button"
+          >
+            {isCurrent && isPlaying ? <PauseIcon /> : <PlayIcon />}
+          </button>
+        )}
       </Link>
     </li>
   );
