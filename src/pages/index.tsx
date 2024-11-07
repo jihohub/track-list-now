@@ -1,86 +1,29 @@
-import rankingSectionsConstants, {
-  RankingSectionConstant,
-} from "@/constants/rankingSections";
 import ErrorComponent from "@/features/common/components/ErrorComponent";
+import MainPageSEO from "@/features/main/components/MainPageSEO";
 import RankingSection from "@/features/main/components/RankingSection";
+import useMainPageSections from "@/features/main/hooks/useMainPageSections";
 import useFetchFeaturedRanking, {
   fetchFeaturedRanking,
 } from "@/features/main/queries/useFetchFeaturedRanking";
-import {
-  ArtistWithRanking,
-  RankingSectionProps,
-  TrackWithRanking,
-} from "@/types/ranking";
+import ErrorProcessor from "@/libs/utils/errorProcessor";
+import { handlePageError } from "@/libs/utils/handlePageError";
 import { dehydrate, QueryClient } from "@tanstack/react-query";
 import { GetServerSideProps } from "next";
-import { useTranslation } from "next-i18next";
 import { serverSideTranslations } from "next-i18next/serverSideTranslations";
-import { NextSeo } from "next-seo";
 
 const MainPage = () => {
-  const { t } = useTranslation(["common", "main", "error"]);
-
   const { data: rankingData, error } = useFetchFeaturedRanking();
 
   if (error) {
-    return <ErrorComponent message={`Error loading data: ${error.message}`} />;
+    const errorMessage = handlePageError(error);
+    return <ErrorComponent message={errorMessage} />;
   }
 
-  const sections: RankingSectionProps[] = rankingSectionsConstants.map(
-    (section: RankingSectionConstant) => {
-      let data: ArtistWithRanking[] | TrackWithRanking[] = [];
-      switch (section.category) {
-        case "ALL_TIME_ARTIST":
-          data = rankingData?.allTimeArtistsRanking || [];
-          break;
-        case "ALL_TIME_TRACK":
-          data = rankingData?.allTimeTracksRanking || [];
-          break;
-        case "CURRENT_ARTIST":
-          data = rankingData?.currentArtistsRanking || [];
-          break;
-        case "CURRENT_TRACK":
-          data = rankingData?.currentTracksRanking || [];
-          break;
-        default:
-          data = [];
-      }
-
-      return {
-        title: t(section.titleKey),
-        data,
-        type: section.type,
-        category: section.category,
-      };
-    },
-  );
+  const sections = useMainPageSections(rankingData);
 
   return (
     <div className="max-w-6xl mx-auto p-6 grid grid-cols-1 lg:grid-cols-2 gap-8">
-      <NextSeo
-        title="Track List Now"
-        description="Explore the top-ranked artists and tracks, featuring all-time favorites and current trends on Track List Now."
-        openGraph={{
-          type: "website",
-          url: "https://www.tracklistnow.com",
-          title: "Track List Now",
-          description:
-            "Explore the top-ranked artists and tracks, featuring all-time favorites and current trends on Track List Now.",
-          images: [
-            {
-              url: "/default-image.jpg",
-              width: 800,
-              height: 600,
-              alt: "Track List Now",
-            },
-          ],
-        }}
-        twitter={{
-          handle: "@TrackListNow",
-          site: "@TrackListNow",
-          cardType: "summary_large_image",
-        }}
-      />
+      <MainPageSEO />
       {sections.map((section) => (
         <RankingSection
           key={section.category}
@@ -117,8 +60,7 @@ export const getServerSideProps: GetServerSideProps = async ({ locale }) => {
       },
     };
   } catch (error) {
-    // eslint-disable-next-line no-console
-    console.error("Error in getServerSideProps:", error);
+    ErrorProcessor.logToSentry(error);
 
     return {
       props: {
