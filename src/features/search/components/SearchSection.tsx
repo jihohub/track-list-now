@@ -2,120 +2,44 @@ import ErrorComponent from "@/features/common/components/ErrorComponent";
 import NoResultsMessage from "@/features/search/components/NoResultsMessage";
 import SearchInput from "@/features/search/components/SearchInput";
 import SearchResultList from "@/features/search/components/SearchResultList";
+import SearchSEO from "@/features/search/components/SearchSEO";
 import SearchTabs from "@/features/search/components/SearchTabs";
-import useFetchSearchResults from "@/features/search/queries/useFetchSearchResults";
-import {
-  SimplifiedAlbum,
-  SimplifiedArtist,
-  SimplifiedTrack,
-} from "@/types/search";
+import { useSearch } from "@/features/search/hooks/useSearch";
+import { handlePageError } from "@/libs/utils/handlePageError";
 import { useTranslation } from "next-i18next";
-import { useRouter } from "next/router";
-import { useEffect, useRef, useState } from "react";
 
 const SearchSection = () => {
   const { t } = useTranslation(["common", "search"]);
-  const router = useRouter();
-  const { q, type } = router.query;
-
-  const [searchQuery, setSearchQuery] = useState<string>(
-    typeof q === "string" ? q : "",
-  );
-  const [currentType, setCurrentType] = useState<string>(
-    typeof type === "string" ? type : "all",
-  );
-  const [hasSearched, setHasSearched] = useState<boolean>(false);
-  const resultsRef = useRef<HTMLUListElement>(null);
-
-  const [searchTerm, setSearchTerm] = useState<string>(
-    typeof q === "string" ? q : "",
-  );
-  const [searchType, setSearchType] = useState<string>(
-    typeof type === "string" ? type : "all",
-  );
-
-  const { data, isLoading, isError, error, fetchNextPage, hasNextPage } =
-    useFetchSearchResults(searchTerm, searchType, hasSearched);
-
-  const handleSearch = (newType?: string) => {
-    if (!searchQuery.trim()) return;
-
-    const typeToUse = newType || currentType;
-
-    // 검색 실행 시 searchTerm과 searchType 업데이트
-    setSearchTerm(searchQuery.trim());
-    setSearchType(typeToUse);
-    setHasSearched(true);
-
-    router.push({
-      pathname: "/search",
-      query: { q: searchQuery.trim(), type: typeToUse },
-    });
-  };
-
-  const handleKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === "Enter") {
-      handleSearch();
-    }
-  };
-
-  // 탭 변경 핸들러 수정
-  const handleTypeChange = (newType: string) => {
-    setCurrentType(newType);
-    if (hasSearched && searchQuery.trim()) {
-      handleSearch(newType);
-    }
-  };
-
-  useEffect(() => {
-    if (resultsRef.current) {
-      resultsRef.current.scrollTop = 0;
-    }
-  }, [data]);
-
-  useEffect(() => {
-    // 페이지 로드 시 URL의 쿼리 스트링을 기반으로 검색 수행
-    if (
-      q &&
-      type &&
-      typeof q === "string" &&
-      typeof type === "string" &&
-      !hasSearched
-    ) {
-      setSearchQuery(q.trim());
-      setSearchTerm(q.trim());
-      setCurrentType(type);
-      setSearchType(type);
-      setHasSearched(true);
-    }
-  }, [q, type, hasSearched]);
+  const {
+    searchQuery,
+    setSearchQuery,
+    currentType,
+    handleSearch,
+    handleKeyPress,
+    handleTypeChange,
+    hasSearched,
+    isLoading,
+    isError,
+    error,
+    fetchNextPage,
+    hasNextPage,
+    artists,
+    tracks,
+    albums,
+  } = useSearch();
 
   const placeholder = t("placeholder", { ns: "search" });
   const searchButtonLabel = t("search", { ns: "search" });
   const noResultMessage = t("no_result", { ns: "search" });
 
-  const tracks: SimplifiedTrack[] = [];
-  const artists: SimplifiedArtist[] = [];
-  const albums: SimplifiedAlbum[] = [];
-
-  data?.pages.forEach((page) => {
-    if (page.artists) {
-      artists.push(...page.artists.items);
-    }
-    if (page.tracks) {
-      tracks.push(...page.tracks.items);
-    }
-    if (page.albums) {
-      albums.push(...page.albums.items);
-    }
-  });
-
   if (isError) {
-    return <ErrorComponent message={`Error loading data: ${error.message}`} />;
+    const errorMessage = handlePageError(error);
+    return <ErrorComponent message={errorMessage} />;
   }
 
   return (
     <div className="bg-zinc-800 p-6 rounded-lg shadow-lg max-w-4xl w-full mx-auto">
+      <SearchSEO searchQuery={searchQuery} />
       <h2 className="text-xl font-semibold mb-4 text-white">
         {t("search_for", { ns: "search" })}
       </h2>
