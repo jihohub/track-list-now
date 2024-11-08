@@ -8,7 +8,7 @@ import {
 import { useTranslation } from "next-i18next";
 import { useRouter } from "next/router";
 
-export const useRanking = (category: RankingCategory) => {
+const useRanking = (category: RankingCategory) => {
   const { t } = useTranslation(["common", "ranking"]);
   const router = useRouter();
 
@@ -73,3 +73,5 @@ export const useRanking = (category: RankingCategory) => {
     handleCategoryChange,
   };
 };
+
+export default useRanking;

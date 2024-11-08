@@ -2,7 +2,7 @@ import ErrorComponent from "@/features/common/components/ErrorComponent";
 import RankingCategoryTabs from "@/features/ranking/components/RankingCategoryTabs";
 import RankingSection from "@/features/ranking/components/RankingSection";
 import RankingSEO from "@/features/ranking/components/RankingSEO";
-import { useRanking } from "@/features/ranking/hooks/useRanking";
+import useRanking from "@/features/ranking/hooks/useRanking";
 import {
   fetchRankingData,
   RankingResponse,

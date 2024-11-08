@@ -7,7 +7,7 @@ import {
 import { useRouter } from "next/router";
 import { useEffect, useRef, useState } from "react";
 
-export const useSearch = () => {
+const useSearch = () => {
   const router = useRouter();
   const { q, type } = router.query;
   const resultsRef = useRef<HTMLUListElement>(null);
@@ -117,3 +117,5 @@ export const useSearch = () => {
     resultsRef,
   };
 };
+
+export default useSearch;

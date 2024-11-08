@@ -1,6 +1,6 @@
 import AudioPlayer from "@/features/audio/components/AudioPlayer";
 import LikeButton from "@/features/liked/components/LikeButton";
-import { useTrackPlayer } from "@/features/track/hooks/useTrackPlayer";
+import useTrackPlayer from "@/features/track/hooks/useTrackPlayer";
 import { TrackDetail } from "@/types/track";
 import { useTranslation } from "next-i18next";
 import Image from "next/image";

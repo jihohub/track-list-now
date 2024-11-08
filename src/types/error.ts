@@ -82,3 +82,23 @@ export class DatabaseError extends AppError {
     this.name = "DatabaseError";
   }
 }
+
+export class ProfileError extends AppError {
+  constructor(
+    message: string,
+    metadata: Partial<ErrorMetadata> = {},
+    additionalData: Record<string, unknown> = {},
+  ) {
+    super(message, {
+      severity: "error",
+      errorCode: "PROFILE_ERROR",
+      statusCode: 400,
+      ...metadata,
+      context: {
+        errorType: "PROFILE_ERROR",
+        ...additionalData,
+      },
+    });
+    this.name = "ProfileError";
+  }
+}

@@ -9,7 +9,7 @@ import useUserProfile, {
   fetchUserFavorites,
 } from "@/features/profile/queries/useUserProfile";
 import errorLogger from "@/libs/utils/errorLogger";
-import { AppError } from "@/types/error";
+import { ProfileError } from "@/types/error";
 import {
   UserFavoriteArtist,
   UserFavorites,
@@ -22,17 +22,6 @@ import { useTranslation } from "next-i18next";
 import { serverSideTranslations } from "next-i18next/serverSideTranslations";
 import { NextSeo } from "next-seo";
 import { useRef, useState } from "react";
-
-class ProfileError extends AppError {
-  constructor(message: string, metadata: Record<string, unknown> = {}) {
-    super(message, {
-      severity: "error",
-      errorCode: "PROFILE_ERROR",
-      ...metadata,
-    });
-    this.name = "ProfileError";
-  }
-}
 
 interface ProfileErrorInfo {
   componentStack: string;
@@ -252,40 +241,34 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
     const session = await getSession(context);
     const locale = context.locale ?? "ko";
 
-    // 세션이 없는 경우 로그인 페이지로 리다이렉트
     if (!session) {
-      errorLogger(
-        new ProfileError("Unauthenticated access attempt", {
+      throw new ProfileError(
+        "Unauthenticated access attempt",
+        {
+          severity: "warning",
+          statusCode: 401,
+          componentStack: "getServerSideProps",
+        },
+        {
           action: "getServerSideProps",
           path: context.resolvedUrl,
-        }),
-        { componentStack: "getServerSideProps" } as ProfileErrorInfo,
-      );
-
-      return {
-        redirect: {
-          destination: "/api/auth/signin",
-          permanent: false,
         },
-      };
+      );
     }
 
-    // 세션은 있지만 userId가 없는 경우 (비정상적인 상황)
     if (!session.user?.id) {
-      errorLogger(
-        new ProfileError("Session exists but no user ID found", {
+      throw new ProfileError(
+        "Session exists but no user ID found",
+        {
+          severity: "error",
+          statusCode: 500,
+          componentStack: "getServerSideProps",
+        },
+        {
           action: "getServerSideProps",
           sessionData: session,
-        }),
-        { componentStack: "getServerSideProps" } as ProfileErrorInfo,
-      );
-
-      return {
-        redirect: {
-          destination: "/error",
-          permanent: false,
         },
-      };
+      );
     }
 
     const userId = Number(session.user.id);
@@ -316,13 +299,34 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
       },
     };
   } catch (error) {
-    errorLogger(
-      new ProfileError("Server-side rendering failed", {
-        originalError: error instanceof Error ? error.message : "Unknown error",
-        action: "getServerSideProps",
-      }),
-      { componentStack: "getServerSideProps" } as ProfileErrorInfo,
-    );
+    if (error instanceof ProfileError) {
+      errorLogger(error, { componentStack: "getServerSideProps" });
+
+      if (error.getStatusCode() === 401) {
+        return {
+          redirect: {
+            destination: "/api/auth/signin",
+            permanent: false,
+          },
+        };
+      }
+    } else {
+      errorLogger(
+        new ProfileError(
+          "Server-side rendering failed",
+          {
+            severity: "error",
+            statusCode: 500,
+            componentStack: "getServerSideProps",
+          },
+          {
+            originalError:
+              error instanceof Error ? error.message : "Unknown error",
+            action: "getServerSideProps",
+          },
+        ),
+      );
+    }
 
     return {
       redirect: {

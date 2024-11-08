@@ -2,7 +2,7 @@ import { SimplifiedTrack } from "@/types/album";
 import { TrackDetail } from "@/types/track";
 import { useEffect, useState } from "react";
 
-export const useTrackPlayer = (track: TrackDetail) => {
+const useTrackPlayer = (track: TrackDetail) => {
   const [isPlaying, setIsPlaying] = useState<boolean>(false);
   const [volume, setVolume] = useState<number>(() => {
     if (typeof window !== "undefined") {
@@ -64,3 +64,5 @@ export const useTrackPlayer = (track: TrackDetail) => {
     handleClosePlayer,
   };
 };
+
+export default useTrackPlayer;
