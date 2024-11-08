@@ -20,7 +20,13 @@ const TopTrackItem = ({
   isPlaying,
 }: TopTrackItemProps) => {
   return (
-    <li className="flex justify-between items-center bg-zinc-900 p-4 rounded-lg shadow-md">
+    <li
+      className={`
+        flex justify-between items-center p-4 rounded-lg shadow-md
+        ${isCurrent ? "bg-zinc-950" : "bg-zinc-900"}
+        transition-colors duration-200
+      `}
+    >
       <Link
         href={`/track/${track.id}`}
         className="flex justify-between items-center w-full"
@@ -33,7 +39,7 @@ const TopTrackItem = ({
             imageUrl={track.imageUrl}
             type="track"
             alt={track.name}
-            size="w-12 h-12 sm:w-16 sm:h-16"
+            size="w-10 h-10 sm:w-12 sm:h-12"
             className="mr-4"
           />
           <div className="flex-1 flex flex-col overflow-hidden">

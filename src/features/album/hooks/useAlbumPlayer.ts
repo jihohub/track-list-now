@@ -1,5 +1,5 @@
 import { SimplifiedAlbum } from "@/types/album";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 
 const useAlbumPlayer = (album: SimplifiedAlbum) => {
   const [currentTrackIndex, setCurrentTrackIndex] = useState<number | null>(
@@ -27,6 +27,37 @@ const useAlbumPlayer = (album: SimplifiedAlbum) => {
     }
   }, [volume]);
 
+  const getPlayableTracks = useCallback(() => {
+    return album.tracks.items.reduce<number[]>((acc, track, index) => {
+      if (track.previewUrl) {
+        acc.push(index);
+      }
+      return acc;
+    }, []);
+  }, [album.tracks.items]);
+
+  const findNextPlayableTrack = useCallback(
+    (currentIndex: number) => {
+      const playableTracks = getPlayableTracks();
+      const currentPlayableIndex = playableTracks.findIndex(
+        (index) => index === currentIndex,
+      );
+      return playableTracks[currentPlayableIndex + 1];
+    },
+    [getPlayableTracks],
+  );
+
+  const findPreviousPlayableTrack = useCallback(
+    (currentIndex: number) => {
+      const playableTracks = getPlayableTracks();
+      const currentPlayableIndex = playableTracks.findIndex(
+        (index) => index === currentIndex,
+      );
+      return playableTracks[currentPlayableIndex - 1];
+    },
+    [getPlayableTracks],
+  );
+
   const handlePlay = (index: number) => {
     if (currentTrackIndex === index) {
       setIsPlaying((prev) => !prev);
@@ -36,22 +67,25 @@ const useAlbumPlayer = (album: SimplifiedAlbum) => {
     }
   };
 
-  const handlePrevious = () => {
-    if (currentTrackIndex !== null && currentTrackIndex > 0) {
-      setCurrentTrackIndex(currentTrackIndex - 1);
-      setIsPlaying(true);
-    }
-  };
+  const handleNext = useCallback(() => {
+    if (currentTrackIndex === null) return;
 
-  const handleNext = () => {
-    if (
-      currentTrackIndex !== null &&
-      currentTrackIndex < album.tracks.items.length - 1
-    ) {
-      setCurrentTrackIndex(currentTrackIndex + 1);
+    const nextPlayableIndex = findNextPlayableTrack(currentTrackIndex);
+    if (nextPlayableIndex !== undefined) {
+      setCurrentTrackIndex(nextPlayableIndex);
       setIsPlaying(true);
     }
-  };
+  }, [currentTrackIndex, findNextPlayableTrack]);
+
+  const handlePrevious = useCallback(() => {
+    if (currentTrackIndex === null) return;
+
+    const previousPlayableIndex = findPreviousPlayableTrack(currentTrackIndex);
+    if (previousPlayableIndex !== undefined) {
+      setCurrentTrackIndex(previousPlayableIndex);
+      setIsPlaying(true);
+    }
+  }, [currentTrackIndex, findPreviousPlayableTrack]);
 
   const handleClosePlayer = () => {
     setCurrentTrackIndex(null);
