@@ -4,7 +4,13 @@ import { useEffect, useState } from "react";
 
 export const useTrackPlayer = (track: TrackDetail) => {
   const [isPlaying, setIsPlaying] = useState<boolean>(false);
-  const [volume, setVolume] = useState<number>(1);
+  const [volume, setVolume] = useState<number>(() => {
+    if (typeof window !== "undefined") {
+      const savedVolume = localStorage.getItem("volume");
+      return savedVolume !== null ? Number(savedVolume) : 1;
+    }
+    return 1;
+  });
   const [animate, setAnimate] = useState<boolean>(false);
   const [simplifiedTrack, setSimplifiedTrack] =
     useState<SimplifiedTrack | null>({
@@ -30,9 +36,12 @@ export const useTrackPlayer = (track: TrackDetail) => {
   }, []);
 
   useEffect(() => {
-    localStorage.setItem("volume", volume.toString());
+    if (typeof window !== "undefined") {
+      localStorage.setItem("volume", volume.toString());
+    }
   }, [volume]);
 
+  // eslint-disable-next-line consistent-return
   useEffect(() => {
     if (animate) {
       const timer = setTimeout(() => setAnimate(false), 500);

@@ -1,7 +1,7 @@
 import ErrorProcessor from "@/libs/utils/errorProcessor";
 import { AppError } from "@/types/error";
 
-export const handlePageError = (error: unknown) => {
+const handlePageError = (error: unknown) => {
   if (error instanceof AppError) {
     ErrorProcessor.logToSentry(error);
     return error.message;
@@ -11,3 +11,5 @@ export const handlePageError = (error: unknown) => {
   ErrorProcessor.logToSentry(processedError);
   return processedError.message;
 };
+
+export default handlePageError;

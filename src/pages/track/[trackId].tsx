@@ -6,7 +6,7 @@ import useFetchTrackDetail, {
   fetchTrackDetail,
 } from "@/features/track/queries/useFetchTrackDetail";
 import ErrorProcessor from "@/libs/utils/errorProcessor";
-import { handlePageError } from "@/libs/utils/handlePageError";
+import handlePageError from "@/libs/utils/handlePageError";
 import { dehydrate, QueryClient } from "@tanstack/react-query";
 import { GetServerSideProps } from "next";
 import { useTranslation } from "next-i18next";

@@ -5,7 +5,7 @@ import SearchResultList from "@/features/search/components/SearchResultList";
 import SearchSEO from "@/features/search/components/SearchSEO";
 import SearchTabs from "@/features/search/components/SearchTabs";
 import { useSearch } from "@/features/search/hooks/useSearch";
-import { handlePageError } from "@/libs/utils/handlePageError";
+import handlePageError from "@/libs/utils/handlePageError";
 import { useTranslation } from "next-i18next";
 
 const SearchSection = () => {

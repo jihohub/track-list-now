@@ -6,7 +6,7 @@ import useFetchFeaturedRanking, {
   fetchFeaturedRanking,
 } from "@/features/main/queries/useFetchFeaturedRanking";
 import ErrorProcessor from "@/libs/utils/errorProcessor";
-import { handlePageError } from "@/libs/utils/handlePageError";
+import handlePageError from "@/libs/utils/handlePageError";
 import { dehydrate, QueryClient } from "@tanstack/react-query";
 import { GetServerSideProps } from "next";
 import { serverSideTranslations } from "next-i18next/serverSideTranslations";

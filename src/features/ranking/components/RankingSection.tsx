@@ -2,6 +2,7 @@ import ErrorComponent from "@/features/common/components/ErrorComponent";
 import GlobalLoadingBar from "@/features/common/components/GlobalLoadingBar";
 import LoadingBar from "@/features/common/components/LoadingBar";
 import TItem from "@/features/common/components/TItem";
+import handlePageError from "@/libs/utils/handlePageError";
 import { isArtistWithRanking, TItemData } from "@/types/ranking";
 import { useTranslation } from "next-i18next";
 import InfiniteScroll from "react-infinite-scroll-component";
@@ -26,7 +27,8 @@ const RankingSection = ({
   const { t } = useTranslation(["common", "ranking"]);
 
   if (error) {
-    return <ErrorComponent message={`Error loading data: ${error.message}`} />;
+    const errorMessage = handlePageError(error);
+    return <ErrorComponent message={errorMessage} />;
   }
 
   if (isLoading) {

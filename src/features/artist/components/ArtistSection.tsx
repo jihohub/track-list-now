@@ -20,7 +20,13 @@ const ArtistSection = ({ data }: ArtistSectionProps) => {
     null,
   );
   const [isPlaying, setIsPlaying] = useState<boolean>(false);
-  const [volume, setVolume] = useState<number>(1);
+  const [volume, setVolume] = useState<number>(() => {
+    if (typeof window !== "undefined") {
+      const savedVolume = localStorage.getItem("volume");
+      return savedVolume !== null ? Number(savedVolume) : 1;
+    }
+    return 1;
+  });
 
   useEffect(() => {
     const savedVolume = localStorage.getItem("volume");
@@ -30,7 +36,9 @@ const ArtistSection = ({ data }: ArtistSectionProps) => {
   }, []);
 
   useEffect(() => {
-    localStorage.setItem("volume", volume.toString());
+    if (typeof window !== "undefined") {
+      localStorage.setItem("volume", volume.toString());
+    }
   }, [volume]);
 
   const handlePlay = (index: number) => {

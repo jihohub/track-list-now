@@ -1,11 +1,10 @@
 import AudioPlayer from "@/features/audio/components/AudioPlayer";
 import LikeButton from "@/features/liked/components/LikeButton";
-import { SimplifiedTrack } from "@/types/album";
+import { useTrackPlayer } from "@/features/track/hooks/useTrackPlayer";
 import { TrackDetail } from "@/types/track";
 import { useTranslation } from "next-i18next";
 import Image from "next/image";
 import Link from "next/link";
-import { useEffect, useState } from "react";
 
 interface TrackSectionProps {
   track: TrackDetail;
@@ -14,48 +13,15 @@ interface TrackSectionProps {
 const TrackSection = ({ track }: TrackSectionProps) => {
   const { t } = useTranslation(["common", "track"]);
 
-  const [isPlaying, setIsPlaying] = useState<boolean>(false);
-  const [volume, setVolume] = useState<number>(1);
-  const [simplifiedTrack, setSimplifiedTrack] =
-    useState<SimplifiedTrack | null>({
-      id: track.id,
-      name: track.name,
-      artists: track.artists,
-      previewUrl: track.preview_url,
-      durationMs: track.duration_ms,
-      imageUrl: track.album.images[0]?.url || "/default-album.png",
-    });
-  const [animate, setAnimate] = useState<boolean>(false);
-
-  useEffect(() => {
-    if (isPlaying) {
-      setAnimate(true);
-    }
-  }, [isPlaying]);
-
-  useEffect(() => {
-    const savedVolume = localStorage.getItem("volume");
-    if (savedVolume !== null) {
-      setVolume(Number(savedVolume));
-    }
-  }, []);
-
-  useEffect(() => {
-    localStorage.setItem("volume", volume.toString());
-  }, [volume]);
-
-  // eslint-disable-next-line consistent-return
-  useEffect(() => {
-    if (animate) {
-      const timer = setTimeout(() => setAnimate(false), 500); // 애니메이션 지속 시간과 일치
-      return () => clearTimeout(timer);
-    }
-  }, [animate]);
-
-  const handleClosePlayer = () => {
-    setIsPlaying(false);
-    setSimplifiedTrack(null);
-  };
+  const {
+    isPlaying,
+    setIsPlaying,
+    volume,
+    setVolume,
+    animate,
+    simplifiedTrack,
+    handleClosePlayer,
+  } = useTrackPlayer(track);
 
   return (
     <div
