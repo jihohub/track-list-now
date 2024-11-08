@@ -1,11 +1,11 @@
+import TopTrackItem from "@/features/artist/components/TopTrackItem";
+import useArtistPlayer from "@/features/artist/hooks/useArtistPlayer";
 import AudioPlayer from "@/features/audio/components/AudioPlayer";
 import TImage from "@/features/common/components/TImage";
 import { ArtistPageData } from "@/types/artist";
 import { useTranslation } from "next-i18next";
 import Link from "next/link";
-import { useEffect, useState } from "react";
 import LikeButton from "../../liked/components/LikeButton";
-import TopTrackItem from "./TopTrackItem";
 
 interface ArtistSectionProps {
   data: ArtistPageData;
@@ -13,69 +13,20 @@ interface ArtistSectionProps {
 
 const ArtistSection = ({ data }: ArtistSectionProps) => {
   const { t } = useTranslation(["common", "artist"]);
-
   const { artist, topTracks, relatedArtists } = data;
 
-  const [currentTrackIndex, setCurrentTrackIndex] = useState<number | null>(
-    null,
-  );
-  const [isPlaying, setIsPlaying] = useState<boolean>(false);
-  const [volume, setVolume] = useState<number>(() => {
-    if (typeof window !== "undefined") {
-      const savedVolume = localStorage.getItem("volume");
-      return savedVolume !== null ? Number(savedVolume) : 1;
-    }
-    return 1;
-  });
-
-  useEffect(() => {
-    const savedVolume = localStorage.getItem("volume");
-    if (savedVolume !== null) {
-      setVolume(Number(savedVolume));
-    }
-  }, []);
-
-  useEffect(() => {
-    if (typeof window !== "undefined") {
-      localStorage.setItem("volume", volume.toString());
-    }
-  }, [volume]);
-
-  const handlePlay = (index: number) => {
-    if (currentTrackIndex === index) {
-      setIsPlaying((prev) => !prev);
-    } else {
-      setCurrentTrackIndex(index);
-      setIsPlaying(true);
-    }
-  };
-
-  const handlePrevious = () => {
-    if (currentTrackIndex !== null && currentTrackIndex > 0) {
-      setCurrentTrackIndex(currentTrackIndex - 1);
-      setIsPlaying(true);
-    }
-  };
-
-  const handleNext = () => {
-    if (
-      currentTrackIndex !== null &&
-      currentTrackIndex < data.topTracks.tracks.length - 1
-    ) {
-      setCurrentTrackIndex(currentTrackIndex + 1);
-      setIsPlaying(true);
-    }
-  };
-
-  const handleClosePlayer = () => {
-    setCurrentTrackIndex(null);
-    setIsPlaying(false);
-  };
-
-  const currentTrack =
-    currentTrackIndex !== null
-      ? data.topTracks.tracks[currentTrackIndex]
-      : null;
+  const {
+    currentTrackIndex,
+    isPlaying,
+    volume,
+    setVolume,
+    setIsPlaying,
+    handlePlay,
+    handlePrevious,
+    handleNext,
+    handleClosePlayer,
+    currentTrack,
+  } = useArtistPlayer(data);
 
   return (
     <div className="flex flex-col items-center">

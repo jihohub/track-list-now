@@ -1,14 +1,15 @@
 import ArtistSection from "@/features/artist/components/ArtistSection";
+import ArtistSEO from "@/features/artist/components/ArtistSEO";
 import useFetchArtist, {
   fetchArtistData,
 } from "@/features/artist/queries/useFetchArtist";
 import ErrorComponent from "@/features/common/components/ErrorComponent";
 import LoadingBar from "@/features/common/components/LoadingBar";
+import ErrorProcessor from "@/libs/utils/errorProcessor";
 import { dehydrate, QueryClient } from "@tanstack/react-query";
 import { GetServerSideProps } from "next";
 import { useTranslation } from "next-i18next";
 import { serverSideTranslations } from "next-i18next/serverSideTranslations";
-import { NextSeo } from "next-seo";
 
 interface ArtistPageProps {
   artistId: string;
@@ -16,7 +17,6 @@ interface ArtistPageProps {
 
 const ArtistPage = ({ artistId }: ArtistPageProps) => {
   const { t } = useTranslation(["common", "artist", "error"]);
-
   const { data, error, isLoading } = useFetchArtist(artistId);
 
   if (isLoading) {
@@ -33,29 +33,7 @@ const ArtistPage = ({ artistId }: ArtistPageProps) => {
 
   return (
     <div className="max-w-4xl mobile:mx-6 tablet:mx-6 mx-auto p-6 mt-6 bg-zinc-800 rounded-lg shadow-md">
-      <NextSeo
-        title={`${data.artist.name} - Track List Now`}
-        description={`Basic Information, Top tracks, Related artists of ${data.artist.name}`}
-        openGraph={{
-          type: "music.artist",
-          url: `https://www.tracklistnow.com/artist/${artistId}`,
-          title: `${data.artist.name} - Track List Now`,
-          description: `Discover more about ${data.artist.name} on Track List Now!`,
-          images: [
-            {
-              url: data.artist.images[0]?.url || "/default-image.jpg",
-              width: 800,
-              height: 800,
-              alt: `${data.artist.name} Profile Picture`,
-            },
-          ],
-        }}
-        twitter={{
-          handle: "@TrackListNow",
-          site: "@TrackListNow",
-          cardType: "summary_large_image",
-        }}
-      />
+      <ArtistSEO data={data} artistId={artistId} />
       <ArtistSection data={data} />
     </div>
   );
@@ -89,8 +67,7 @@ export const getServerSideProps: GetServerSideProps = async ({
       },
     };
   } catch (error) {
-    // eslint-disable-next-line no-console
-    console.error("Error in getServerSideProps:", error);
+    ErrorProcessor.logToSentry(error);
 
     return {
       props: {
