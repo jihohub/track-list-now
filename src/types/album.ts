@@ -40,6 +40,7 @@ export interface SimplifiedTrack {
   previewUrl: string | null;
   durationMs: number;
   imageUrl: string;
+  popularity: number;
 }
 
 export interface SimplifiedTracks {
