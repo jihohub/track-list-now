@@ -141,6 +141,7 @@ model Track {
   artists           String
   popularity        Int
   previewUrl        String?
+  durationMs        Int
   createdAt         DateTime             @default(now())
   updatedAt         DateTime             @updatedAt
 
