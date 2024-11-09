@@ -26,6 +26,11 @@ export async function GET(request: NextRequest, response: NextResponse) {
       });
     }
 
+    // 현재 호스트 URL 구성
+    const protocol = process.env.NODE_ENV === "production" ? "https" : "http";
+    const host = request.headers.get("host") || "localhost:3000";
+    const baseUrl = `${protocol}://${host}`;
+
     ErrorProcessor.logToSentry(
       new AppError("Starting Spotify data update cron job", {
         errorCode: "CRON_JOB_STARTED",
@@ -38,7 +43,7 @@ export async function GET(request: NextRequest, response: NextResponse) {
     );
 
     // SpotifyDataUpdater 인스턴스 생성
-    const updater = new SpotifyDataUpdater(request as any, response as any);
+    const updater = new SpotifyDataUpdater(baseUrl);
 
     // 순차적으로 업데이트 실행
     await updater.updateAllArtists();

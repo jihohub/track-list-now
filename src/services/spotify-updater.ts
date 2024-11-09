@@ -1,8 +1,7 @@
-import getServerAxiosInstance from "@/libs/axios/axiosServerInstance";
 import ErrorProcessor from "@/libs/utils/errorProcessor";
 import { AppError } from "@/types/error";
 import { PrismaClient } from "@prisma/client";
-import { NextApiRequest, NextApiResponse } from "next";
+import axios from "axios";
 
 const prisma = new PrismaClient();
 
@@ -29,9 +28,36 @@ interface TrackUpdateData {
 export class SpotifyDataUpdater {
   private readonly BATCH_SIZE = 50;
   private readonly axiosInstance;
+  private readonly baseUrl: string;
 
-  constructor(req: NextApiRequest, res: NextApiResponse) {
-    this.axiosInstance = getServerAxiosInstance(req, res);
+  constructor(baseUrl: string) {
+    this.baseUrl = baseUrl;
+    this.axiosInstance = axios.create({
+      baseURL: "https://api.spotify.com/v1",
+    });
+
+    this.axiosInstance.interceptors.response.use(
+      (response) => response,
+      async (error) => {
+        const originalRequest = error.config;
+
+        if (error.response?.status === 401 && !originalRequest.retry) {
+          originalRequest.retry = true;
+
+          try {
+            const tokenResponse = await axios.post(`${this.baseUrl}/api/token`);
+            const newAccessToken = tokenResponse.data.access_token;
+
+            originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
+            return this.axiosInstance(originalRequest);
+          } catch (tokenError) {
+            return Promise.reject(tokenError);
+          }
+        }
+
+        return Promise.reject(error);
+      },
+    );
   }
 
   private async fetchSpotifyArtists(
