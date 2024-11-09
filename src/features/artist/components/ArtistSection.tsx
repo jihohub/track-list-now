@@ -132,7 +132,7 @@ const ArtistSection = ({ data }: ArtistSectionProps) => {
         onClose={handleClosePlayer}
         volume={volume}
         setVolume={setVolume}
-        enableClose={true}
+        enableClose
       />
     </div>
   );
