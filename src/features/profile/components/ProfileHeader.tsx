@@ -1,15 +1,15 @@
+import ProfileHeaderSkeleton from "@/features/profile/components/ProfileHeaderSkeleton";
 import Image from "next/image";
-import ProfileHeaderSkeleton from "./ProfileHeaderSkeleton";
 
 interface ProfileHeaderProps {
-  profileImageUrl: string | null | undefined;
-  viewedUserName: string | undefined;
+  viewedUserName?: string;
+  profileImageUrl?: string | null;
   isLoading: boolean;
 }
 
 const ProfileHeader = ({
-  profileImageUrl,
   viewedUserName,
+  profileImageUrl,
   isLoading,
 }: ProfileHeaderProps) => {
   if (isLoading) {

@@ -1,14 +1,6 @@
 import FavoriteSection from "@/features/profile/components/FavoriteSection";
 import FavoriteSectionSkeleton from "@/features/profile/components/FavoriteSectionSkeleton";
-import { UserFavorites } from "@/types/favorite";
-
-interface SectionConfig {
-  title: string;
-  items: UserFavorites[keyof UserFavorites];
-  type: "artist" | "track";
-  openModal: () => void;
-  handleDelete: (id: string) => void;
-}
+import { SectionConfig } from "@/types/section";
 
 interface FavoriteSectionsProps {
   sections: SectionConfig[];
@@ -16,11 +8,11 @@ interface FavoriteSectionsProps {
   isLoading?: boolean;
 }
 
-const FavoriteSections: React.FC<FavoriteSectionsProps> = ({
+const FavoriteSections = ({
   sections,
   isEditing,
   isLoading = false,
-}) => {
+}: FavoriteSectionsProps) => {
   if (isLoading) {
     return (
       <div className="space-y-8">
@@ -37,12 +29,8 @@ const FavoriteSections: React.FC<FavoriteSectionsProps> = ({
       {sections.map((section) => (
         <FavoriteSection
           key={section.title}
-          title={section.title}
-          items={section.items}
-          openModal={section.openModal}
-          type={section.type}
+          {...section}
           isEditing={isEditing}
-          handleDelete={section.handleDelete}
         />
       ))}
     </div>

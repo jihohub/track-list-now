@@ -2,7 +2,7 @@ import { NextSeo } from "next-seo";
 
 interface ProfileSEOProps {
   viewedUserName?: string;
-  profileImageUrl?: string;
+  profileImageUrl?: string | null;
   userId: number;
 }
 

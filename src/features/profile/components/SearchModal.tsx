@@ -81,7 +81,6 @@ const SearchModal = ({
         imageUrl: item.imageUrl,
         artists: item.artists,
         previewUrl: item.previewUrl,
-        durationMs: item.durationMs,
         popularity: item.popularity,
       };
 

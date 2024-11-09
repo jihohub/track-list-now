@@ -14,7 +14,6 @@ export interface SimplifiedTrack {
   imageUrl: string;
   artists: string;
   previewUrl: string | null;
-  durationMs: number;
   popularity: number;
 }
 
@@ -99,7 +98,6 @@ export interface AddedTrack {
   imageUrl: string;
   artists: string;
   previewUrl: string | null;
-  durationMs: number;
   popularity: number;
 }
 
