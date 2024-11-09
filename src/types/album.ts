@@ -90,7 +90,7 @@ export interface AudioPlayerProps {
   onClose: () => void;
   volume: number;
   setVolume: (volume: number) => void;
-  isAlbumPage: boolean;
+  enableClose: boolean;
 }
 
 export interface PlaybackControlsProps {

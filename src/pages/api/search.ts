@@ -78,6 +78,8 @@ const handler = async (
             .map((artist: SpotifyArtistBrief) => artist.name)
             .join(", "),
           id: track.id,
+          previewUrl: track.preview_url,
+          durationMs: track.duration_ms,
           popularity: track.popularity,
         }),
       );

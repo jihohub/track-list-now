@@ -38,6 +38,7 @@ const simplifyAlbumData = (data: SpotifyAlbum): SimplifiedAlbum => {
         previewUrl: track.preview_url,
         durationMs: track.duration_ms,
         imageUrl,
+        popularity: track.popularity,
       })),
     },
   };

@@ -22,7 +22,7 @@ const TopTrackItem = ({
   return (
     <li
       className={`
-        flex justify-between items-center p-4 rounded-lg shadow-md
+        flex justify-between items-center p-2 rounded-lg shadow-md
         ${isCurrent ? "bg-zinc-950" : "bg-zinc-900"}
         transition-colors duration-200
       `}
@@ -57,7 +57,7 @@ const TopTrackItem = ({
               e.preventDefault();
               onPlay();
             }}
-            className="text-neonBlue hover:text-chefchaouenBlue focus:outline-none"
+            className="sm:px-2 text-neonBlue hover:text-chefchaouenBlue focus:outline-none"
             type="button"
           >
             {isCurrent && isPlaying ? <PauseIcon /> : <PlayIcon />}

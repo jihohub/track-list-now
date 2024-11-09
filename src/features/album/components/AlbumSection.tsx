@@ -26,7 +26,7 @@ const AlbumSection = ({ album }: AlbumSectionProps) => {
 
   return (
     <div
-      className={`flex flex-col items-center ${currentTrackIndex && "pb-60 md:pb-40 desktop:pb-20"}`}
+      className={`flex flex-col items-center ${currentTrack && "pb-60 md:pb-40 desktop:pb-20"}`}
     >
       <Image
         src={album.images[0]?.url || "/default-image.jpg"}
@@ -64,7 +64,7 @@ const AlbumSection = ({ album }: AlbumSectionProps) => {
         onClose={handleClosePlayer}
         volume={volume}
         setVolume={setVolume}
-        isAlbumPage
+        enableClose
       />
     </div>
   );

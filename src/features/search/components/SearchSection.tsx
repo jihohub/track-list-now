@@ -38,7 +38,7 @@ const SearchSection = () => {
   }
 
   return (
-    <div className="bg-zinc-800 p-6 rounded-lg shadow-lg max-w-4xl w-full mx-auto">
+    <div>
       <SearchSEO searchQuery={searchQuery} />
       <h2 className="text-xl font-semibold mb-4 text-white">
         {t("search_for", { ns: "search" })}

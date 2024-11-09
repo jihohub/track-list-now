@@ -32,7 +32,7 @@ const ProfileHeader = ({
       )}
 
       {viewedUserName && (
-        <h1 className="text-3xl font-bold">{viewedUserName}</h1>
+        <h1 className="text-3xl text-white font-bold">{viewedUserName}</h1>
       )}
     </div>
   );

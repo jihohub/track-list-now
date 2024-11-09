@@ -139,6 +139,7 @@ const handler = async (
           })),
           previewUrl: track.preview_url,
           durationMs: track.duration_ms,
+          popularity: track.popularity,
         })),
       },
       relatedArtists: {

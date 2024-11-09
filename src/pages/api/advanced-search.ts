@@ -33,6 +33,8 @@ const simplifyTracks = (tracks: SpotifyTrack[]): SimplifiedTrack[] => {
     artists: track.artists
       .map((artist: SpotifyArtistBrief) => artist.name)
       .join(", "),
+    previewUrl: track.preview_url,
+    durationMs: track.duration_ms,
     popularity: track.popularity,
   }));
 };

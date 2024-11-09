@@ -13,6 +13,7 @@ export interface UserFavoriteTrack {
   imageUrl: string;
   artists: string;
   popularity: number;
+  previewUrl: string | null;
 }
 
 export interface UserFavorites {

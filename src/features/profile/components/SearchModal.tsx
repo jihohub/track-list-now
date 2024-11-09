@@ -81,6 +81,7 @@ const SearchModal = ({
         imageUrl: item.imageUrl,
         artists: item.artists,
         popularity: item.popularity,
+        previewUrl: item.previewUrl,
       };
 
       handleAddItem(activeSection, addedTrack);

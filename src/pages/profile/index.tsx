@@ -170,7 +170,7 @@ const ProfilePage = ({ userId }: ProfilePageProps) => {
   ];
 
   return (
-    <div className="max-w-3xl mx-auto text-white">
+    <div className="max-w-4xl mx-auto p-6 mt-6 bg-zinc-800 rounded-lg shadow-md">
       <NextSeo
         title={`${viewedUserName} - Track List Now`}
         description={`${viewedUserName}'s favorite artists and tracks on Track List Now`}
@@ -194,7 +194,7 @@ const ProfilePage = ({ userId }: ProfilePageProps) => {
           cardType: "summary_large_image",
         }}
       />
-      <div ref={pageRef} className="p-6">
+      <div ref={pageRef}>
         <ProfileHeader
           profileImageUrl={profileImageUrl}
           viewedUserName={viewedUserName}

@@ -90,7 +90,7 @@ const TrackSection = ({ track }: TrackSectionProps) => {
           onClose={handleClosePlayer}
           volume={volume}
           setVolume={setVolume}
-          isAlbumPage={false}
+          enableClose={false}
         />
       )}
     </div>

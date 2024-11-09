@@ -8,6 +8,8 @@ interface TrackInfoProps {
 
 const TrackInfo = ({ track }: TrackInfoProps) => {
   const artistNames = track.artists.map((artist) => artist.name).join(", ");
+  const DEFAULT_POPULARITY = 50;
+  const popularity = track.popularity ? track.popularity : DEFAULT_POPULARITY;
 
   return (
     <div className="flex items-center justify-between bg-zinc-800 w-full max-w-[480px] p-2 rounded-md">
@@ -24,16 +26,14 @@ const TrackInfo = ({ track }: TrackInfoProps) => {
           <p className="text-gray-400">{artistNames}</p>
         </div>
       </div>
-      <div className="px-4">
-        <LikeButton
-          itemType="track"
-          itemId={track.id}
-          name={track.name}
-          imageUrl={track.imageUrl}
-          artists={artistNames}
-          popularity={track.popularity}
-        />
-      </div>
+      <LikeButton
+        itemType="track"
+        itemId={track.id}
+        name={track.name}
+        imageUrl={track.imageUrl}
+        artists={artistNames}
+        popularity={popularity}
+      />
     </div>
   );
 };

@@ -29,7 +29,9 @@ const ArtistSection = ({ data }: ArtistSectionProps) => {
   } = useArtistPlayer(data);
 
   return (
-    <div className="flex flex-col items-center">
+    <div
+      className={`flex flex-col items-center ${currentTrack && "pb-60 md:pb-40 desktop:pb-20"}`}
+    >
       {/* 아티스트 기본 정보 */}
       <div className="relative w-[300px] h-[300px] rounded-full overflow-hidden">
         <TImage
@@ -95,7 +97,7 @@ const ArtistSection = ({ data }: ArtistSectionProps) => {
         <h2 className="text-2xl font-semibold text-white mb-4">
           {t("related_artists", { ns: "artist" })}
         </h2>
-        <ul className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-6">
+        <ul className="grid grid-cols-2 md:grid-cols-4 gap-6">
           {relatedArtists.artists.map((relatedArtist) => (
             <li key={relatedArtist.id} className="flex flex-col items-center">
               <Link
@@ -130,7 +132,7 @@ const ArtistSection = ({ data }: ArtistSectionProps) => {
         onClose={handleClosePlayer}
         volume={volume}
         setVolume={setVolume}
-        isAlbumPage={false}
+        enableClose={true}
       />
     </div>
   );

@@ -16,7 +16,7 @@ const AudioPlayerComponent = ({
   onClose,
   volume,
   setVolume,
-  isAlbumPage,
+  enableClose,
 }: AudioPlayerProps) => {
   const audioElementRef = useRef<AudioElementHandle | null>(null);
 
@@ -53,7 +53,7 @@ const AudioPlayerComponent = ({
   return (
     <div className="fixed bottom-16 md:bottom-0 left-0 right-0 bg-zinc-700 p-4 flex flex-col desktop:flex-row items-center justify-between z-50">
       {/* 닫기 버튼 */}
-      {isAlbumPage && <CloseButton onClose={onClose} />}
+      {enableClose && <CloseButton onClose={onClose} />}
 
       {/* 트랙 정보 */}
       <TrackInfo track={track} />
