@@ -8,6 +8,8 @@ import useUserProfile, {
   fetchUserData,
   fetchUserFavorites,
 } from "@/features/profile/queries/useUserProfile";
+import errorLogger from "@/libs/utils/errorLogger";
+import { ProfileError } from "@/types/error";
 import {
   UserFavoriteArtist,
   UserFavorites,
@@ -21,12 +23,16 @@ import { serverSideTranslations } from "next-i18next/serverSideTranslations";
 import { NextSeo } from "next-seo";
 import { useRef, useState } from "react";
 
+interface ProfileErrorInfo {
+  componentStack: string;
+}
+
 interface ProfilePageProps {
   userId: number;
 }
 
 const ProfilePage = ({ userId }: ProfilePageProps) => {
-  const { t } = useTranslation(["common", "profile"]);
+  const { t } = useTranslation(["common", "profile", "error"]);
   const { data: session } = useSession();
 
   const {
@@ -60,14 +66,30 @@ const ProfilePage = ({ userId }: ProfilePageProps) => {
   const pageRef = useRef<HTMLDivElement>(null);
 
   const handleToggleEditing = () => {
-    if (!isEditing) {
-      // 편집 모드로 전환될 때, 현재 favorites를 로컬 상태로 복사
-      setEditedFavorites(userFavorites ? { ...userFavorites } : null);
-    } else {
-      // 편집 모드에서 나올 때, 로컬 상태 초기화
-      setEditedFavorites(null);
+    try {
+      if (!session?.user?.id || session.user.id !== userId) {
+        throw new ProfileError("Unauthorized editing attempt", {
+          userId,
+          sessionUserId: session?.user?.id,
+          action: "toggleEditing",
+        });
+      }
+
+      if (!isEditing) {
+        // 편집 모드로 전환될 때, 현재 favorites를 로컬 상태로 복사
+        setEditedFavorites(userFavorites ? { ...userFavorites } : null);
+      } else {
+        // 편집 모드에서 나올 때, 로컬 상태 초기화
+        setEditedFavorites(null);
+      }
+      setIsEditing((prev) => !prev);
+    } catch (error) {
+      if (error instanceof Error) {
+        errorLogger(error, {
+          componentStack: "ProfilePage.handleToggleEditing",
+        } as ProfileErrorInfo);
+      }
     }
-    setIsEditing((prev) => !prev);
   };
 
   // 편집 모드일 때는 editedFavorites를, 아닐 때는 userFavorites를 사용
@@ -75,15 +97,25 @@ const ProfilePage = ({ userId }: ProfilePageProps) => {
     isEditing && editedFavorites ? editedFavorites : userFavorites;
 
   const handleSaveChanges = async () => {
-    if (!session?.user?.id || !editedFavorites) {
-      return;
-    }
     try {
+      if (!session?.user?.id || !editedFavorites) {
+        throw new ProfileError("Invalid save attempt", {
+          userId,
+          hasSession: !!session?.user?.id,
+          hasEditedFavorites: !!editedFavorites,
+          action: "saveChanges",
+        });
+      }
+
       await saveFavorites(editedFavorites);
       setIsEditing(false);
       setEditedFavorites(null);
-    } catch (error: unknown) {
-      JSON.stringify(error);
+    } catch (error) {
+      if (error instanceof Error) {
+        errorLogger(error, {
+          componentStack: "ProfilePage.handleSaveChanges",
+        } as ProfileErrorInfo);
+      }
     }
   };
 
@@ -138,7 +170,7 @@ const ProfilePage = ({ userId }: ProfilePageProps) => {
   ];
 
   return (
-    <div className="max-w-3xl mx-auto text-white">
+    <div className="max-w-4xl mx-auto p-6 mt-6 bg-zinc-800 rounded-lg shadow-md">
       <NextSeo
         title={`${viewedUserName} - Track List Now`}
         description={`${viewedUserName}'s favorite artists and tracks on Track List Now`}
@@ -162,7 +194,7 @@ const ProfilePage = ({ userId }: ProfilePageProps) => {
           cardType: "summary_large_image",
         }}
       />
-      <div ref={pageRef} className="p-6">
+      <div ref={pageRef}>
         <ProfileHeader
           profileImageUrl={profileImageUrl}
           viewedUserName={viewedUserName}
@@ -205,23 +237,43 @@ const ProfilePage = ({ userId }: ProfilePageProps) => {
 export default ProfilePage;
 
 export const getServerSideProps: GetServerSideProps = async (context) => {
-  const session = await getSession(context);
-
-  if (!session) {
-    return {
-      redirect: {
-        destination: "/api/auth/signin",
-        permanent: false,
-      },
-    };
-  }
-
-  const locale = context.locale ?? "ko";
-  const userId = Number(session.user.id);
-
-  const queryClient = new QueryClient();
-
   try {
+    const session = await getSession(context);
+    const locale = context.locale ?? "ko";
+
+    if (!session) {
+      throw new ProfileError(
+        "Unauthenticated access attempt",
+        {
+          severity: "warning",
+          statusCode: 401,
+          componentStack: "getServerSideProps",
+        },
+        {
+          action: "getServerSideProps",
+          path: context.resolvedUrl,
+        },
+      );
+    }
+
+    if (!session.user?.id) {
+      throw new ProfileError(
+        "Session exists but no user ID found",
+        {
+          severity: "error",
+          statusCode: 500,
+          componentStack: "getServerSideProps",
+        },
+        {
+          action: "getServerSideProps",
+          sessionData: session,
+        },
+      );
+    }
+
+    const userId = Number(session.user.id);
+    const queryClient = new QueryClient();
+
     await Promise.all([
       queryClient.prefetchQuery({
         queryKey: ["userFavorites", userId],
@@ -237,20 +289,49 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
 
     return {
       props: {
-        ...(await serverSideTranslations(locale, ["common", "profile"])),
+        ...(await serverSideTranslations(locale, [
+          "common",
+          "profile",
+          "error",
+        ])),
         dehydratedState: dehydrate(queryClient),
         userId,
       },
     };
   } catch (error) {
-    // eslint-disable-next-line no-console
-    console.error("서버 사이드 데이터 페칭 실패:", error);
+    if (error instanceof ProfileError) {
+      errorLogger(error, { componentStack: "getServerSideProps" });
+
+      if (error.getStatusCode() === 401) {
+        return {
+          redirect: {
+            destination: "/api/auth/signin",
+            permanent: false,
+          },
+        };
+      }
+    } else {
+      errorLogger(
+        new ProfileError(
+          "Server-side rendering failed",
+          {
+            severity: "error",
+            statusCode: 500,
+            componentStack: "getServerSideProps",
+          },
+          {
+            originalError:
+              error instanceof Error ? error.message : "Unknown error",
+            action: "getServerSideProps",
+          },
+        ),
+      );
+    }
 
     return {
-      props: {
-        ...(await serverSideTranslations(locale, ["common", "profile"])),
-        dehydratedState: dehydrate(queryClient),
-        userId: 0,
+      redirect: {
+        destination: "/error",
+        permanent: false,
       },
     };
   }

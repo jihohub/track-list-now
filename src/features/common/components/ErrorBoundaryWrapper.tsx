@@ -1,24 +1,54 @@
 import ErrorFallback from "@/features/common/components/ErrorFallback";
+import ErrorProcessor from "@/libs/utils/errorProcessor";
+import * as Sentry from "@sentry/nextjs";
 import { ReactNode } from "react";
-import { ErrorBoundary } from "react-error-boundary";
 
 interface ErrorBoundaryWrapperProps {
   children: ReactNode;
 }
 
-const ErrorBoundaryWrapper = ({ children }: ErrorBoundaryWrapperProps) => (
-  <ErrorBoundary
-    FallbackComponent={ErrorFallback}
-    onReset={() => {
-      // TODO: 리셋 시 동작
-      window.location.reload();
+interface FallbackProps {
+  error: unknown;
+  resetError: () => void;
+}
+
+const processError = (error: unknown): Error => {
+  if (error instanceof Error) {
+    return error;
+  }
+
+  if (typeof error === "string") {
+    return new Error(error);
+  }
+
+  return new Error(
+    typeof error === "object" ? JSON.stringify(error) : String(error),
+  );
+};
+
+const SentryFallback = ({ error, resetError }: FallbackProps) => (
+  <ErrorFallback
+    error={processError(error)}
+    resetErrorBoundary={() => {
+      Sentry.withScope((scope) => {
+        scope.setTag("action", "error_reset");
+        Sentry.captureMessage("Error boundary reset");
+      });
+      resetError();
     }}
-    // onError={(error, info) => {
-    //   // TODO: 추후 Sentry 연결 가능
-    // }}
-  >
-    {children}
-  </ErrorBoundary>
+  />
 );
+
+const ErrorBoundaryWrapper = ({ children }: ErrorBoundaryWrapperProps) => {
+  const handleError = (error: unknown, componentStack: string | undefined) => {
+    ErrorProcessor.logToSentry(error, componentStack);
+  };
+
+  return (
+    <Sentry.ErrorBoundary fallback={SentryFallback} onError={handleError}>
+      {children}
+    </Sentry.ErrorBoundary>
+  );
+};
 
 export default ErrorBoundaryWrapper;

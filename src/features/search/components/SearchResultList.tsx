@@ -1,8 +1,8 @@
+import GlobalLoadingBar from "@/features/common/components/GlobalLoadingBar";
+import SearchResultItem from "@/features/search/components/SearchResultItem";
 import { SearchResult } from "@/types/search";
 import { useTranslation } from "react-i18next";
 import InfiniteScroll from "react-infinite-scroll-component";
-import GlobalLoadingBar from "../../common/components/GlobalLoadingBar";
-import SearchResultItem from "./SearchResultItem";
 
 interface SearchResultListProps {
   searchResults: SearchResult[];

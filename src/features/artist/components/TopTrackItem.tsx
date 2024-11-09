@@ -1,19 +1,32 @@
+import PauseIcon from "@/assets/icons/pause.svg";
+import PlayIcon from "@/assets/icons/play.svg";
 import TImage from "@/features/common/components/TImage";
+import { SimplifiedTrack } from "@/types/album";
 import Link from "next/link";
 
 interface TopTrackItemProps {
   index: number;
-  track: {
-    id: string;
-    name: string;
-    album: { images: { url: string }[] };
-    artists: { name: string }[];
-  };
+  track: SimplifiedTrack;
+  onPlay: () => void;
+  isCurrent: boolean;
+  isPlaying: boolean;
 }
 
-const TopTrackItem = ({ index, track }: TopTrackItemProps) => {
+const TopTrackItem = ({
+  index,
+  track,
+  onPlay,
+  isCurrent,
+  isPlaying,
+}: TopTrackItemProps) => {
   return (
-    <li className="flex justify-between items-center min-w-[400px] xs:min-w-[320px] bg-zinc-900 p-4 rounded-lg shadow-md">
+    <li
+      className={`
+        flex justify-between items-center p-2 rounded-lg shadow-md
+        ${isCurrent ? "bg-zinc-950" : "bg-zinc-900"}
+        transition-colors duration-200
+      `}
+    >
       <Link
         href={`/track/${track.id}`}
         className="flex justify-between items-center w-full"
@@ -23,10 +36,10 @@ const TopTrackItem = ({ index, track }: TopTrackItemProps) => {
             {index + 1}
           </span>
           <TImage
-            imageUrl={track.album.images[0].url}
+            imageUrl={track.imageUrl}
             type="track"
             alt={track.name}
-            size="w-12 h-12 sm:w-16 sm:h-16"
+            size="w-10 h-10 sm:w-12 sm:h-12"
             className="mr-4"
           />
           <div className="flex-1 flex flex-col overflow-hidden">
@@ -38,6 +51,18 @@ const TopTrackItem = ({ index, track }: TopTrackItemProps) => {
             </p>
           </div>
         </div>
+        {track.previewUrl && (
+          <button
+            onClick={(e) => {
+              e.preventDefault();
+              onPlay();
+            }}
+            className="sm:px-2 text-neonBlue hover:text-chefchaouenBlue focus:outline-none"
+            type="button"
+          >
+            {isCurrent && isPlaying ? <PauseIcon /> : <PlayIcon />}
+          </button>
+        )}
       </Link>
     </li>
   );

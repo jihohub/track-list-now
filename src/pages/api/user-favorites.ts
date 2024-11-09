@@ -1,9 +1,11 @@
 import prisma from "@/libs/prisma/prismaClient";
+import withErrorHandling from "@/libs/utils/errorHandler";
 import {
   computeDifference,
   mapFavoriteTypeToArtistRankingType,
   mapFavoriteTypeToTrackRankingType,
 } from "@/libs/utils/favorite";
+import { APIError, DatabaseError, ValidationError } from "@/types/error";
 import {
   ResponseData,
   UpdateFavorites,
@@ -24,13 +26,13 @@ const handleGet = async (
   const { userId } = req.query;
 
   if (!userId || Array.isArray(userId)) {
-    return res.status(400).json({ error: "Invalid or missing userId" });
+    throw new ValidationError("Invalid or missing userId");
   }
 
   const parsedUserId = parseInt(userId, 10);
 
   if (Number.isNaN(parsedUserId)) {
-    return res.status(400).json({ error: "userId must be a number" });
+    throw new ValidationError("userId must be a number");
   }
 
   try {
@@ -74,12 +76,11 @@ const handleGet = async (
     };
 
     return res.status(200).json(userFavorites);
-  } catch (error: unknown) {
-    const errorMessage =
-      error instanceof Error
-        ? error.message
-        : "알 수 없는 오류가 발생했습니다.";
-    return res.status(500).json({ error: errorMessage });
+  } catch (error) {
+    if (error instanceof ValidationError) {
+      throw error;
+    }
+    throw new DatabaseError("Failed to fetch user favorites");
   }
 };
 
@@ -96,7 +97,7 @@ const handlePatch = async (
   } = req.body as UpdateFavorites;
 
   if (!userId) {
-    return res.status(400).json({ error: "User ID is required" });
+    throw new ValidationError("User ID is required");
   }
 
   try {
@@ -179,6 +180,8 @@ const handlePatch = async (
           name: track.name,
           imageUrl: track.imageUrl,
           artists: track.artists,
+          previewUrl: track.previewUrl,
+          durationMs: track.durationMs,
           popularity: track.popularity,
         }));
 
@@ -437,12 +440,14 @@ const handlePatch = async (
     });
 
     return res.status(200).json({ message: "Favorites updated successfully" });
-  } catch (error: unknown) {
-    const errorMessage =
-      error instanceof Error
-        ? error.message
-        : "알 수 없는 오류가 발생했습니다.";
-    return res.status(500).json({ error: errorMessage });
+  } catch (error) {
+    if (error instanceof Prisma.PrismaClientKnownRequestError) {
+      throw new DatabaseError(`Database operation failed: ${error.message}`);
+    }
+    if (error instanceof ValidationError) {
+      throw error;
+    }
+    throw new DatabaseError("Failed to update favorites");
   }
 };
 
@@ -458,9 +463,11 @@ const handler = async (
     case "PATCH":
       return handlePatch(req, res);
     default:
-      res.setHeader("Allow", ["GET", "PATCH"]);
-      return res.status(405).end(`Method ${method} Not Allowed`);
+      throw new APIError(`Method ${method} Not Allowed`, {
+        statusCode: 405,
+        errorCode: "METHOD_NOT_ALLOWED",
+      });
   }
 };
 
-export default handler;
+export default withErrorHandling(handler);

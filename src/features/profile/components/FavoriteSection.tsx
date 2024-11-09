@@ -16,8 +16,8 @@ const FavoriteSection = ({
   isEditing,
   handleDelete,
 }: FavoriteSectionProps) => (
-  <div className="mb-8 bg-zinc-800 p-6 rounded-lg shadow-md">
-    <h2 className="text-2xl font-bold mb-4 text-white">{title}</h2>
+  <div className="mb-8 bg-zinc-900 p-6 rounded-lg shadow-md">
+    <h2 className="text-xl font-bold mb-4 text-white">{title}</h2>
     <div className="grid grid-cols-3 gap-4">
       {items.map((item) => (
         <FavoriteItem

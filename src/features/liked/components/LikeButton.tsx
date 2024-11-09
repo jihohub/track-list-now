@@ -1,4 +1,3 @@
-import HeartIcon from "@/assets/icons/heart.svg";
 import HeartFillIcon from "@/assets/icons/heartFill.svg";
 import useLikeMutation from "@/features/liked/mutations/useLikeMutation";
 import useUnlikeMutation from "@/features/liked/mutations/useUnlikeMutation";
@@ -92,12 +91,12 @@ const LikeButton = ({
   return (
     <button
       onClick={handleClick}
-      className="text-vividSkyBlue"
+      className={liked ? "text-vividSkyBlue" : "text-gray-500"}
       aria-pressed={liked}
       aria-label={liked ? "Unlike this item" : "Like this item"}
       type="button"
     >
-      {liked ? <HeartFillIcon /> : <HeartIcon />}
+      <HeartFillIcon />
     </button>
   );
 };

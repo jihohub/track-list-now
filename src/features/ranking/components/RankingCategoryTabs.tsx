@@ -43,8 +43,8 @@ const RankingCategoryTabs = ({
           className={`text-xs md:text-lg px-0 md:px-4 py-1 md:py-2 duration-200 
             ${
               category === tab.key
-                ? "text-neonBlue font-bold shadow-lg"
-                : " text-gray-300  hover:text-neonBlue"
+                ? "text-neonBlue font-bold"
+                : "text-gray-300  hover:text-neonBlue"
             }
           `}
           type="button"

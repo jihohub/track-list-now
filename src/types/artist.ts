@@ -1,5 +1,4 @@
-// src/types/artist.ts
-
+import { SimplifiedTrack } from "@/types/album";
 import { Artist, ArtistRanking, Track, TrackRanking } from "@prisma/client";
 
 export type RankingCategory =
@@ -8,7 +7,6 @@ export type RankingCategory =
   | "CURRENT_ARTIST"
   | "CURRENT_TRACK";
 
-// **Spotify API Response Interfaces**
 export interface SpotifyArtist {
   external_urls: {
     spotify: string;
@@ -110,13 +108,8 @@ export interface CombinedArtistData {
   relatedArtists: SpotifyRelatedArtists;
 }
 
-export interface ErrorResponse {
-  error: string;
-}
+export type ArtistResponseData = CombinedArtistData;
 
-export type ArtistResponseData = CombinedArtistData | ErrorResponse;
-
-// **Frontend Page Interfaces**
 export interface ArtistPageData {
   artist: {
     id: string;
@@ -129,12 +122,7 @@ export interface ArtistPageData {
     };
   };
   topTracks: {
-    tracks: {
-      id: string;
-      name: string;
-      album: { images: { url: string }[] };
-      artists: { name: string }[];
-    }[];
+    tracks: SimplifiedTrack[];
   };
   relatedArtists: {
     artists: {
@@ -145,7 +133,6 @@ export interface ArtistPageData {
   };
 }
 
-// **Extended Interfaces for Rankings**
 export interface ArtistWithRanking
   extends Omit<ArtistRanking, "updatedAt" | "rankingType"> {
   rankingType: RankingCategory;
@@ -162,7 +149,6 @@ export interface TrackWithRanking
   track: Track;
 }
 
-// **Type Guards**
 export const isArtistWithRanking = (
   item: ArtistWithRanking | TrackWithRanking,
 ): item is ArtistWithRanking => {

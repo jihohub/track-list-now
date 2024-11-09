@@ -1,22 +1,60 @@
 import prisma from "@/libs/prisma/prismaClient";
-import { FullRankingData } from "@/types/ranking";
+import withErrorHandling from "@/libs/utils/errorHandler";
+import { APIError, DatabaseError } from "@/types/error";
+import { FeaturedRankingData } from "@/types/ranking";
+import { ArtistRankingType, Prisma, TrackRankingType } from "@prisma/client";
 import { NextApiRequest, NextApiResponse } from "next";
 
-interface ErrorResponse {
-  error: string;
-}
+const RANKING_LIMIT = 3;
 
-type ResponseData = FullRankingData | ErrorResponse;
+const fetchArtistRanking = (rankingType: ArtistRankingType) => {
+  return prisma.artistRanking.findMany({
+    where: { rankingType },
+    orderBy: [{ count: "desc" }, { followers: "desc" }],
+    take: RANKING_LIMIT,
+    include: {
+      artist: {
+        select: {
+          id: true,
+          artistId: true,
+          name: true,
+          imageUrl: true,
+          followers: true,
+        },
+      },
+    },
+  });
+};
+
+const fetchTrackRanking = (rankingType: TrackRankingType) => {
+  return prisma.trackRanking.findMany({
+    where: { rankingType },
+    orderBy: [{ count: "desc" }, { popularity: "desc" }],
+    take: RANKING_LIMIT,
+    include: {
+      track: {
+        select: {
+          id: true,
+          trackId: true,
+          name: true,
+          imageUrl: true,
+          artists: true,
+          popularity: true,
+        },
+      },
+    },
+  });
+};
 
 const handler = async (
   req: NextApiRequest,
-  res: NextApiResponse<ResponseData>,
+  res: NextApiResponse<FeaturedRankingData>,
 ) => {
-  const { method } = req;
-
-  if (method !== "GET") {
-    res.setHeader("Allow", ["GET"]);
-    return res.status(405).end(`Method ${method} Not Allowed`);
+  if (req.method !== "GET") {
+    throw new APIError(`Method ${req.method} Not Allowed`, {
+      statusCode: 405,
+      errorCode: "METHOD_NOT_ALLOWED",
+    });
   }
 
   try {
@@ -26,75 +64,29 @@ const handler = async (
       currentArtistsRanking,
       currentTracksRanking,
     ] = await Promise.all([
-      prisma.artistRanking.findMany({
-        where: { rankingType: "ALL_TIME_ARTIST" },
-        orderBy: [{ count: "desc" }, { followers: "desc" }],
-        take: 3,
-        include: {
-          artist: {
-            select: {
-              id: true,
-              artistId: true,
-              name: true,
-              imageUrl: true,
-              followers: true,
-            },
-          },
-        },
-      }),
-      prisma.trackRanking.findMany({
-        where: { rankingType: "ALL_TIME_TRACK" },
-        orderBy: [{ count: "desc" }, { popularity: "desc" }],
-        take: 3,
-        include: {
-          track: {
-            select: {
-              id: true,
-              trackId: true,
-              name: true,
-              imageUrl: true,
-              artists: true,
-              popularity: true,
-            },
-          },
-        },
-      }),
-      prisma.artistRanking.findMany({
-        where: { rankingType: "CURRENT_ARTIST" },
-        orderBy: [{ count: "desc" }, { followers: "desc" }],
-        take: 3,
-        include: {
-          artist: {
-            select: {
-              id: true,
-              artistId: true,
-              name: true,
-              imageUrl: true,
-              followers: true,
-            },
-          },
-        },
-      }),
-      prisma.trackRanking.findMany({
-        where: { rankingType: "CURRENT_TRACK" },
-        orderBy: [{ count: "desc" }, { popularity: "desc" }],
-        take: 3,
-        include: {
-          track: {
-            select: {
-              id: true,
-              trackId: true,
-              name: true,
-              imageUrl: true,
-              artists: true,
-              popularity: true,
-            },
-          },
-        },
-      }),
-    ]);
+      fetchArtistRanking("ALL_TIME_ARTIST"),
+      fetchTrackRanking("ALL_TIME_TRACK"),
+      fetchArtistRanking("CURRENT_ARTIST"),
+      fetchTrackRanking("CURRENT_TRACK"),
+    ]).catch((error) => {
+      if (error instanceof Prisma.PrismaClientKnownRequestError) {
+        throw new DatabaseError(
+          `Failed to fetch ranking data: ${error.message}`,
+        );
+      }
+      throw error;
+    });
 
-    const rankingData: FullRankingData = {
+    if (
+      !allTimeArtistsRanking ||
+      !allTimeTracksRanking ||
+      !currentArtistsRanking ||
+      !currentTracksRanking
+    ) {
+      throw new DatabaseError("Failed to fetch complete ranking data");
+    }
+
+    const rankingData: FeaturedRankingData = {
       allTimeArtistsRanking,
       allTimeTracksRanking,
       currentArtistsRanking,
@@ -102,13 +94,16 @@ const handler = async (
     };
 
     return res.status(200).json(rankingData);
-  } catch (error: unknown) {
-    const errorMessage =
-      error instanceof Error
-        ? error.message
-        : "알 수 없는 오류가 발생했습니다.";
-    return res.status(500).json({ error: errorMessage });
+  } catch (error) {
+    if (error instanceof DatabaseError || error instanceof APIError) {
+      throw error;
+    }
+
+    // 예상치 못한 에러
+    throw new DatabaseError(
+      "An unexpected error occurred while fetching ranking data",
+    );
   }
 };
 
-export default handler;
+export default withErrorHandling(handler);
