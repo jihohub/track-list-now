@@ -138,7 +138,6 @@ const handler = async (
             name: artist.name,
           })),
           previewUrl: track.preview_url,
-          durationMs: track.duration_ms,
           popularity: track.popularity,
         })),
       },

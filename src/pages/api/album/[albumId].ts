@@ -36,7 +36,6 @@ const simplifyAlbumData = (data: SpotifyAlbum): SimplifiedAlbum => {
           name: artist.name,
         })),
         previewUrl: track.preview_url,
-        durationMs: track.duration_ms,
         imageUrl,
         popularity: track.popularity,
       })),
