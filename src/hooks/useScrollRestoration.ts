@@ -1,4 +1,3 @@
-// hooks/useScrollRestoration.ts
 import { useRouter } from "next/router";
 import { useEffect, useRef } from "react";
 
@@ -15,15 +14,15 @@ const useScrollRestoration = () => {
     });
 
     // 페이지 이동 시작 시 현재 스크롤 위치 저장
-    const saveScrollPosition = (url: string) => {
+    const saveScrollPosition = () => {
       scrollPositions.current[router.asPath] = window.scrollY;
     };
 
     // 페이지 이동 완료 후 스크롤 위치 복원 또는 최상단 이동
-    const restoreScrollPosition = (url: string) => {
+    const restoreScrollPosition = (nextPath: string) => {
       if (isBack.current) {
         // 뒤로가기의 경우 저장된 위치로 스크롤
-        const savedPosition = scrollPositions.current[url];
+        const savedPosition = scrollPositions.current[nextPath];
         if (savedPosition !== undefined) {
           setTimeout(() => {
             window.scrollTo(0, savedPosition);
