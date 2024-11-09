@@ -1,0 +1,16 @@
+name: Spotify Data Update
+
+on:
+  schedule:
+    - cron: "0 15 * * *"
+  workflow_dispatch:
+
+jobs:
+  update_spotify_data:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Call Spotify Update API
+        run: |
+          curl -X GET "https://tracklistnow.com/api/cron/spotify-update" \
+            -H "Authorization: Bearer ${{ secrets.VERCEL_CRON_SECRET }}"
