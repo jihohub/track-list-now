@@ -1,4 +1,6 @@
 {
   "something_went_wrong": "Something went wrong",
-  "try_again": "Try again"
+  "try_again": "Try again",
+  "show_stack_trace": "Show error details",
+  "error_persistence_message": "If the error persists, please contact support."
 }

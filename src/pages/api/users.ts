@@ -1,4 +1,6 @@
 import prisma from "@/libs/prisma/prismaClient";
+import withErrorHandling from "@/libs/utils/errorHandler";
+import { APIError, DatabaseError, ValidationError } from "@/types/error";
 import { User as PrismaUser } from "@prisma/client";
 import { NextApiRequest, NextApiResponse } from "next";
 
@@ -13,11 +15,7 @@ interface UserResponse {
   updatedAt: string;
 }
 
-interface ErrorResponse {
-  error: string;
-}
-
-type ResponseData = UserResponse | ErrorResponse;
+type ResponseData = UserResponse;
 
 const serializeUser = (user: PrismaUser): UserResponse => ({
   ...user,
@@ -32,20 +30,22 @@ const handler = async (
   const { method } = req;
 
   if (method !== "GET") {
-    res.setHeader("Allow", ["GET"]);
-    return res.status(405).end(`Method ${method} Not Allowed`);
+    throw new APIError(`Method ${method} Not Allowed`, {
+      statusCode: 405,
+      errorCode: "METHOD_NOT_ALLOWED",
+    });
   }
 
   const { userId } = req.query;
 
   if (!userId || Array.isArray(userId)) {
-    return res.status(400).json({ error: "Invalid or missing userId" });
+    throw new ValidationError("Invalid or missing userId");
   }
 
   const parsedUserId = parseInt(userId, 10);
 
   if (Number.isNaN(parsedUserId)) {
-    return res.status(400).json({ error: "userId must be a number" });
+    throw new ValidationError("userId must be a number");
   }
 
   try {
@@ -54,22 +54,20 @@ const handler = async (
     });
 
     if (!user) {
-      return res.status(404).json({ error: "User not found" });
+      throw new APIError("User not found", {
+        statusCode: 404,
+        errorCode: "USER_NOT_FOUND",
+      });
     }
-
-    // if (!user.isPublic) {
-    //   return res.status(403).json({ error: "This profile is private" });
-    // }
 
     const serializedUser = serializeUser(user);
     return res.status(200).json(serializedUser);
   } catch (error: unknown) {
-    const errorMessage =
-      error instanceof Error
-        ? error.message
-        : "알 수 없는 오류가 발생했습니다.";
-    return res.status(500).json({ error: errorMessage });
+    if (error instanceof APIError || error instanceof ValidationError) {
+      throw error;
+    }
+    throw new DatabaseError("Failed to fetch user data");
   }
 };
 
-export default handler;
+export default withErrorHandling(handler);

@@ -1,0 +1,9 @@
+{
+  "regions": ["icn1"],
+  "crons": [
+    {
+      "path": "/api/cron/spotify-update",
+      "schedule": "0 */12 * * *"
+    }
+  ]
+}

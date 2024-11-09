@@ -24,7 +24,7 @@ const TItem = ({ index, item, type, isFeatured = false }: TItemProps) => {
 
   return (
     <li
-      className={`flex justify-between items-center ${isFeatured ? "bg-transparent mb-4" : "bg-zinc-900 p-4 rounded-lg shadow-md"}`}
+      className={`flex justify-between items-center ${isFeatured ? "bg-transparent mb-4" : "bg-zinc-900 p-2 rounded-lg shadow-md"}`}
     >
       <Link
         href={linkHref}
@@ -40,13 +40,11 @@ const TItem = ({ index, item, type, isFeatured = false }: TItemProps) => {
             imageUrl={imageUrl}
             type={type}
             alt={alt}
-            size="w-12 h-12 sm:w-16 sm:h-16"
+            size="w-10 h-10 sm:w-12 sm:h-12"
             className="mr-4"
           />
           <div className="flex-1 flex flex-col overflow-hidden">
-            <h3
-              className={`text-xs text-white font-semibold ${isFeatured ? "sm:text-sm" : "sm:text-lg"}`}
-            >
+            <h3 className="text-xs text-white font-semibold sm:text-sm">
               {name}
             </h3>
             {type === "artist" ? (
@@ -59,7 +57,7 @@ const TItem = ({ index, item, type, isFeatured = false }: TItemProps) => {
           </div>
         </div>
         {item.count && (
-          <div className="text-right">
+          <div className="sm:px-2 text-right">
             <p className="text-xs sm:text-sm text-blue-300 truncate">
               {item.count}
               {t("selected")}

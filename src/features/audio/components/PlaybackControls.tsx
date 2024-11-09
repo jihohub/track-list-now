@@ -13,7 +13,7 @@ const PlaybackControls = ({
   disableNext = false,
 }: PlaybackControlsProps) => {
   return (
-    <div className="flex justify-center items-center space-x-6 w-full">
+    <div className="flex justify-center items-center space-x-6 w-full h-[50px]">
       {/* 이전 버튼 */}
       <button
         onClick={onPrevious}

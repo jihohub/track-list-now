@@ -1,7 +1,6 @@
 import { SpotifyArtist } from "./artist";
 import { SpotifyTrack } from "./track";
 
-// **Simplified Artist and Track Interfaces**
 export interface SimplifiedArtist {
   id: string;
   name: string;
@@ -14,6 +13,8 @@ export interface SimplifiedTrack {
   name: string;
   imageUrl: string;
   artists: string;
+  previewUrl: string | null;
+  durationMs: number;
   popularity: number;
 }
 
@@ -25,7 +26,6 @@ export interface SimplifiedAlbum {
   releaseDate: string;
 }
 
-// **Search Response Interfaces**
 export interface ArtistsSearchResponse {
   artists: {
     items: SimplifiedArtist[];
@@ -53,14 +53,6 @@ export interface TracksSearchResponse {
 export type SimplifiedSearchResponse =
   | ArtistsSearchResponse
   | TracksSearchResponse;
-
-// **Error Response Interface**
-export interface ErrorResponse {
-  error: string;
-}
-
-// **Union Type for API Response**
-export type ResponseData = SimplifiedSearchResponse | ErrorResponse;
 
 export type SearchResult = SimplifiedArtist | SimplifiedTrack | SimplifiedAlbum;
 
@@ -94,7 +86,6 @@ export interface SearchResponseData {
   };
 }
 
-// **Added Item Interfaces**
 export interface AddedArtist {
   artistId: string;
   name: string;
@@ -107,12 +98,13 @@ export interface AddedTrack {
   name: string;
   imageUrl: string;
   artists: string;
+  previewUrl: string | null;
+  durationMs: number;
   popularity: number;
 }
 
 export type AddedItem = AddedArtist | AddedTrack;
 
-// **Type Guards**
 export const isAddedArtist = (item: AddedItem): item is AddedArtist => {
   return (item as AddedArtist).artistId !== undefined;
 };
@@ -121,7 +113,6 @@ export const isAddedTrack = (item: AddedItem): item is AddedTrack => {
   return (item as AddedTrack).trackId !== undefined;
 };
 
-// **Spotify Search Response Interfaces**
 export interface SpotifyArtistSearchResponse {
   artists: {
     items: SpotifyArtist[];

@@ -19,7 +19,7 @@ const FavoriteItem = ({
 
   const content = (
     <div className="relative flex flex-col items-center">
-      <div className="relative w-24 h-24">
+      <div className="relative w-16 h-16 sm:w-24 sm:h-24">
         <TImage
           imageUrl={
             type === "artist"
@@ -28,7 +28,7 @@ const FavoriteItem = ({
           }
           type={type}
           alt={item.name}
-          size="w-24 h-24"
+          size="w-16 h-16 sm:w-24 sm:h-24"
           className="opacity-80"
         />
         {isEditing && (

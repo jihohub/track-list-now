@@ -1,18 +1,17 @@
-// 랭킹 카테고리 타입
 export type RankingCategory =
   | "ALL_TIME_ARTIST"
   | "ALL_TIME_TRACK"
   | "CURRENT_ARTIST"
   | "CURRENT_TRACK";
 
-// 기본 랭킹 인터페이스
+export type RankingType = "artist" | "track";
+
 export interface BaseRanking {
   rankingType: RankingCategory;
   count: number;
   updatedAt: Date;
 }
 
-// 아티스트 상세 정보
 export interface ArtistDetail {
   id: number;
   artistId: string;
@@ -21,7 +20,6 @@ export interface ArtistDetail {
   followers: number;
 }
 
-// 트랙 상세 정보
 export interface TrackDetail {
   id: number;
   trackId: string;
@@ -31,46 +29,40 @@ export interface TrackDetail {
   popularity: number;
 }
 
-// 아티스트 랭킹 타입
 export interface ArtistWithRanking extends BaseRanking {
   artist: ArtistDetail;
 }
 
-// 트랙 랭킹 타입
 export interface TrackWithRanking extends BaseRanking {
   track: TrackDetail;
 }
 
-// 전체 랭킹 데이터 타입
-export interface FullRankingData {
+export interface FeaturedRankingData {
   allTimeArtistsRanking: ArtistWithRanking[];
   allTimeTracksRanking: TrackWithRanking[];
   currentArtistsRanking: ArtistWithRanking[];
   currentTracksRanking: TrackWithRanking[];
 }
 
-// 랭킹 섹션 컴포넌트의 props 타입
 export interface RankingSectionProps {
   title: string;
   data: ArtistWithRanking[] | TrackWithRanking[];
-  type: "artist" | "track";
+  type: RankingType;
   category: RankingCategory;
 }
 
-// 타입 가드 함수
 export const isArtistWithRanking = (
-  item: ArtistWithRanking | TrackWithRanking,
+  item: ArtistWithRanking | TrackWithRanking | undefined,
 ): item is ArtistWithRanking => {
-  return (item as ArtistWithRanking).artist !== undefined;
+  return item !== undefined && "artist" in item;
 };
 
 export const isTrackWithRanking = (
-  item: ArtistWithRanking | TrackWithRanking,
+  item: ArtistWithRanking | TrackWithRanking | undefined,
 ): item is TrackWithRanking => {
-  return (item as TrackWithRanking).track !== undefined;
+  return item !== undefined && "track" in item;
 };
 
-// TItemProps 타입 정의
 export interface ArtistTItemProps {
   index: number;
   item: ArtistWithRanking;
@@ -87,3 +79,32 @@ export interface TrackTItemProps {
 
 export type TItemData = ArtistWithRanking | TrackWithRanking;
 export type TItemProps = ArtistTItemProps | TrackTItemProps;
+
+export type RankingDataMap = {
+  [K in RankingCategory]: K extends `${string}ARTIST`
+    ? ArtistWithRanking[]
+    : TrackWithRanking[];
+};
+
+export const getRankingDataByCategory = <T extends RankingCategory>(
+  data: FeaturedRankingData,
+  category: T,
+): T extends `${string}ARTIST` ? ArtistWithRanking[] : TrackWithRanking[] => {
+  const dataMap = {
+    ALL_TIME_ARTIST: data.allTimeArtistsRanking,
+    ALL_TIME_TRACK: data.allTimeTracksRanking,
+    CURRENT_ARTIST: data.currentArtistsRanking,
+    CURRENT_TRACK: data.currentTracksRanking,
+  };
+
+  return dataMap[category] as T extends `${string}ARTIST`
+    ? ArtistWithRanking[]
+    : TrackWithRanking[];
+};
+
+export const RANKING_TYPE_MAP: Record<RankingCategory, RankingType> = {
+  ALL_TIME_ARTIST: "artist",
+  CURRENT_ARTIST: "artist",
+  ALL_TIME_TRACK: "track",
+  CURRENT_TRACK: "track",
+};

@@ -15,6 +15,7 @@ export const getServerSideProps: GetServerSideProps = async ({ locale }) => {
       ...(await serverSideTranslations(currentLocale ?? "ko", [
         "common",
         "ranking",
+        "error",
       ])),
     },
     redirect: {

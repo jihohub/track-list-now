@@ -6,7 +6,7 @@ import {
 } from "@tanstack/react-query";
 import axios from "axios";
 
-type SearchQueryKey = readonly ["search", string, string];
+type SearchQueryKey = readonly ["search", string, string, boolean];
 
 const fetchSearchResults = async ({
   pageParam = 0,
@@ -29,11 +29,16 @@ const fetchSearchResults = async ({
   return response.data;
 };
 
-const useFetchSearchResults = (searchQuery: string, currentType: string) => {
+const useFetchSearchResults = (
+  searchQuery: string,
+  currentType: string,
+  hasSearched: boolean,
+) => {
   const queryKey: SearchQueryKey = [
     "search",
     searchQuery,
     currentType,
+    hasSearched,
   ] as const;
 
   return useInfiniteQuery<
@@ -44,7 +49,7 @@ const useFetchSearchResults = (searchQuery: string, currentType: string) => {
   >({
     queryKey,
     queryFn: fetchSearchResults,
-    enabled: searchQuery.trim().length > 0, // 검색어가 있을 때만 활성화
+    enabled: searchQuery.trim().length > 0 && hasSearched, // 검색어가 있을 때만 활성화
     initialPageParam: 0,
     getNextPageParam: (lastPage) => {
       if (currentType === "artist" && lastPage.artists?.next) {

@@ -11,6 +11,7 @@ interface LayoutProps {
 
 const notoSansKr = NotoSansKr({
   subsets: ["latin"],
+  display: "swap",
 });
 
 const Layout = ({ children }: LayoutProps) => (

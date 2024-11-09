@@ -4,7 +4,7 @@ import { serverSideTranslations } from "next-i18next/serverSideTranslations";
 
 const SearchPage = () => {
   return (
-    <div className="min-h-screen p-4">
+    <div className="max-w-4xl mx-auto p-6 mt-6 bg-zinc-800 rounded-lg shadow-md">
       <SearchSection />
     </div>
   );
@@ -13,7 +13,11 @@ const SearchPage = () => {
 export const getServerSideProps: GetServerSideProps = async ({ locale }) => {
   return {
     props: {
-      ...(await serverSideTranslations(locale ?? "ko", ["common", "search"])),
+      ...(await serverSideTranslations(locale ?? "ko", [
+        "common",
+        "search",
+        "error",
+      ])),
     },
   };
 };

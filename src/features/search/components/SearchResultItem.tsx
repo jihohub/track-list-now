@@ -1,3 +1,5 @@
+import PauseIcon from "@/assets/icons/pause.svg";
+import PlayIcon from "@/assets/icons/play.svg";
 import TImage from "@/features/common/components/TImage";
 import {
   SearchResult,
@@ -11,9 +13,18 @@ import { useTranslation } from "react-i18next";
 interface SearchResultItemProps {
   result: SearchResult;
   listType: "artist" | "track" | "album";
+  isPlaying?: boolean;
+  onPlay?: () => void;
+  isCurrent?: boolean;
 }
 
-const SearchResultItem = ({ result, listType }: SearchResultItemProps) => {
+const SearchResultItem = ({
+  result,
+  listType,
+  isPlaying = false,
+  onPlay,
+  isCurrent = false,
+}: SearchResultItemProps) => {
   const { t } = useTranslation("common");
 
   // 타입 가드 함수 정의
@@ -43,7 +54,9 @@ const SearchResultItem = ({ result, listType }: SearchResultItemProps) => {
   };
 
   return (
-    <li className="flex items-center justify-between text-sm text-white cursor-pointer bg-zinc-900 hover:bg-gray-700 p-2 rounded-lg">
+    <li
+      className={`flex items-center justify-between text-sm text-white cursor-pointer ${isCurrent ? "bg-zinc-950" : "bg-zinc-900"} hover:bg-gray-700 p-2 rounded-lg`}
+    >
       <Link
         href={getDetailPageUrl()}
         passHref
@@ -54,8 +67,8 @@ const SearchResultItem = ({ result, listType }: SearchResultItemProps) => {
             imageUrl={result.imageUrl}
             type={listType}
             alt={result.name}
-            size="w-10 h-10"
-            className="mr-4 rounded-full"
+            size="w-10 h-10 sm:w-12 sm:h-12"
+            className="mr-4"
           />
           <div className="flex flex-col">
             <span>{result.name}</span>
@@ -72,6 +85,18 @@ const SearchResultItem = ({ result, listType }: SearchResultItemProps) => {
             )}
           </div>
         </div>
+        {listType === "track" && isTrack(result) && result.previewUrl && (
+          <button
+            onClick={(e) => {
+              e.preventDefault();
+              onPlay?.();
+            }}
+            className="sm:px-2 text-neonBlue hover:text-chefchaouenBlue focus:outline-none"
+            type="button"
+          >
+            {isCurrent && isPlaying ? <PauseIcon /> : <PlayIcon />}
+          </button>
+        )}
       </Link>
     </li>
   );

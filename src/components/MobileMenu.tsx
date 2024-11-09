@@ -36,7 +36,7 @@ const MobileMenu = ({ isMenuOpen, closeMenu }: MobileMenuProps) => {
     >
       <div className="flex justify-between p-4">
         <Link href="/" className="text-xl font-bold">
-          <Image src="/logo.png" alt="logo image" width={120} height={28} />
+          <Image src="/logo.png" alt="logo image" width={180} height={28} />
         </Link>
         <button
           onClick={closeMenu}
