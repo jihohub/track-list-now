@@ -19,7 +19,6 @@ const useTrackPlayer = (track: TrackDetail) => {
       imageUrl: track.album.images[0]?.url || "/default-album.png",
       artists: track.artists,
       previewUrl: track.preview_url,
-      durationMs: track.duration_ms,
       popularity: track.popularity,
     });
 

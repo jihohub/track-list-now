@@ -10,7 +10,6 @@ interface LikeItemPayload {
   artists?: string;
   followers?: number;
   previewUrl?: string | null;
-  durationMs?: number;
   popularity?: number;
   releaseDate?: string;
 }
@@ -38,7 +37,6 @@ const useLikeMutation = () => {
         artists: payload.artists,
         followers: payload.followers,
         previewUrl: payload.previewUrl,
-        durationMs: payload.durationMs,
         popularity: payload.popularity,
         releaseDate: payload.releaseDate,
       }),

@@ -4,36 +4,38 @@ import { useState } from "react";
 
 interface UseProfileActionsProps {
   editedFavorites: UserFavorites | null;
-  setEditedFavorites: React.Dispatch<
-    React.SetStateAction<UserFavorites | null>
-  >;
+  setEditedFavorites: (favorites: UserFavorites | null) => void;
+}
+
+interface ModalState {
+  isOpen: boolean;
+  type?: "artist" | "track";
+  section?: keyof UserFavorites;
 }
 
 const useProfileActions = ({
   editedFavorites,
   setEditedFavorites,
 }: UseProfileActionsProps) => {
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [modalType, setModalType] = useState<"artist" | "track" | undefined>(
-    undefined,
-  );
-  const [activeSection, setActiveSection] = useState<
-    keyof UserFavorites | undefined
-  >(undefined);
+  const [modalState, setModalState] = useState<ModalState>({
+    isOpen: false,
+  });
 
   const openModal = (
     type: "artist" | "track",
     section: keyof UserFavorites,
   ) => {
-    setModalType(type);
-    setActiveSection(section);
-    setIsModalOpen(true);
+    setModalState({
+      isOpen: true,
+      type,
+      section,
+    });
   };
 
   const closeModal = () => {
-    setIsModalOpen(false);
-    setModalType(undefined);
-    setActiveSection(undefined);
+    setModalState({
+      isOpen: false,
+    });
   };
 
   const handleDelete = <S extends keyof UserFavorites>(
@@ -57,9 +59,9 @@ const useProfileActions = ({
   };
 
   return {
-    isModalOpen,
-    modalType,
-    activeSection,
+    isModalOpen: modalState.isOpen,
+    modalType: modalState.type,
+    activeSection: modalState.section,
     openModal,
     closeModal,
     handleDelete,

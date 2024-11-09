@@ -1,39 +1,28 @@
 import ErrorComponent from "@/features/common/components/ErrorComponent";
-import EditControls from "@/features/profile/components/EditControls";
-import FavoriteSections from "@/features/profile/components/FavoriteSections";
-import ProfileHeader from "@/features/profile/components/ProfileHeader";
-import SearchModal from "@/features/profile/components/SearchModal";
+import ProfileSection from "@/features/profile/components/ProfileSection";
+import ProfileSEO from "@/features/profile/components/ProfileSEO";
 import useProfileActions from "@/features/profile/hooks/useProfileActions";
+import useProfileEditing from "@/features/profile/hooks/useProfileEditing";
+import useProfileSections from "@/features/profile/hooks/useProfileSections";
 import useUserProfile, {
   fetchUserData,
   fetchUserFavorites,
 } from "@/features/profile/queries/useUserProfile";
 import errorLogger from "@/libs/utils/errorLogger";
+import handlePageError from "@/libs/utils/handlePageError";
 import { ProfileError } from "@/types/error";
-import {
-  UserFavoriteArtist,
-  UserFavorites,
-  UserFavoriteTrack,
-} from "@/types/favorite";
 import { dehydrate, QueryClient } from "@tanstack/react-query";
 import { GetServerSideProps } from "next";
-import { getSession, useSession } from "next-auth/react";
-import { useTranslation } from "next-i18next";
+import { getSession } from "next-auth/react";
 import { serverSideTranslations } from "next-i18next/serverSideTranslations";
-import { NextSeo } from "next-seo";
-import { useRef, useState } from "react";
-
-interface ProfileErrorInfo {
-  componentStack: string;
-}
+import { useRef } from "react";
 
 interface ProfilePageProps {
   userId: number;
 }
 
 const ProfilePage = ({ userId }: ProfilePageProps) => {
-  const { t } = useTranslation(["common", "profile", "error"]);
-  const { data: session } = useSession();
+  const pageRef = useRef<HTMLDivElement>(null);
 
   const {
     userFavorites,
@@ -45,10 +34,14 @@ const ProfilePage = ({ userId }: ProfilePageProps) => {
     saveFavorites,
   } = useUserProfile(userId);
 
-  const [isEditing, setIsEditing] = useState(false);
-  const [editedFavorites, setEditedFavorites] = useState<UserFavorites | null>(
-    null,
-  );
+  const {
+    isEditing,
+    editedFavorites,
+    setEditedFavorites,
+    handleToggleEditing,
+    handleSaveChanges,
+    displayFavorites,
+  } = useProfileEditing(userId, userFavorites, saveFavorites);
 
   const {
     isModalOpen,
@@ -63,173 +56,45 @@ const ProfilePage = ({ userId }: ProfilePageProps) => {
     setEditedFavorites,
   });
 
-  const pageRef = useRef<HTMLDivElement>(null);
-
-  const handleToggleEditing = () => {
-    try {
-      if (!session?.user?.id || session.user.id !== userId) {
-        throw new ProfileError("Unauthorized editing attempt", {
-          userId,
-          sessionUserId: session?.user?.id,
-          action: "toggleEditing",
-        });
-      }
-
-      if (!isEditing) {
-        // 편집 모드로 전환될 때, 현재 favorites를 로컬 상태로 복사
-        setEditedFavorites(userFavorites ? { ...userFavorites } : null);
-      } else {
-        // 편집 모드에서 나올 때, 로컬 상태 초기화
-        setEditedFavorites(null);
-      }
-      setIsEditing((prev) => !prev);
-    } catch (error) {
-      if (error instanceof Error) {
-        errorLogger(error, {
-          componentStack: "ProfilePage.handleToggleEditing",
-        } as ProfileErrorInfo);
-      }
-    }
-  };
-
-  // 편집 모드일 때는 editedFavorites를, 아닐 때는 userFavorites를 사용
-  const displayFavorites =
-    isEditing && editedFavorites ? editedFavorites : userFavorites;
-
-  const handleSaveChanges = async () => {
-    try {
-      if (!session?.user?.id || !editedFavorites) {
-        throw new ProfileError("Invalid save attempt", {
-          userId,
-          hasSession: !!session?.user?.id,
-          hasEditedFavorites: !!editedFavorites,
-          action: "saveChanges",
-        });
-      }
-
-      await saveFavorites(editedFavorites);
-      setIsEditing(false);
-      setEditedFavorites(null);
-    } catch (error) {
-      if (error instanceof Error) {
-        errorLogger(error, {
-          componentStack: "ProfilePage.handleSaveChanges",
-        } as ProfileErrorInfo);
-      }
-    }
-  };
-
-  const viewedUserName = userData?.name;
-  const profileImageUrl = userData?.profileImage;
+  const sections = useProfileSections(
+    displayFavorites,
+    openModal,
+    handleDelete,
+  );
 
   if (userFavoritesError || userDataError) {
-    return (
-      <ErrorComponent
-        message={`Error loading data: ${userFavoritesError?.message || userDataError?.message}`}
-      />
-    );
+    const errorMessage = handlePageError(userFavoritesError || userDataError);
+    return <ErrorComponent message={errorMessage} />;
   }
 
   const isLoading = isFavoritesLoading || isUserDataLoading;
 
-  const sections: {
-    title: string;
-    items: UserFavoriteArtist[] | UserFavoriteTrack[];
-    type: "artist" | "track";
-    openModal: () => void;
-    handleDelete: (id: string) => void;
-  }[] = [
-    {
-      title: t("all_time_favorite_artists"),
-      items: displayFavorites?.allTimeArtists || [],
-      type: "artist",
-      openModal: () => openModal("artist", "allTimeArtists"),
-      handleDelete: (id: string) => handleDelete("allTimeArtists", id),
-    },
-    {
-      title: t("all_time_favorite_tracks"),
-      items: displayFavorites?.allTimeTracks || [],
-      type: "track",
-      openModal: () => openModal("track", "allTimeTracks"),
-      handleDelete: (id: string) => handleDelete("allTimeTracks", id),
-    },
-    {
-      title: t("current_favorite_artists"),
-      items: displayFavorites?.currentArtists || [],
-      type: "artist",
-      openModal: () => openModal("artist", "currentArtists"),
-      handleDelete: (id: string) => handleDelete("currentArtists", id),
-    },
-    {
-      title: t("current_favorite_tracks"),
-      items: displayFavorites?.currentTracks || [],
-      type: "track",
-      openModal: () => openModal("track", "currentTracks"),
-      handleDelete: (id: string) => handleDelete("currentTracks", id),
-    },
-  ];
+  const viewedUserName = userData?.name;
+  const profileImageUrl = userData?.profileImage;
 
   return (
     <div className="max-w-4xl mx-auto p-6 mt-6 bg-zinc-800 rounded-lg shadow-md">
-      <NextSeo
-        title={`${viewedUserName} - Track List Now`}
-        description={`${viewedUserName}'s favorite artists and tracks on Track List Now`}
-        openGraph={{
-          type: "profile",
-          url: `https://www.tracklistnow.com/profile/${userId}`,
-          title: `${viewedUserName} - Track List Now`,
-          description: `${viewedUserName}'s favorite artists and tracks`,
-          images: [
-            {
-              url: profileImageUrl || "/default-profile-image.jpg",
-              width: 800,
-              height: 800,
-              alt: `${profileImageUrl}'s Profile Image`,
-            },
-          ],
-        }}
-        twitter={{
-          handle: "@TrackListNow",
-          site: "@TrackListNow",
-          cardType: "summary_large_image",
-        }}
+      <ProfileSEO
+        viewedUserName={viewedUserName}
+        profileImageUrl={profileImageUrl}
+        userId={userId}
       />
-      <div ref={pageRef}>
-        <ProfileHeader
-          profileImageUrl={profileImageUrl}
-          viewedUserName={viewedUserName}
-          isLoading={isLoading}
-        />
-
-        <EditControls
-          label={
-            isEditing
-              ? t("save", { ns: "profile" })
-              : t("edit", { ns: "profile" })
-          }
-          isEditing={isEditing}
-          toggleEditing={handleToggleEditing}
-          handleSaveChanges={handleSaveChanges}
-        />
-
-        <FavoriteSections
-          sections={sections}
-          isEditing={isEditing}
-          isLoading={isLoading}
-        />
-
-        {isModalOpen && modalType && activeSection && (
-          <SearchModal
-            closeModal={closeModal}
-            modalType={modalType}
-            activeSection={activeSection}
-            handleAddItem={(section, item) => {
-              handleAddItem(section as keyof UserFavorites, item);
-            }}
-            userFavorites={editedFavorites as UserFavorites}
-          />
-        )}
-      </div>
+      <ProfileSection
+        viewedUserName={userData?.name}
+        profileImageUrl={userData?.profileImage}
+        isLoading={isLoading}
+        isEditing={isEditing}
+        editedFavorites={editedFavorites}
+        sections={sections}
+        pageRef={pageRef}
+        isModalOpen={isModalOpen}
+        modalType={modalType}
+        activeSection={activeSection}
+        handleToggleEditing={handleToggleEditing}
+        handleSaveChanges={handleSaveChanges}
+        closeModal={closeModal}
+        handleAddItem={handleAddItem}
+      />
     </div>
   );
 };

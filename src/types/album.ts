@@ -39,7 +39,6 @@ export interface SimplifiedTrack {
   artists: SimplifiedArtist[];
   imageUrl: string;
   previewUrl: string | null;
-  durationMs: number;
   popularity: number;
 }
 
