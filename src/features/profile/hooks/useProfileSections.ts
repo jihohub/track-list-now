@@ -2,9 +2,9 @@ import { UserFavorites } from "@/types/favorite";
 import { useTranslation } from "next-i18next";
 
 const useProfileSections = (
-  displayFavorites: UserFavorites | null,
-  openModal: (type: "artist" | "track", section: string) => void,
-  handleDelete: (section: string, id: string) => void,
+  displayFavorites: UserFavorites | null | undefined,
+  openModal: (type: "artist" | "track", section: keyof UserFavorites) => void,
+  handleDelete: <S extends keyof UserFavorites>(section: S, id: string) => void,
 ) => {
   const { t } = useTranslation("common");
 

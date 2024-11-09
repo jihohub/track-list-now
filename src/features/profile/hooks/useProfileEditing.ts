@@ -1,13 +1,19 @@
 import errorLogger from "@/libs/utils/errorLogger";
 import { AppError, ProfileError } from "@/types/error";
 import { UserFavorites } from "@/types/favorite";
+import { UseMutateFunction } from "@tanstack/react-query";
 import { useSession } from "next-auth/react";
 import { useState } from "react";
 
 const useProfileEditing = (
   userId: number,
-  userFavorites: UserFavorites | null,
-  saveFavorites: (favorites: UserFavorites) => Promise<void>,
+  userFavorites: UserFavorites | null | undefined,
+  saveFavorites: UseMutateFunction<
+    UserFavorites,
+    Error,
+    UserFavorites,
+    unknown
+  >,
 ) => {
   const { data: session } = useSession();
   const [isEditing, setIsEditing] = useState(false);
