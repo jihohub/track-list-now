@@ -53,7 +53,49 @@ const nextConfig = {
             key: "Expires",
             value: "0",
           },
+          {
+            key: "CF-Access-Allow-Origin",
+            value: "*",
+          },
+          {
+            key: "CF-Cache-Status",
+            value: "DYNAMIC",
+          },
         ],
+      },
+    ];
+  },
+  // Cloudflare를 위한 rewrites 설정 추가
+  async rewrites() {
+    return {
+      beforeFiles: [
+        {
+          source: "/api/:path*",
+          destination: "/api/:path*",
+          has: [
+            {
+              type: "header",
+              key: "cf-connecting-ip",
+            },
+          ],
+        },
+      ],
+    };
+  },
+  // Cloudflare Worker로의 프록시 설정
+  async redirects() {
+    return [
+      {
+        source: "/api/:path*",
+        has: [
+          {
+            type: "header",
+            key: "x-forwarded-proto",
+            value: "https",
+          },
+        ],
+        destination: "/api/:path*",
+        permanent: true,
       },
     ];
   },
