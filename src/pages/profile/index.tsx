@@ -14,20 +14,14 @@ import { ProfileError } from "@/types/error";
 import { dehydrate, QueryClient } from "@tanstack/react-query";
 import { GetServerSideProps } from "next";
 import { getSession } from "next-auth/react";
-import { useTranslation } from "next-i18next";
 import { serverSideTranslations } from "next-i18next/serverSideTranslations";
 import { useRef } from "react";
-
-interface ProfileErrorInfo {
-  componentStack: string;
-}
 
 interface ProfilePageProps {
   userId: number;
 }
 
 const ProfilePage = ({ userId }: ProfilePageProps) => {
-  const { t } = useTranslation(["common", "profile", "error"]);
   const pageRef = useRef<HTMLDivElement>(null);
 
   const {

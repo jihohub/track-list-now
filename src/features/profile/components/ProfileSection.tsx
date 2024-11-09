@@ -2,7 +2,8 @@ import EditControls from "@/features/profile/components/EditControls";
 import FavoriteSections from "@/features/profile/components/FavoriteSections";
 import ProfileHeader from "@/features/profile/components/ProfileHeader";
 import SearchModal from "@/features/profile/components/SearchModal";
-import { UserFavorites } from "@/types/favorite";
+import { SectionToItemType, UserFavorites } from "@/types/favorite";
+import { SectionConfig } from "@/types/section";
 import { useTranslation } from "next-i18next";
 import { RefObject } from "react";
 
@@ -12,13 +13,7 @@ interface ProfileSectionProps {
   isLoading: boolean;
   isEditing: boolean;
   editedFavorites: UserFavorites | null;
-  sections: {
-    title: string;
-    items: any[];
-    type: "artist" | "track";
-    openModal: () => void;
-    handleDelete: (id: string) => void;
-  }[];
+  sections: SectionConfig[];
   pageRef: RefObject<HTMLDivElement>;
   isModalOpen: boolean;
   modalType?: "artist" | "track" | null;
@@ -26,7 +21,10 @@ interface ProfileSectionProps {
   handleToggleEditing: () => void;
   handleSaveChanges: () => Promise<void>;
   closeModal: () => void;
-  handleAddItem: (section: keyof UserFavorites, item: any) => void;
+  handleAddItem: <S extends keyof UserFavorites>(
+    section: S,
+    item: SectionToItemType<S>,
+  ) => void;
 }
 
 const ProfileSection = ({
