@@ -80,8 +80,9 @@ const SearchModal = ({
         name: item.name,
         imageUrl: item.imageUrl,
         artists: item.artists,
-        popularity: item.popularity,
         previewUrl: item.previewUrl,
+        durationMs: item.durationMs,
+        popularity: item.popularity,
       };
 
       handleAddItem(activeSection, addedTrack);

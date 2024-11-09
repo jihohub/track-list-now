@@ -180,6 +180,8 @@ const handlePatch = async (
           name: track.name,
           imageUrl: track.imageUrl,
           artists: track.artists,
+          previewUrl: track.previewUrl,
+          durationMs: track.durationMs,
           popularity: track.popularity,
         }));
 

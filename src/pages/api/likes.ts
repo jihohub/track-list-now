@@ -152,6 +152,8 @@ const handleGet = async (
                 name: fav.track.name,
                 imageUrl: fav.track.imageUrl,
                 artists: fav.track.artists,
+                previewUrl: fav.track.previewUrl,
+                durationMs: fav.track.durationMs,
                 popularity: fav.track.popularity,
               })),
               href: `/api/likes?userId=${userIdInt}&type=track&limit=${parsedLimit}&offset=${parsedOffset}`,
@@ -230,6 +232,8 @@ const handlePost = async (
     imageUrl,
     artists,
     followers,
+    previewUrl,
+    durationMs,
     popularity,
     releaseDate,
   } = req.body;
@@ -284,6 +288,8 @@ const handlePost = async (
                 name,
                 imageUrl,
                 artists,
+                previewUrl,
+                durationMs,
                 popularity,
               },
             });

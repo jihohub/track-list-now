@@ -98,8 +98,9 @@ export interface AddedTrack {
   name: string;
   imageUrl: string;
   artists: string;
+  previewUrl: string | null;
+  durationMs: number;
   popularity: number;
-  previewUrl: string;
 }
 
 export type AddedItem = AddedArtist | AddedTrack;

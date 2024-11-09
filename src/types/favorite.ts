@@ -12,8 +12,9 @@ export interface UserFavoriteTrack {
   name: string;
   imageUrl: string;
   artists: string;
-  popularity: number;
   previewUrl: string | null;
+  durationMs: number;
+  popularity: number;
 }
 
 export interface UserFavorites {
@@ -97,6 +98,8 @@ export interface UserFavoriteTrackInput {
   name: string;
   imageUrl: string;
   artists: string;
+  previewUrl: string | null;
+  durationMs: number;
   popularity: number;
 }
 

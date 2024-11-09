@@ -16,10 +16,11 @@ const useTrackPlayer = (track: TrackDetail) => {
     useState<SimplifiedTrack | null>({
       id: track.id,
       name: track.name,
+      imageUrl: track.album.images[0]?.url || "/default-album.png",
       artists: track.artists,
       previewUrl: track.preview_url,
       durationMs: track.duration_ms,
-      imageUrl: track.album.images[0]?.url || "/default-album.png",
+      popularity: track.popularity,
     });
 
   useEffect(() => {

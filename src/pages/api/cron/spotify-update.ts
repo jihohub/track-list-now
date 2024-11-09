@@ -1,16 +1,18 @@
 import ErrorProcessor from "@/libs/utils/errorProcessor";
-import { SpotifyDataUpdater } from "@/services/spotify-updater";
+import SpotifyDataUpdater from "@/services/spotify-updater";
 import { AppError } from "@/types/error";
-import { headers } from "next/headers";
-import { NextRequest, NextResponse } from "next/server";
+import { NextApiRequest, NextApiResponse } from "next";
 
-export async function GET(request: NextRequest) {
+async function handler(req: NextApiRequest, res: NextApiResponse) {
   const requestId = crypto.randomUUID();
+
+  if (req.method !== "GET") {
+    return res.status(405).json({ error: "Method not allowed" });
+  }
 
   try {
     // Vercel Cron 보안 검증
-    const headersList = headers();
-    const authHeader = headersList.get("authorization");
+    const authHeader = req.headers.authorization;
 
     if (
       process.env.VERCEL_CRON_SECRET &&
@@ -28,7 +30,7 @@ export async function GET(request: NextRequest) {
 
     // 현재 호스트 URL 구성
     const protocol = process.env.NODE_ENV === "production" ? "https" : "http";
-    const host = request.headers.get("host") || "localhost:3000";
+    const host = req.headers.host || "localhost:3000";
     const baseUrl = `${protocol}://${host}`;
 
     ErrorProcessor.logToSentry(
@@ -60,7 +62,7 @@ export async function GET(request: NextRequest) {
       }),
     );
 
-    return NextResponse.json({
+    return res.status(200).json({
       success: true,
       message: "Spotify data update completed",
       requestId,
@@ -69,22 +71,22 @@ export async function GET(request: NextRequest) {
   } catch (error) {
     ErrorProcessor.logToSentry(error);
 
-    return NextResponse.json(
-      {
-        success: false,
-        error: "Failed to update Spotify data",
-        requestId,
-        timestamp: new Date().toISOString(),
-      },
-      { status: 500 },
-    );
+    return res.status(500).json({
+      success: false,
+      error: "Failed to update Spotify data",
+      requestId,
+      timestamp: new Date().toISOString(),
+    });
   }
 }
 
-export const maxDuration = 300; // 최대 실행 시간 5분
-
-// Vercel Edge Config에서 크론 작업 설정을 위한 설정
+// 메모리 제한과 타임아웃 설정을 위한 설정
 export const config = {
-  maxDuration: 300,
-  memory: 1024, // 메모리 제한 1GB
+  api: {
+    bodyParser: false,
+    responseLimit: false,
+    externalResolver: true,
+  },
 };
+
+export default handler;

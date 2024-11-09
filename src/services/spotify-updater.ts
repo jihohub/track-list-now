@@ -25,9 +25,11 @@ interface TrackUpdateData {
   };
 }
 
-export class SpotifyDataUpdater {
+class SpotifyDataUpdater {
   private readonly BATCH_SIZE = 50;
+
   private readonly axiosInstance;
+
   private readonly baseUrl: string;
 
   constructor(baseUrl: string) {
@@ -103,7 +105,9 @@ export class SpotifyDataUpdater {
     }
   }
 
-  private async updateArtistBatch(artists: ArtistUpdateData[]): Promise<void> {
+  private static async updateArtistBatch(
+    artists: ArtistUpdateData[],
+  ): Promise<void> {
     try {
       const updates = artists.map((artist) =>
         prisma.artist.update({
@@ -129,7 +133,9 @@ export class SpotifyDataUpdater {
     }
   }
 
-  private async updateTrackBatch(tracks: TrackUpdateData[]): Promise<void> {
+  private static async updateTrackBatch(
+    tracks: TrackUpdateData[],
+  ): Promise<void> {
     try {
       const updates = tracks.map((track) =>
         prisma.track.update({
@@ -161,21 +167,27 @@ export class SpotifyDataUpdater {
         select: { artistId: true },
       });
 
-      for (let i = 0; i < allArtists.length; i += this.BATCH_SIZE) {
-        const batch = allArtists.slice(i, i + this.BATCH_SIZE);
+      const processBatch = async (batch: { artistId: string }[]) => {
         const artistIds = batch.map((a) => a.artistId);
-
         try {
           const spotifyArtists = await this.fetchSpotifyArtists(artistIds);
-          await this.updateArtistBatch(spotifyArtists);
+          await SpotifyDataUpdater.updateArtistBatch(spotifyArtists);
+          // eslint-disable-next-line no-promise-executor-return
           await new Promise((resolve) => setTimeout(resolve, 100));
         } catch (error) {
           ErrorProcessor.logToSentry(
             error,
-            `Artist batch update failed: ${i}-${i + this.BATCH_SIZE}`,
+            `Artist batch update failed for IDs: ${artistIds.join(", ")}`,
           );
         }
+      };
+
+      const batches = [];
+      for (let i = 0; i < allArtists.length; i += this.BATCH_SIZE) {
+        batches.push(allArtists.slice(i, i + this.BATCH_SIZE));
       }
+
+      await Promise.all(batches.map(processBatch));
     } catch (error) {
       throw new AppError("Failed to update all artists", {
         errorCode: "ARTIST_UPDATE_FAILED",
@@ -191,21 +203,27 @@ export class SpotifyDataUpdater {
         select: { trackId: true },
       });
 
-      for (let i = 0; i < allTracks.length; i += this.BATCH_SIZE) {
-        const batch = allTracks.slice(i, i + this.BATCH_SIZE);
+      const processBatch = async (batch: { trackId: string }[]) => {
         const trackIds = batch.map((t) => t.trackId);
-
         try {
           const spotifyTracks = await this.fetchSpotifyTracks(trackIds);
-          await this.updateTrackBatch(spotifyTracks);
+          await SpotifyDataUpdater.updateTrackBatch(spotifyTracks);
+          // eslint-disable-next-line no-promise-executor-return
           await new Promise((resolve) => setTimeout(resolve, 100));
         } catch (error) {
           ErrorProcessor.logToSentry(
             error,
-            `Track batch update failed: ${i}-${i + this.BATCH_SIZE}`,
+            `Track batch update failed for IDs: ${trackIds.join(", ")}`,
           );
         }
+      };
+
+      const batches = [];
+      for (let i = 0; i < allTracks.length; i += this.BATCH_SIZE) {
+        batches.push(allTracks.slice(i, i + this.BATCH_SIZE));
       }
+
+      await Promise.all(batches.map(processBatch));
     } catch (error) {
       throw new AppError("Failed to update all tracks", {
         errorCode: "TRACK_UPDATE_FAILED",
@@ -215,3 +233,5 @@ export class SpotifyDataUpdater {
     }
   }
 }
+
+export default SpotifyDataUpdater;
