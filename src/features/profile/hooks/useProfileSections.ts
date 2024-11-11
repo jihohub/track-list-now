@@ -9,7 +9,7 @@ const useProfileSections = (
 ) => {
   const { t } = useTranslation("common");
 
-  const artistSections: SectionConfig[] = [
+  const allTimeSections: SectionConfig[] = [
     {
       title: t("all_time_favorite_artists"),
       items: displayFavorites?.allTimeArtists ?? [],
@@ -18,21 +18,21 @@ const useProfileSections = (
       handleDelete: (id: string) => handleDelete("allTimeArtists", id),
     },
     {
-      title: t("current_favorite_artists"),
-      items: displayFavorites?.currentArtists ?? [],
-      type: "artist",
-      openModal: () => openModal("artist", "currentArtists"),
-      handleDelete: (id: string) => handleDelete("currentArtists", id),
-    },
-  ];
-
-  const trackSections: SectionConfig[] = [
-    {
       title: t("all_time_favorite_tracks"),
       items: displayFavorites?.allTimeTracks ?? [],
       type: "track",
       openModal: () => openModal("track", "allTimeTracks"),
       handleDelete: (id: string) => handleDelete("allTimeTracks", id),
+    },
+  ];
+
+  const currentSections: SectionConfig[] = [
+    {
+      title: t("current_favorite_artists"),
+      items: displayFavorites?.currentArtists ?? [],
+      type: "artist",
+      openModal: () => openModal("artist", "currentArtists"),
+      handleDelete: (id: string) => handleDelete("currentArtists", id),
     },
     {
       title: t("current_favorite_tracks"),
@@ -43,7 +43,7 @@ const useProfileSections = (
     },
   ];
 
-  return [...artistSections, ...trackSections];
+  return [...allTimeSections, ...currentSections];
 };
 
 export default useProfileSections;

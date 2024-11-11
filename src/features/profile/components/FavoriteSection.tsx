@@ -42,7 +42,7 @@ const FavoriteSection = ({
           >
             <button
               onClick={isEditing ? openModal : undefined}
-              className={`flex items-center justify-center w-24 h-24 ${
+              className={`flex items-center justify-center w-16 h-16 sm:w-24 sm:h-24 ${
                 type === "track" ? "rounded-lg" : "rounded-full"
               }`}
               style={{
@@ -53,11 +53,11 @@ const FavoriteSection = ({
               type="button"
             >
               {isEditing ? (
-                <AddIcon className="w-8 h-8 text-white" />
+                <AddIcon className="w-6 h-6 sm:w-8 sm:h-8 text-white" />
               ) : type === "artist" ? (
-                <ArtistIcon className="w-8 h-8 text-gray-500" />
+                <ArtistIcon className="w-6 h-6 sm:w-8 sm:h-8 text-gray-500" />
               ) : (
-                <TrackIcon className="w-8 h-8 text-gray-500" />
+                <TrackIcon className="w-6 h-6 sm:w-8 sm:h-8 text-gray-500" />
               )}
             </button>
           </div>
