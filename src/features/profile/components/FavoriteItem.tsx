@@ -41,7 +41,7 @@ const FavoriteItem = ({
                   : (item as UserFavoriteTrack).trackId,
               );
             }}
-            className={`absolute inset-0 flex items-center justify-center bg-black bg-opacity-50 text-white text-3xl ${
+            className={`absolute inset-0 flex items-center justify-center bg-black bg-opacity-50 text-white text-xl sm:text-3xl ${
               type === "artist" ? "rounded-full" : "rounded-lg"
             }`}
             type="button"
