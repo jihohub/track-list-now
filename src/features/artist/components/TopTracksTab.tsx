@@ -21,6 +21,8 @@ const TopTracksTab = ({ tracks }: TopTracksTabProps) => {
     handleNext,
     handleClosePlayer,
     currentTrack,
+    disablePrevious,
+    disableNext,
   } = useArtistPlayer(tracks);
 
   return (
@@ -53,6 +55,8 @@ const TopTracksTab = ({ tracks }: TopTracksTabProps) => {
           volume={volume}
           setVolume={setVolume}
           enableClose
+          disablePrevious={disablePrevious}
+          disableNext={disableNext}
         />
       )}
     </div>

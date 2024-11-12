@@ -90,6 +90,8 @@ export interface AudioPlayerProps {
   volume: number;
   setVolume: (volume: number) => void;
   enableClose: boolean;
+  disablePrevious?: boolean;
+  disableNext?: boolean;
 }
 
 export interface PlaybackControlsProps {
