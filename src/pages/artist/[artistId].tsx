@@ -44,6 +44,7 @@ export default ArtistPage;
 export const getServerSideProps: GetServerSideProps = async ({
   locale,
   params,
+  query,
 }) => {
   const queryClient = new QueryClient();
   const artistId = params?.artistId as string;
@@ -64,6 +65,7 @@ export const getServerSideProps: GetServerSideProps = async ({
         ])),
         dehydratedState: dehydrate(queryClient),
         artistId,
+        defaultTab: query.tab || "top_tracks",
       },
     };
   } catch (error) {
@@ -78,6 +80,7 @@ export const getServerSideProps: GetServerSideProps = async ({
         ])),
         dehydratedState: dehydrate(queryClient),
         artistId,
+        defaultTab: "top_tracks",
       },
     };
   }

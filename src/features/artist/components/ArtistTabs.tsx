@@ -1,15 +1,16 @@
-// import TopTracksTab from "@/features/artist/components/TopTracksTab";
 import { useTranslation } from "next-i18next";
 
+type TabType = "top_tracks" | "albums" | "related_artists";
+
 interface ArtistTabsProps {
-  currentTab: string;
-  onTabChange: (tab: string) => void;
+  currentTab: TabType;
+  onTabChange: (tab: TabType) => void;
 }
 
 const ArtistTabs = ({ currentTab, onTabChange }: ArtistTabsProps) => {
   const { t } = useTranslation(["artist"]);
 
-  const tabs = [
+  const tabs: { label: string; value: TabType }[] = [
     { label: "top_tracks", value: "top_tracks" },
     { label: "albums", value: "albums" },
     { label: "related_artists", value: "related_artists" },
