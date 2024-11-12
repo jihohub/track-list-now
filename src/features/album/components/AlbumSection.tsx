@@ -22,6 +22,8 @@ const AlbumSection = ({ album }: AlbumSectionProps) => {
     handleNext,
     handleClosePlayer,
     currentTrack,
+    disablePrevious,
+    disableNext,
   } = useAlbumPlayer(album);
 
   return (
@@ -65,6 +67,8 @@ const AlbumSection = ({ album }: AlbumSectionProps) => {
         volume={volume}
         setVolume={setVolume}
         enableClose
+        disablePrevious={disablePrevious}
+        disableNext={disableNext}
       />
     </div>
   );
