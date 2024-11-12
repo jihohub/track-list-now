@@ -22,6 +22,7 @@ const SeekBar = ({ currentTime, duration, onSeek }: SeekBarProps) => {
       <input
         type="range"
         min="0"
+        step={duration > currentTime ? 1 : 0.5}
         max={duration}
         value={currentTime}
         onChange={(e) => onSeek(Number(e.target.value))}
