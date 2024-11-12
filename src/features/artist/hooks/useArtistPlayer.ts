@@ -1,7 +1,7 @@
-import { ArtistPageData } from "@/types/artist";
+import { SimplifiedTrack } from "@/types/album";
 import { useCallback, useEffect, useState } from "react";
 
-const useArtistPlayer = (data: ArtistPageData) => {
+const useArtistPlayer = (tracks: SimplifiedTrack[]) => {
   const [currentTrackIndex, setCurrentTrackIndex] = useState<number | null>(
     null,
   );
@@ -28,13 +28,13 @@ const useArtistPlayer = (data: ArtistPageData) => {
   }, [volume]);
 
   const getPlayableTracks = useCallback(() => {
-    return data.topTracks.tracks.reduce<number[]>((acc, track, index) => {
+    return tracks.reduce<number[]>((acc, track, index) => {
       if (track.previewUrl) {
         acc.push(index);
       }
       return acc;
     }, []);
-  }, [data.topTracks.tracks]);
+  }, [tracks]);
 
   const findNextPlayableTrack = useCallback(
     (currentIndex: number) => {
@@ -42,7 +42,10 @@ const useArtistPlayer = (data: ArtistPageData) => {
       const currentPlayableIndex = playableTracks.findIndex(
         (index) => index === currentIndex,
       );
-      return playableTracks[currentPlayableIndex + 1];
+      // 다음 재생 가능한 트랙이 없으면 undefined 반환
+      return currentPlayableIndex < playableTracks.length - 1
+        ? playableTracks[currentPlayableIndex + 1]
+        : undefined;
     },
     [getPlayableTracks],
   );
@@ -53,10 +56,32 @@ const useArtistPlayer = (data: ArtistPageData) => {
       const currentPlayableIndex = playableTracks.findIndex(
         (index) => index === currentIndex,
       );
-      return playableTracks[currentPlayableIndex - 1];
+      // 이전 재생 가능한 트랙이 없으면 undefined 반환
+      return currentPlayableIndex > 0
+        ? playableTracks[currentPlayableIndex - 1]
+        : undefined;
     },
     [getPlayableTracks],
   );
+
+  const getNavigationState = useCallback(() => {
+    if (currentTrackIndex === null) {
+      return { disablePrevious: true, disableNext: true };
+    }
+
+    const playableTracks = getPlayableTracks();
+    const currentPlayableIndex = playableTracks.findIndex(
+      (index) => index === currentTrackIndex,
+    );
+
+    // 재생 가능한 트랙 목록 내에서의 위치를 확인
+    return {
+      disablePrevious: currentPlayableIndex <= 0,
+      disableNext:
+        currentPlayableIndex >= playableTracks.length - 1 ||
+        findNextPlayableTrack(currentTrackIndex) === undefined,
+    };
+  }, [currentTrackIndex, getPlayableTracks, findNextPlayableTrack]);
 
   const handlePlay = (index: number) => {
     if (currentTrackIndex === index) {
@@ -93,9 +118,8 @@ const useArtistPlayer = (data: ArtistPageData) => {
   };
 
   const currentTrack =
-    currentTrackIndex !== null
-      ? data.topTracks.tracks[currentTrackIndex]
-      : null;
+    currentTrackIndex !== null ? tracks[currentTrackIndex] : null;
+  const { disablePrevious, disableNext } = getNavigationState();
 
   return {
     currentTrackIndex,
@@ -108,6 +132,8 @@ const useArtistPlayer = (data: ArtistPageData) => {
     handleNext,
     handleClosePlayer,
     currentTrack,
+    disablePrevious,
+    disableNext,
   };
 };
 

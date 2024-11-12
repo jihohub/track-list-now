@@ -1,4 +1,4 @@
-import { SimplifiedTrack } from "@/types/album";
+import { SimplifiedTrack, SpotifyAlbum } from "@/types/album";
 import { Artist, ArtistRanking, Track, TrackRanking } from "@prisma/client";
 
 export type RankingCategory =
@@ -110,6 +110,16 @@ export interface CombinedArtistData {
 
 export type ArtistResponseData = CombinedArtistData;
 
+export interface ArtistAlbumsResponse {
+  href: string;
+  limit: number;
+  next: string | null;
+  offset: number;
+  previous: string | null;
+  total: number;
+  items: SpotifyAlbum[];
+}
+
 export interface ArtistPageData {
   artist: {
     id: string;
@@ -123,13 +133,6 @@ export interface ArtistPageData {
   };
   topTracks: {
     tracks: SimplifiedTrack[];
-  };
-  relatedArtists: {
-    artists: {
-      id: string;
-      name: string;
-      images: { url: string }[];
-    }[];
   };
 }
 

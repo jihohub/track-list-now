@@ -17,7 +17,12 @@ const PlaybackControls = ({
       {/* 이전 버튼 */}
       <button
         onClick={onPrevious}
-        className="text-gray-400 hover:text-gray-300 focus:outline-none"
+        className={`text-gray-400 focus:outline-none transition-all duration-200
+          ${
+            disablePrevious
+              ? "opacity-30 cursor-not-allowed"
+              : "hover:text-gray-300"
+          }`}
         disabled={disablePrevious}
         type="button"
         aria-label="Previous Track"
@@ -45,7 +50,12 @@ const PlaybackControls = ({
       {/* 다음 버튼 */}
       <button
         onClick={onNext}
-        className="text-gray-400 hover:text-gray-300 focus:outline-none"
+        className={`text-gray-400 focus:outline-none transition-all duration-200
+          ${
+            disableNext
+              ? "opacity-30 cursor-not-allowed"
+              : "hover:text-gray-300"
+          }`}
         disabled={disableNext}
         type="button"
         aria-label="Next Track"

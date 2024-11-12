@@ -17,6 +17,8 @@ const AudioPlayerComponent = ({
   volume,
   setVolume,
   enableClose,
+  disablePrevious,
+  disableNext,
 }: AudioPlayerProps) => {
   const audioElementRef = useRef<AudioElementHandle | null>(null);
 
@@ -64,8 +66,8 @@ const AudioPlayerComponent = ({
         onPlayPause={() => setIsPlaying(!isPlaying)}
         onPrevious={onPrevious}
         onNext={onNext}
-        disablePrevious={false} // 필요에 따라 비활성화 로직 추가
-        disableNext={false} // 필요에 따라 비활성화 로직 추가
+        disablePrevious={disablePrevious}
+        disableNext={disableNext}
       />
 
       {/* 시크 바 및 볼륨 조절 */}

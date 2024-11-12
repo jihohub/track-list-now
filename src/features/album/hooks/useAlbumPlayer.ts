@@ -42,7 +42,9 @@ const useAlbumPlayer = (album: SimplifiedAlbum) => {
       const currentPlayableIndex = playableTracks.findIndex(
         (index) => index === currentIndex,
       );
-      return playableTracks[currentPlayableIndex + 1];
+      return currentPlayableIndex < playableTracks.length - 1
+        ? playableTracks[currentPlayableIndex + 1]
+        : undefined;
     },
     [getPlayableTracks],
   );
@@ -53,10 +55,30 @@ const useAlbumPlayer = (album: SimplifiedAlbum) => {
       const currentPlayableIndex = playableTracks.findIndex(
         (index) => index === currentIndex,
       );
-      return playableTracks[currentPlayableIndex - 1];
+      return currentPlayableIndex > 0
+        ? playableTracks[currentPlayableIndex - 1]
+        : undefined;
     },
     [getPlayableTracks],
   );
+
+  const getNavigationState = useCallback(() => {
+    if (currentTrackIndex === null) {
+      return { disablePrevious: true, disableNext: true };
+    }
+
+    const playableTracks = getPlayableTracks();
+    const currentPlayableIndex = playableTracks.findIndex(
+      (index) => index === currentTrackIndex,
+    );
+
+    return {
+      disablePrevious: currentPlayableIndex <= 0,
+      disableNext:
+        currentPlayableIndex >= playableTracks.length - 1 ||
+        findNextPlayableTrack(currentTrackIndex) === undefined,
+    };
+  }, [currentTrackIndex, getPlayableTracks, findNextPlayableTrack]);
 
   const handlePlay = (index: number) => {
     if (currentTrackIndex === index) {
@@ -94,6 +116,7 @@ const useAlbumPlayer = (album: SimplifiedAlbum) => {
 
   const currentTrack =
     currentTrackIndex !== null ? album.tracks.items[currentTrackIndex] : null;
+  const { disablePrevious, disableNext } = getNavigationState();
 
   return {
     currentTrackIndex,
@@ -106,6 +129,8 @@ const useAlbumPlayer = (album: SimplifiedAlbum) => {
     handleNext,
     handleClosePlayer,
     currentTrack,
+    disablePrevious,
+    disableNext,
   };
 };
 
