@@ -1,7 +1,7 @@
-import { ArtistPageData } from "@/types/artist";
+import { SimplifiedTrack } from "@/types/album";
 import { useCallback, useEffect, useState } from "react";
 
-const useArtistPlayer = (data: ArtistPageData) => {
+const useArtistPlayer = (tracks: SimplifiedTrack[]) => {
   const [currentTrackIndex, setCurrentTrackIndex] = useState<number | null>(
     null,
   );
@@ -28,13 +28,13 @@ const useArtistPlayer = (data: ArtistPageData) => {
   }, [volume]);
 
   const getPlayableTracks = useCallback(() => {
-    return data.topTracks.tracks.reduce<number[]>((acc, track, index) => {
+    return tracks.reduce<number[]>((acc, track, index) => {
       if (track.previewUrl) {
         acc.push(index);
       }
       return acc;
     }, []);
-  }, [data.topTracks.tracks]);
+  }, [tracks]);
 
   const findNextPlayableTrack = useCallback(
     (currentIndex: number) => {
@@ -93,9 +93,7 @@ const useArtistPlayer = (data: ArtistPageData) => {
   };
 
   const currentTrack =
-    currentTrackIndex !== null
-      ? data.topTracks.tracks[currentTrackIndex]
-      : null;
+    currentTrackIndex !== null ? tracks[currentTrackIndex] : null;
 
   return {
     currentTrackIndex,

@@ -3,7 +3,6 @@ import withErrorHandling from "@/libs/utils/errorHandler";
 import {
   ArtistPageData,
   SpotifyArtist,
-  SpotifyRelatedArtists,
   SpotifyTopTracks,
 } from "@/types/artist";
 import { SpotifyAPIError, ValidationError } from "@/types/error";
@@ -60,20 +59,6 @@ const fetchTopTracks = async (
   }
 };
 
-const fetchRelatedArtists = async (
-  axios: AxiosInstance,
-  artistId: string,
-): Promise<SpotifyRelatedArtists> => {
-  try {
-    const response = await axios.get<SpotifyRelatedArtists>(
-      `/artists/${artistId}/related-artists`,
-    );
-    return response.data;
-  } catch (error) {
-    throw handleSpotifyError(error, "Failed to fetch related artists");
-  }
-};
-
 const validateArtistId = (artistId: unknown): string => {
   if (!artistId || typeof artistId !== "string") {
     throw new ValidationError("Invalid or missing artistId");
@@ -94,10 +79,6 @@ const validateResponse = (data: ArtistPageData): void => {
   if (!data.topTracks || !Array.isArray(data.topTracks.tracks)) {
     throw new SpotifyAPIError("Invalid top tracks data", 502);
   }
-
-  if (!data.relatedArtists || !Array.isArray(data.relatedArtists.artists)) {
-    throw new SpotifyAPIError("Invalid related artists data", 502);
-  }
 };
 
 const handler = async (
@@ -114,10 +95,9 @@ const handler = async (
   try {
     const serverAxios = getServerAxiosInstance(req, res);
 
-    const [artistData, topTracksData, relatedArtistsData] = await Promise.all([
+    const [artistData, topTracksData] = await Promise.all([
       fetchArtistData(serverAxios, validatedArtistId),
       fetchTopTracks(serverAxios, validatedArtistId),
-      fetchRelatedArtists(serverAxios, validatedArtistId),
     ]);
 
     const combinedData: ArtistPageData = {
@@ -139,13 +119,6 @@ const handler = async (
           })),
           previewUrl: track.preview_url,
           popularity: track.popularity,
-        })),
-      },
-      relatedArtists: {
-        artists: relatedArtistsData.artists.map((artist) => ({
-          id: artist.id,
-          name: artist.name,
-          images: artist.images,
         })),
       },
     };
