@@ -3,8 +3,9 @@ import ArtistTabs from "@/features/artist/components/ArtistTabs";
 import OverviewSection from "@/features/artist/components/OverviewSection";
 import RelatedArtistsTab from "@/features/artist/components/RelatedArtistsTab";
 import TopTracksTab from "@/features/artist/components/TopTracksTab";
+import useArtistTabs from "@/features/artist/hooks/useArtistTabs";
+import LoadingBar from "@/features/common/components/LoadingBar";
 import { ArtistPageData } from "@/types/artist";
-import { useRouter } from "next/router";
 
 interface ArtistSectionProps {
   data: ArtistPageData;
@@ -12,23 +13,14 @@ interface ArtistSectionProps {
 }
 
 const ArtistSection = ({ data, artistId }: ArtistSectionProps) => {
-  const router = useRouter();
-  const { tab = "top_tracks" } = router.query;
+  const { currentTab, handleTabChange, isReady } = useArtistTabs();
 
-  const handleTabChange = (newTab: string) => {
-    const query = { ...router.query, tab: newTab };
-    router.push(
-      {
-        pathname: router.pathname,
-        query,
-      },
-      undefined,
-      { shallow: true },
-    );
-  };
+  if (!isReady) {
+    return <LoadingBar />;
+  }
 
   const renderTabContent = () => {
-    switch (tab) {
+    switch (currentTab) {
       case "albums":
         return <AlbumsTab artistId={artistId} />;
       case "related_artists":
@@ -42,7 +34,7 @@ const ArtistSection = ({ data, artistId }: ArtistSectionProps) => {
   return (
     <div>
       <OverviewSection artist={data.artist} />
-      <ArtistTabs currentTab={tab as string} onTabChange={handleTabChange} />
+      <ArtistTabs currentTab={currentTab} onTabChange={handleTabChange} />
       <div className="mt-6">{renderTabContent()}</div>
     </div>
   );
