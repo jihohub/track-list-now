@@ -6,16 +6,9 @@ const LanguageToggle = () => {
   const [isKorean, setIsKorean] = useState(router.locale === "ko"); // 현재 locale에 맞춰 초기 값 설정
 
   const changeLanguage = (lang: string) => {
-    if (router.locale === lang) return;
-
-    // 현재 URL을 그대로 사용하면서 locale만 변경
-    const { pathname, query, asPath } = router;
-
-    router.push({ pathname, query }, asPath, {
-      locale: lang,
-      shallow: true,
-      scroll: false, // 페이지 스크롤 위치 유지
-    });
+    if (router.locale !== lang) {
+      router.push(router.pathname, router.asPath, { locale: lang });
+    }
   };
 
   const handleToggle = () => {
