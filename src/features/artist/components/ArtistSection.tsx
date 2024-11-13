@@ -4,7 +4,6 @@ import OverviewSection from "@/features/artist/components/OverviewSection";
 import RelatedArtistsTab from "@/features/artist/components/RelatedArtistsTab";
 import TopTracksTab from "@/features/artist/components/TopTracksTab";
 import useArtistTabs from "@/features/artist/hooks/useArtistTabs";
-import LoadingBar from "@/features/common/components/LoadingBar";
 import { ArtistPageData } from "@/types/artist";
 
 interface ArtistSectionProps {
@@ -13,11 +12,7 @@ interface ArtistSectionProps {
 }
 
 const ArtistSection = ({ data, artistId }: ArtistSectionProps) => {
-  const { currentTab, handleTabChange, isReady } = useArtistTabs();
-
-  if (!isReady) {
-    return <LoadingBar />;
-  }
+  const { currentTab, setCurrentTab } = useArtistTabs();
 
   const renderTabContent = () => {
     switch (currentTab) {
@@ -34,7 +29,7 @@ const ArtistSection = ({ data, artistId }: ArtistSectionProps) => {
   return (
     <div>
       <OverviewSection artist={data.artist} />
-      <ArtistTabs currentTab={currentTab} onTabChange={handleTabChange} />
+      <ArtistTabs currentTab={currentTab} setCurrentTab={setCurrentTab} />
       <div className="mt-6">{renderTabContent()}</div>
     </div>
   );
