@@ -1,11 +1,13 @@
+import AudioElement, {
+  AudioElementHandle,
+} from "@/features/audio/components/AudioElement";
+import CloseButton from "@/features/audio/components/CloseButton";
+import PlaybackControls from "@/features/audio/components/PlaybackControls";
+import SeekBar from "@/features/audio/components/SeekBar";
+import TrackInfo from "@/features/audio/components/TrackInfo";
+import VolumeControl from "@/features/audio/components/VolumeControl";
 import { AudioPlayerProps } from "@/types/album";
-import React, { useRef, useState } from "react";
-import AudioElement, { AudioElementHandle } from "./AudioElement";
-import CloseButton from "./CloseButton";
-import PlaybackControls from "./PlaybackControls";
-import SeekBar from "./SeekBar";
-import TrackInfo from "./TrackInfo";
-import VolumeControl from "./VolumeControl";
+import React, { useCallback, useRef, useState } from "react";
 
 const AudioPlayerComponent = ({
   track,
@@ -22,33 +24,44 @@ const AudioPlayerComponent = ({
 }: AudioPlayerProps) => {
   const audioElementRef = useRef<AudioElementHandle | null>(null);
 
-  const [currentTime, setCurrentTime] = useState<number>(0);
-  const [duration, setDuration] = useState<number>(0);
+  const [currentSeconds, setCurrentSeconds] = useState<number>(0);
+  const [durationSeconds, setDurationSeconds] = useState<number>(0);
 
-  const handleSeek = (value: number) => {
-    setCurrentTime(value);
+  const handleSeek = useCallback((value: number) => {
+    setCurrentSeconds(value);
     if (audioElementRef.current) {
       audioElementRef.current.seek(value);
     }
-  };
+  }, []);
 
-  const handleVolumeChange = (value: number) => {
-    setVolume(value);
-  };
+  const handleVolumeChange = useCallback(
+    (value: number) => {
+      setVolume(value);
+    },
+    [setVolume],
+  );
 
-  const handleEnded = () => {
+  const handleEnded = useCallback(() => {
     setIsPlaying(false);
+    setCurrentSeconds(durationSeconds);
     // 자동으로 다음 트랙으로 넘어가려면 onNext 호출
     // onNext();
-  };
+  }, [durationSeconds, setIsPlaying]);
 
-  const handleTimeUpdate = (time: number) => {
-    setCurrentTime(time);
-  };
+  const handleTimeUpdate = useCallback(
+    (time: number) => {
+      const flooredTime = Math.floor(time);
+      const flooredDuration = Math.floor(durationSeconds);
+      if (flooredTime !== currentSeconds) {
+        setCurrentSeconds(Math.min(flooredTime, flooredDuration));
+      }
+    },
+    [currentSeconds, durationSeconds],
+  );
 
-  const handleLoadedMetadata = (metaDuration: number) => {
-    setDuration(metaDuration);
-  };
+  const handleLoadedMetadata = useCallback((metaDuration: number) => {
+    setDurationSeconds(Math.floor(metaDuration));
+  }, []);
 
   if (!track) return null;
 
@@ -74,8 +87,8 @@ const AudioPlayerComponent = ({
       <div className="flex justify-center items-center space-x-4">
         {/* 시간 표시 및 시크 바 */}
         <SeekBar
-          currentTime={currentTime}
-          duration={duration}
+          currentTime={currentSeconds}
+          duration={durationSeconds}
           onSeek={handleSeek}
         />
 
