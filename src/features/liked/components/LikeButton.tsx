@@ -1,9 +1,6 @@
 import HeartFillIcon from "@/assets/icons/heartFill.svg";
-import useLikeMutation from "@/features/liked/mutations/useLikeMutation";
-import useUnlikeMutation from "@/features/liked/mutations/useUnlikeMutation";
-import axios from "axios";
+import useLikeState from "@/features/liked/hooks/useLikeState";
 import { useSession } from "next-auth/react";
-import { useEffect, useState } from "react";
 
 interface LikeButtonProps {
   itemType: "artist" | "track" | "album";
@@ -16,81 +13,18 @@ interface LikeButtonProps {
   releaseDate?: string;
 }
 
-const LikeButton = ({
-  itemType,
-  itemId,
-  name,
-  imageUrl,
-  artists,
-  followers,
-  popularity,
-  releaseDate,
-}: LikeButtonProps) => {
-  const { data: session } = useSession();
+const LikeButton = (props: LikeButtonProps) => {
+  const { itemType, itemId, ...itemData } = props;
+  const { data: session, status } = useSession();
+  const { liked, toggleLike } = useLikeState(itemType, itemId);
 
-  const userId = session?.user.id;
-
-  const [liked, setLiked] = useState<boolean>(false);
-
-  const likeMutation = useLikeMutation();
-  const unlikeMutation = useUnlikeMutation();
-
-  useEffect(() => {
-    const fetchLiked = async () => {
-      if (!userId) {
-        setLiked(false);
-        return;
-      }
-      try {
-        const response = await axios.get<{ liked: boolean }>(
-          "/api/likes/check",
-          {
-            params: { userId, itemType, itemId },
-          },
-        );
-        setLiked(response.data.liked);
-      } catch (error: unknown) {
-        JSON.stringify(error);
-        setLiked(false);
-      }
-    };
-    fetchLiked();
-  }, [userId, itemType, itemId]);
-
-  const handleClick = () => {
-    if (!userId) {
-      return;
-    }
-    if (liked) {
-      const unlikePayload = { userId, itemType, itemId };
-      unlikeMutation.mutate(unlikePayload, {
-        onSuccess: () => {
-          setLiked(false);
-        },
-      });
-    } else {
-      const likePayload = {
-        userId,
-        itemType,
-        itemId,
-        name,
-        imageUrl,
-        artists,
-        followers,
-        popularity,
-        releaseDate,
-      };
-      likeMutation.mutate(likePayload, {
-        onSuccess: () => {
-          setLiked(true);
-        },
-      });
-    }
-  };
+  if (status === "unauthenticated" || !session?.user.id) {
+    return null;
+  }
 
   return (
     <button
-      onClick={handleClick}
+      onClick={() => toggleLike(itemData)}
       className={liked ? "text-vividSkyBlue" : "text-gray-500"}
       aria-pressed={liked}
       aria-label={liked ? "Unlike this item" : "Like this item"}
