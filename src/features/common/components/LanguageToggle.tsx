@@ -1,5 +1,5 @@
 import { useRouter } from "next/router";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 
 const LanguageToggle = () => {
   const router = useRouter();
@@ -18,13 +18,12 @@ const LanguageToggle = () => {
     });
   };
 
-  useEffect(() => {
-    setIsKorean(router.locale === "ko");
-  }, [router.locale]);
-
   const handleToggle = () => {
-    const newLang = !isKorean ? "ko" : "en";
-    changeLanguage(newLang);
+    setIsKorean((prevIsKorean) => {
+      const newLang = !prevIsKorean ? "ko" : "en";
+      changeLanguage(newLang);
+      return !prevIsKorean;
+    });
   };
 
   return (
