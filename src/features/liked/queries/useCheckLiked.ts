@@ -24,6 +24,8 @@ const useCheckLiked = (
   return useQuery<boolean, Error>({
     queryKey: ["likes", userId, itemType, itemId],
     queryFn: () => fetchCheckLiked(userId!, itemType, itemId),
+    enabled: !!userId,
+    staleTime: 1000 * 60 * 5,
   });
 };
 
