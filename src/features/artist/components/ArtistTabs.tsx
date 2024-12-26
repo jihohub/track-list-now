@@ -11,7 +11,7 @@ const ArtistTabs = ({ currentTab, setCurrentTab }: ArtistTabsProps) => {
   const tabs: { label: string; value: string }[] = [
     { label: "top_tracks", value: "top_tracks" },
     { label: "albums", value: "albums" },
-    { label: "related_artists", value: "related_artists" },
+    // { label: "related_artists", value: "related_artists" },
   ];
 
   return (
