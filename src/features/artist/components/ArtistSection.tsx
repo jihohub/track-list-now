@@ -1,7 +1,6 @@
 import AlbumsTab from "@/features/artist/components/AlbumsTab";
 import ArtistTabs from "@/features/artist/components/ArtistTabs";
 import OverviewSection from "@/features/artist/components/OverviewSection";
-import RelatedArtistsTab from "@/features/artist/components/RelatedArtistsTab";
 import TopTracksTab from "@/features/artist/components/TopTracksTab";
 import useArtistTabs from "@/features/artist/hooks/useArtistTabs";
 import { ArtistPageData } from "@/types/artist";
@@ -18,8 +17,8 @@ const ArtistSection = ({ data, artistId }: ArtistSectionProps) => {
     switch (currentTab) {
       case "albums":
         return <AlbumsTab artistId={artistId} />;
-      case "related_artists":
-        return <RelatedArtistsTab artistId={artistId} />;
+      // case "related_artists":
+      //   return <RelatedArtistsTab artistId={artistId} />;
       case "top_tracks":
       default:
         return <TopTracksTab tracks={data.topTracks.tracks} />;
